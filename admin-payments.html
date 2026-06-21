@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REMPRO — Управление платежами</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f7fa; color: #1a1a1a; min-height: 100vh;
+  }
+  header {
+    display: flex; align-items: center; padding: 12px 24px;
+    background: #fff; border-bottom: 1px solid #e8e8e8; gap: 16px; position: relative;
+  }
+  .header-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 600; font-size: 16px; white-space: nowrap;
+  }
+  .header-logo .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 13px; font-weight: 600;
+  }
+  nav { display: flex; align-items: center; gap: 20px; flex: 1; overflow-x: auto; }
+  nav a { text-decoration: none; color: #333; font-size: 14px; white-space: nowrap; }
+  nav a:hover, nav a.active { color: #3b82f6; }
+  .btn-create {
+    background: #3b82f6; border: none; color: #fff;
+    padding: 8px 20px; border-radius: 8px; font-size: 14px;
+    cursor: pointer; white-space: nowrap; font-weight: 500;
+  }
+  .btn-create:hover { background: #2563eb; }
+  .burger { display: none; background: none; border: none; font-size: 24px; cursor: pointer; color: #333; }
+
+  main { max-width: 1400px; margin: 0 auto; padding: 32px 20px 60px; }
+  .page-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 24px; flex-wrap: wrap; gap: 16px;
+  }
+  .page-title { font-size: 28px; font-weight: 700; }
+
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    margin-bottom: 24px;
+  }
+  .stat-box {
+    background: #fff; border-radius: 12px; padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .stat-box-label { font-size: 13px; color: #666; margin-bottom: 8px; }
+  .stat-box-value { font-size: 28px; font-weight: 700; }
+  .stat-box-value.blue { color: #3b82f6; }
+  .stat-box-value.green { color: #10b981; }
+  .stat-box-value.orange { color: #f59e0b; }
+  .stat-box-value.red { color: #ef4444; }
+
+  .charts-row {
+    display: grid; grid-template-columns: 2fr 1fr; gap: 16px;
+    margin-bottom: 24px;
+  }
+  .chart-card {
+    background: #fff; border-radius: 16px; padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .chart-title { font-size: 18px; font-weight: 600; margin-bottom: 20px; }
+  .chart-bars {
+    display: flex; align-items: flex-end; gap: 12px; height: 180px;
+    padding-top: 20px;
+  }
+  .chart-bar-group {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px;
+  }
+  .chart-bar {
+    width: 100%; background: linear-gradient(180deg, #3b82f6, #1e40af);
+    border-radius: 6px 6px 0 0; min-height: 20px;
+  }
+  .chart-label { font-size: 12px; color: #666; }
+
+  .donut-chart {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 180px;
+  }
+  .donut {
+    width: 140px; height: 140px; border-radius: 50%;
+    background: conic-gradient(#3b82f6 0% 65%, #10b981 65% 85%, #f59e0b 85% 95%, #ef4444 95% 100%);
+    position: relative;
+  }
+  .donut::after {
+    content: ""; position: absolute;
+    top: 30px; left: 30px; right: 30px; bottom: 30px;
+    background: #fff; border-radius: 50%;
+  }
+  .donut-legend {
+    display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px;
+    font-size: 12px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  .filters-bar {
+    background: #fff; border-radius: 12px; padding: 16px 20px;
+    margin-bottom: 24px; display: flex; gap: 16px; flex-wrap: wrap; align-items: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .filter-group { display: flex; flex-direction: column; gap: 4px; }
+  .filter-group label { font-size: 12px; color: #666; font-weight: 500; }
+  .filter-group input, .filter-group select {
+    padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px;
+    font-size: 14px; outline: none; min-width: 180px;
+  }
+
+  .payments-table-wrap {
+    background: #fff; border-radius: 16px; padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow-x: auto;
+  }
+  .payments-table {
+    width: 100%; border-collapse: collapse; min-width: 1000px;
+  }
+  .payments-table th {
+    text-align: left; padding: 12px; font-size: 13px; color: #666;
+    font-weight: 600; border-bottom: 2px solid #e5e7eb;
+  }
+  .payments-table td {
+    padding: 14px 12px; border-bottom: 1px solid #f0f0f0; font-size: 14px;
+  }
+  .payments-table tr:hover td { background: #f9fafb; }
+
+  .payment-status {
+    padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;
+  }
+  .payment-status.completed { background: #d1fae5; color: #065f46; }
+  .payment-status.pending { background: #fef3c7; color: #92400e; }
+  .payment-status.processing { background: #dbeafe; color: #1e40af; }
+  .payment-status.failed { background: #fee2e2; color: #991b1b; }
+  .payment-status.refunded { background: #f3f4f6; color: #4b5563; }
+
+  .amount { font-weight: 600; }
+  .amount.positive { color: #10b981; }
+  .amount.negative { color: #ef4444; }
+
+  .action-btns { display: flex; gap: 6px; }
+  .btn-icon {
+    width: 32px; height: 32px; border-radius: 6px;
+    border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 14px; transition: all 0.2s;
+  }
+  .btn-icon.view { background: #eff6ff; color: #3b82f6; }
+  .btn-icon.view:hover { background: #dbeafe; }
+  .btn-icon.refund { background: #fef3c7; color: #d97706; }
+  .btn-icon.refund:hover { background: #fde68a; }
+
+  .pagination {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 24px; flex-wrap: wrap; gap: 16px;
+  }
+  .pagination-info { font-size: 14px; color: #666; }
+  .pagination-btns { display: flex; gap: 8px; }
+  .pagination-btns button {
+    padding: 8px 14px; border: 1px solid #ddd; background: #fff;
+    border-radius: 8px; cursor: pointer; font-size: 14px;
+  }
+  .pagination-btns button:hover:not(:disabled) { background: #f5f5f5; }
+  .pagination-btns button:disabled { opacity: 0.4; cursor: default; }
+  .pagination-btns button.active { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+
+  @media (max-width: 768px) {
+    nav { display: none; }
+    nav.open {
+      display: flex; flex-direction: column;
+      position: absolute; top: 56px; left: 0; right: 0;
+      background: #fff; padding: 20px;
+      border-bottom: 1px solid #e8e8e8; z-index: 100; gap: 14px;
+    }
+    .burger { display: block; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .charts-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="burger" onclick="document.querySelector('nav').classList.toggle('open')">☰</button>
+  <div class="header-logo">
+    <div class="avatar">МГ</div>
+    <span>Максим Гусев</span>
+  </div>
+  <nav>
+    <a href="dashboard.html">Рабочий стол</a>
+    <a href="projects.html">Проекты</a>
+    <a href="search.html">Поиск</a>
+    <a href="panels.html">Панели</a>
+    <a href="admin.html">Администратор</a>
+    <a href="manager.html">Менеджер</a>
+    <a href="workers.html">Рабочие</a>
+  </nav>
+  <button class="btn-create">📥 Экспорт отчёта</button>
+</header>
+
+<main>
+  <div class="page-header">
+    <h1 class="page-title">Управление платежами</h1>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-box-label">Оборот за месяц</div>
+      <div class="stat-box-value blue">2,847,500 ₽</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-label">Комиссия платформы</div>
+      <div class="stat-box-value green">284,750 ₽</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-label">В обработке</div>
+      <div class="stat-box-value orange">127,400 ₽</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-label">Возвраты</div>
+      <div class="stat-box-value red">18,200 ₽</div>
+    </div>
+  </div>
+
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="chart-title">Доходы по месяцам (тыс. ₽)</div>
+      <div class="chart-bars">
+        <div class="chart-bar-group"><div class="chart-bar" style="height: 45%"></div><div class="chart-label">Янв</div></div>
+        <div class="chart-bar-group"><div class="chart-bar" style="height: 62%"></div><div class="chart-label">Фев</div></div>
+        <div class="chart-bar-group"><div class="chart-bar" style="height: 58%"></div><div class="chart-label">Мар</div></div>
+        <div class="chart-bar-group"><div class="chart-bar" style="height: 71%"></div><div class="chart-label">Апр</div></div>
+        <div class="chart-bar-group"><div class="chart-bar" style="height: 68%"></div><div class="chart-label">Май</div></div>
+        <div class="chart-bar-group"><div class="chart-bar" style="height: 85%"></div><div class="chart-label">Июн</div></div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Статусы платежей</div>
+      <div class="donut-chart">
+        <div class="donut"></div>
+        <div class="donut-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>Завершены 65%</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div>В обработке 20%</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>Ожидают 10%</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Отменены 5%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="filters-bar">
+    <div class="filter-group">
+      <label>Поиск</label>
+      <input type="text" placeholder="ID транзакции, email...">
+    </div>
+    <div class="filter-group">
+      <label>Статус</label>
+      <select>
+        <option>Все статусы</option>
+        <option>Завершён</option>
+        <option>В обработке</option>
+        <option>Ожидает</option>
+        <option>Отменён</option>
+        <option>Возврат</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Тип</label>
+      <select>
+        <option>Все типы</option>
+        <option>Оплата заказа</option>
+        <option>Вывод средств</option>
+        <option>Комиссия</option>
+        <option>Возврат</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Период</label>
+      <input type="date">
+    </div>
+    <button class="btn-create">Применить</button>
+  </div>
+
+  <div class="payments-table-wrap">
+    <table class="payments-table">
+      <thead>
+        <tr>
+          <th>ID транзакции</th>
+          <th>Дата</th>
+          <th>Пользователь</th>
+          <th>Тип</th>
+          <th>Описание</th>
+          <th>Сумма</th>
+          <th>Статус</th>
+          <th>Действия</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>#TRX-8821</strong></td>
+          <td>08.06.2026 14:32</td>
+          <td>petrov@mail.ru</td>
+          <td>Оплата заказа</td>
+          <td>Проект #PRJ-2026-089</td>
+          <td class="amount positive">+65,000 ₽</td>
+          <td><span class="payment-status completed">Завершён</span></td>
+          <td>
+            <div class="action-btns">
+              <button class="btn-icon view" title="Детали">️</button>
+              <button class="btn-icon refund" title="Возврат">↩️</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>#TRX-8820</strong></td>
+          <td>08.06.2026 13:15</td>
+          <td>sidorov@mail.ru</td>
+          <td>Вывод средств</td>
+          <td>На карту *4521</td>
+          <td class="amount negative">-50,000 ₽</td>
+          <td><span class="payment-status processing">В обработке</span></td>
+          <td>
+            <div class="action-btns">
+              <button class="btn-icon view" title="Детали">👁️</button>
+              <button class="btn-icon refund" title="Отменить">❌</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>#TRX-8819</strong></td>
+          <td>08.06.2026 12:47</td>
+          <td>kozlova@mail.ru</td>
+          <td>Оплата заказа</td>
+          <td>Проект #PRJ-2026-076</td>
+          <td class="amount positive">+38,000 ₽</td>
+          <td><span class="payment-status completed">Завершён</span></td>
+          <td>
+            <div class="action-btns">
+              <button class="btn-icon view" title="Детали">👁️</button>
+              <button class="btn-icon refund" title="Возврат">↩️</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>#TRX-8818</strong></td>
+          <td>08.06.2026 11:23</td>
+          <td>volkov@mail.ru</td>
+          <td>Комиссия</td>
+          <td>Комиссия платформы 10%</td>
+          <td class="amount negative">-6,500 ₽</td>
+          <td><span class="payment-status completed">Завершён</span></td>
+          <td>
+            <div class="action-btns">
+              <button class="btn-icon view" title="Детали">👁️</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>#TRX-8817</strong></td>
+          <td>08.06.2026 10:58</td>
+          <td>novikova@mail.ru</td>
+          <td>Оплата заказа</td>
+          <td>Проект #PRJ-2026-065</td>
+          <td class="amount positive">+25,000 ₽</td>
+          <td><span class="payment-status pending">Ожидает</span></td>
+          <td>
+            <div class="action-btns">
+              <button class="btn-icon view" title="Детали">👁️</button>
+              <button class="btn-icon refund" title="Отменить">❌</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>#TRX-8816</strong></td>
+          <td>07.06.2026 18:42</td>
+          <td>morozov@mail.ru</td>
+          <td>Возврат</td>
+          <td>Возврат по проекту #PRJ-2026-054</td>
+          <td class="amount negative">-18,200 ₽</td>
+          <td><span class="payment-status refunded">Возврат</span></td>
+          <td>
+            <div class="action-btns">
+              <button class="btn-icon view" title="Детали">️</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>#TRX-8815</strong></td>
+          <td>07.06.2026 16:15</td>
+          <td>ivanov@mail.ru</td>
+          <td>Оплата заказа</td>
+          <td>Проект #PRJ-2026-048</td>
+          <td class="amount positive">+42,000 ₽</td>
+          <td><span class="payment-status failed">Отменён</span></td>
+          <td>
+            <div class="action-btns">
+              <button class="btn-icon view" title="Детали">️</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination">
+    <div class="pagination-info">Показано 1-7 из 3,847 транзакций</div>
+    <div class="pagination-btns">
+      <button disabled>← Пред.</button>
+      <button class="active">1</button>
+      <button>2</button>
+      <button>3</button>
+      <button>...</button>
+      <button>550</button>
+      <button>След. →</button>
+    </div>
+  </div>
+</main>
+
+<script>
+  document.querySelector('.burger').addEventListener('click', function() {
+    document.querySelector('nav').classList.toggle('open');
+  });
+</script>
+
+</body>
+</html>

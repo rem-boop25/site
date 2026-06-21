@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REMPRO — Календарь</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f7fa; color: #1a1a1a; min-height: 100vh;
+  }
+
+  header {
+    display: flex; align-items: center; padding: 12px 24px;
+    background: #fff; border-bottom: 1px solid #e8e8e8; gap: 16px; position: relative;
+  }
+  .header-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 600; font-size: 16px; white-space: nowrap;
+  }
+  .header-logo .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 13px; font-weight: 600;
+    cursor: pointer;
+  }
+  nav {
+    display: flex; align-items: center; gap: 20px; flex: 1;
+  }
+  nav a { text-decoration: none; color: #333; font-size: 14px; white-space: nowrap; }
+  nav a:hover, nav a.active { color: #3b82f6; }
+
+  .header-actions { display: flex; align-items: center; gap: 16px; }
+  .btn-create {
+    background: #3b82f6; border: none; color: #fff;
+    padding: 8px 20px; border-radius: 8px; font-size: 14px;
+    cursor: pointer; white-space: nowrap; font-weight: 500;
+  }
+  .btn-create:hover { background: #2563eb; }
+
+  .dropdown { position: relative; }
+  .dropdown-toggle { cursor: pointer; }
+  .dropdown-menu {
+    display: none; position: absolute; top: 100%; right: 0;
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1); min-width: 220px;
+    z-index: 1000; padding: 8px 0; margin-top: 8px;
+  }
+  .dropdown:hover .dropdown-menu { display: block; }
+  .dropdown-menu a {
+    display: block; padding: 10px 16px; font-size: 14px;
+    color: #333; text-decoration: none; white-space: nowrap;
+  }
+  .dropdown-menu a:hover { background: #f5f7fa; color: #3b82f6; }
+
+  .profile-dropdown { position: relative; }
+  .profile-menu {
+    display: none; position: absolute; top: 100%; right: 0;
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1); min-width: 200px;
+    z-index: 1000; padding: 8px 0; margin-top: 8px;
+  }
+  .profile-menu.show { display: block; }
+  .profile-menu a {
+    display: block; padding: 10px 16px; font-size: 14px;
+    color: #333; text-decoration: none;
+  }
+  .profile-menu a:hover { background: #f5f7fa; color: #3b82f6; }
+  .profile-menu .divider { height: 1px; background: #e8e8e8; margin: 8px 0; }
+  .profile-menu .logout { color: #ef4444; }
+  .profile-menu .logout:hover { background: #fee2e2; color: #dc2626; }
+
+  .burger {
+    display: none; background: none; border: none;
+    font-size: 24px; cursor: pointer; color: #333;
+  }
+
+  main { max-width: 1200px; margin: 0 auto; padding: 32px 20px 60px; }
+
+  .page-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 24px; flex-wrap: wrap; gap: 16px;
+  }
+  .page-title { font-size: 28px; font-weight: 700; }
+
+  .calendar-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 24px;
+  }
+  .calendar-nav { display: flex; gap: 12px; align-items: center; }
+  .btn-calendar {
+    padding: 8px 16px; border: 1px solid #ddd; background: #fff;
+    border-radius: 8px; cursor: pointer; font-size: 14px;
+  }
+  .btn-calendar:hover { background: #f5f7fa; }
+  .current-month { font-size: 20px; font-weight: 600; }
+
+  .calendar-grid {
+    background: #fff; border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow: hidden;
+  }
+  .calendar-weekdays {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    background: #f9fafb; border-bottom: 1px solid #e5e7eb;
+  }
+  .weekday { padding: 16px; text-align: center; font-weight: 600; font-size: 14px; color: #666; }
+  .calendar-days { display: grid; grid-template-columns: repeat(7, 1fr); }
+  .day-cell {
+    min-height: 120px; padding: 12px; border-right: 1px solid #f0f0f0;
+    border-bottom: 1px solid #f0f0f0; position: relative; cursor: pointer;
+    transition: background 0.15s;
+  }
+  .day-cell:hover { background: #f0f7ff; }
+  .day-cell.other-month { background: #f9fafb; opacity: 0.5; }
+  .day-cell.other-month:hover { background: #f0f0f0; }
+  .day-cell.today { background: #eff6ff; }
+  .day-cell.today:hover { background: #dbeafe; }
+  .day-number { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+  .day-cell.today .day-number {
+    background: #3b82f6; color: #fff; width: 28px; height: 28px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  }
+
+  .event {
+    background: #dbeafe; color: #1e40af; padding: 4px 8px; border-radius: 6px;
+    font-size: 12px; margin-bottom: 4px; cursor: pointer; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; transition: all 0.15s;
+    text-decoration: none; display: block;
+  }
+  .event:hover { background: #bfdbfe; transform: translateX(2px); }
+  .event.urgent { background: #fee2e2; color: #991b1b; }
+  .event.urgent:hover { background: #fecaca; }
+  .event.completed { background: #d1fae5; color: #065f46; }
+  .event.completed:hover { background: #a7f3d0; }
+
+  /* Toast-уведомления */
+  .toast {
+    position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
+    background: #333; color: #fff; padding: 12px 24px; border-radius: 8px;
+    font-size: 14px; font-weight: 500; transition: bottom 0.3s ease; z-index: 9999;
+  }
+  .toast.show { bottom: 30px; }
+
+  @media (max-width: 768px) {
+    nav { display: none; }
+    nav.open {
+      display: flex; flex-direction: column; position: absolute; top: 56px; left: 0; right: 0;
+      background: #fff; padding: 20px; border-bottom: 1px solid #e8e8e8; z-index: 100; gap: 14px;
+    }
+    .burger { display: block; }
+    .calendar-days { grid-template-columns: repeat(7, 1fr); font-size: 12px; }
+    .day-cell { min-height: 80px; padding: 6px; }
+    .weekday { padding: 10px 6px; font-size: 12px; }
+    .dropdown-menu, .profile-menu { position: fixed; top: 70px; right: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="burger" onclick="document.querySelector('nav').classList.toggle('open')">☰</button>
+  <div class="header-logo">
+    <div class="avatar" onclick="document.querySelector('.profile-menu').classList.toggle('show')">МГ</div>
+    <span>Максим Гусев</span>
+  </div>
+  <nav>
+    <a href="dashboard.html">Рабочий стол</a>
+    <a href="projects.html">Проекты</a>
+    <a href="search.html">Поиск</a>
+    <a href="messages.html">Сообщения</a>
+    <a href="notifications.html">Уведомления</a>
+    <a href="finance.html">Финансы</a>
+    <div class="dropdown">
+      <a href="#" class="dropdown-toggle">Ещё ▾</a>
+      <div class="dropdown-menu">
+        <a href="calendar.html" class="active">📅 Календарь</a>
+        <a href="documents.html">📄 Документы</a>
+        <a href="reviews.html">⭐ Отзывы</a>
+        <a href="portfolio.html">🖼️ Портфолио</a>
+        <a href="workers.html">👷 Рабочие</a>
+        <a href="panels.html">📊 Панели</a>
+        <a href="reports.html">📈 Отчёты</a>
+        <a href="specializations.html">🔧 Специализация</a>
+        <a href="admin.html">⚙️ Администратор</a>
+        <a href="manager.html">👔 Менеджер</a>
+      </div>
+    </div>
+  </nav>
+  <div class="header-actions">
+    <!-- Исправленная ссылка -->
+    <button class="btn-create" onclick="location.href='request-form.html'">+ Событие</button>
+    <div class="profile-dropdown">
+      <div class="avatar" onclick="document.querySelector('.profile-menu').classList.toggle('show')">МГ</div>
+      <div class="profile-menu">
+        <a href="profile.html">👤 Мой профиль</a>
+        <a href="personal-data.html">🛡️ Персональные данные</a>
+        <a href="settings.html">⚙️ Настройки</a>
+        <a href="help.html">❓ Помощь</a>
+        <div class="divider"></div>
+        <a href="login.html" class="logout">🚪 Выйти</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="page-header">
+    <h1 class="page-title">Календарь</h1>
+  </div>
+
+  <div class="calendar-header">
+    <div class="calendar-nav">
+      <!-- Заменены alert на Toast -->
+      <button class="btn-calendar" onclick="showToast('Загрузка предыдущего месяца...')">← Назад</button>
+      <button class="btn-calendar" onclick="showToast('Загрузка следующего месяца...')">Вперёд →</button>
+    </div>
+    <div class="current-month">Июнь 2026</div>
+    <div>
+      <button class="btn-create" onclick="scrollToToday()">Сегодня</button>
+    </div>
+  </div>
+
+  <div class="calendar-grid">
+    <div class="calendar-weekdays">
+      <div class="weekday">Пн</div>
+      <div class="weekday">Вт</div>
+      <div class="weekday">Ср</div>
+      <div class="weekday">Чт</div>
+      <div class="weekday">Пт</div>
+      <div class="weekday">Сб</div>
+      <div class="weekday">Вс</div>
+    </div>
+    <div class="calendar-days">
+      <div class="day-cell other-month" onclick="showDay(26, 'мая')"><div class="day-number">26</div></div>
+      <div class="day-cell other-month" onclick="showDay(27, 'мая')"><div class="day-number">27</div></div>
+      <div class="day-cell other-month" onclick="showDay(28, 'мая')"><div class="day-number">28</div></div>
+      <div class="day-cell other-month" onclick="showDay(29, 'мая')"><div class="day-number">29</div></div>
+      <div class="day-cell other-month" onclick="showDay(30, 'мая')"><div class="day-number">30</div></div>
+      <div class="day-cell other-month" onclick="showDay(31, 'мая')"><div class="day-number">31</div></div>
+      <div class="day-cell" onclick="showDay(1, 'июня')"><div class="day-number">1</div></div>
+
+      <div class="day-cell" onclick="showDay(2, 'июня')"><div class="day-number">2</div></div>
+      <div class="day-cell" onclick="showDay(3, 'июня')">
+        <div class="day-number">3</div>
+        <a href="task-detail.html" class="event">Монтаж кондиционера</a>
+      </div>
+      <div class="day-cell" onclick="showDay(4, 'июня')"><div class="day-number">4</div></div>
+      <div class="day-cell" onclick="showDay(5, 'июня')">
+        <div class="day-number">5</div>
+        <!-- Замена 404 на task-detail.html -->
+        <a href="task-detail.html" class="event urgent">Видеонаблюдение</a>
+      </div>
+      <div class="day-cell" onclick="showDay(6, 'июня')"><div class="day-number">6</div></div>
+      <div class="day-cell" onclick="showDay(7, 'июня')">
+        <div class="day-number">7</div>
+        <!-- Замена 404 на task-detail.html -->
+        <a href="task-detail.html" class="event completed">Сборка мебели</a>
+      </div>
+      <div class="day-cell" onclick="showDay(8, 'июня')">
+        <div class="day-number">8</div>
+        <a href="task-detail.html" class="event">Установка кондиционера</a>
+      </div>
+
+      <div class="day-cell today" id="today-cell" onclick="showDay(9, 'июня')"><div class="day-number">9</div></div>
+      <div class="day-cell" onclick="showDay(10, 'июня')">
+        <div class="day-number">10</div>
+        <!-- Замена 404 на task-detail.html -->
+        <a href="task-detail.html" class="event urgent">Ремонт проводки</a>
+      </div>
+      <div class="day-cell" onclick="showDay(11, 'июня')"><div class="day-number">11</div></div>
+      <div class="day-cell" onclick="showDay(12, 'июня')">
+        <div class="day-number">12</div>
+        <a href="task-detail.html" class="event">Ремонт сантехники</a>
+      </div>
+      <div class="day-cell" onclick="showDay(13, 'июня')"><div class="day-number">13</div></div>
+      <div class="day-cell" onclick="showDay(14, 'июня')"><div class="day-number">14</div></div>
+      <div class="day-cell" onclick="showDay(15, 'июня')">
+        <div class="day-number">15</div>
+        <a href="task-detail.html" class="event">Укладка плитки</a>
+      </div>
+
+      <div class="day-cell" onclick="showDay(16, 'июня')"><div class="day-number">16</div></div>
+      <div class="day-cell" onclick="showDay(17, 'июня')"><div class="day-number">17</div></div>
+      <div class="day-cell" onclick="showDay(18, 'июня')"><div class="day-number">18</div></div>
+      <div class="day-cell" onclick="showDay(19, 'июня')"><div class="day-number">19</div></div>
+      <div class="day-cell" onclick="showDay(20, 'июня')">
+        <div class="day-number">20</div>
+        <a href="task-detail.html" class="event">Замена радиаторов</a>
+      </div>
+      <div class="day-cell" onclick="showDay(21, 'июня')"><div class="day-number">21</div></div>
+      <div class="day-cell" onclick="showDay(22, 'июня')"><div class="day-number">22</div></div>
+
+      <div class="day-cell" onclick="showDay(23, 'июня')"><div class="day-number">23</div></div>
+      <div class="day-cell" onclick="showDay(24, 'июня')"><div class="day-number">24</div></div>
+      <div class="day-cell" onclick="showDay(25, 'июня')"><div class="day-number">25</div></div>
+      <div class="day-cell" onclick="showDay(26, 'июня')"><div class="day-number">26</div></div>
+      <div class="day-cell" onclick="showDay(27, 'июня')"><div class="day-number">27</div></div>
+      <div class="day-cell" onclick="showDay(28, 'июня')"><div class="day-number">28</div></div>
+      <div class="day-cell" onclick="showDay(29, 'июня')"><div class="day-number">29</div></div>
+
+      <div class="day-cell" onclick="showDay(30, 'июня')"><div class="day-number">30</div></div>
+      <div class="day-cell other-month" onclick="showDay(1, 'июля')"><div class="day-number">1</div></div>
+      <div class="day-cell other-month" onclick="showDay(2, 'июля')"><div class="day-number">2</div></div>
+      <div class="day-cell other-month" onclick="showDay(3, 'июля')"><div class="day-number">3</div></div>
+      <div class="day-cell other-month" onclick="showDay(4, 'июля')"><div class="day-number">4</div></div>
+      <div class="day-cell other-month" onclick="showDay(5, 'июля')"><div class="day-number">5</div></div>
+      <div class="day-cell other-month" onclick="showDay(6, 'июля')"><div class="day-number">6</div></div>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  document.querySelector('.burger').addEventListener('click', function() {
+    document.querySelector('nav').classList.toggle('open');
+  });
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.profile-dropdown')) {
+      document.querySelectorAll('.profile-menu').forEach(m => m.classList.remove('show'));
+    }
+  });
+
+  // Заменено на Toast-уведомление
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => { toast.classList.remove('show'); }, 2000);
+  }
+
+  function showDay(day, month) {
+    showToast(`📅 Расписание на ${day} ${month}`);
+  }
+
+  function scrollToToday() {
+    const today = document.getElementById('today-cell');
+    if (today) {
+      today.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      today.style.background = '#bfdbfe';
+      setTimeout(() => { today.style.background = ''; }, 1500);
+    }
+  }
+</script>
+
+</body>
+</html>

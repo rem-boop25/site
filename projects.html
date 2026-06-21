@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REMPRO — Проекты</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f7fa; color: #1a1a1a; min-height: 100vh;
+  }
+
+  header {
+    display: flex; align-items: center; padding: 12px 24px;
+    background: #fff; border-bottom: 1px solid #e8e8e8; gap: 16px; position: relative;
+  }
+  .header-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 600; font-size: 16px; white-space: nowrap;
+  }
+  .header-logo .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 13px; font-weight: 600;
+    cursor: pointer;
+  }
+  nav {
+    display: flex; align-items: center; gap: 20px; flex: 1; overflow-x: auto;
+  }
+  nav a { text-decoration: none; color: #333; font-size: 14px; white-space: nowrap; }
+  nav a:hover, nav a.active { color: #3b82f6; }
+
+  .header-actions { display: flex; align-items: center; gap: 16px; }
+  .btn-create {
+    background: #3b82f6; border: none; color: #fff;
+    padding: 8px 20px; border-radius: 8px; font-size: 14px;
+    cursor: pointer; white-space: nowrap; font-weight: 500;
+  }
+  .btn-create:hover { background: #2563eb; }
+
+  .dropdown { position: relative; }
+  .dropdown-toggle { cursor: pointer; }
+  .dropdown-menu {
+    display: none; position: absolute; top: 100%; right: 0;
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1); min-width: 220px;
+    z-index: 1000; padding: 8px 0; margin-top: 8px;
+  }
+  .dropdown:hover .dropdown-menu { display: block; }
+  .dropdown-menu a {
+    display: block; padding: 10px 16px; font-size: 14px;
+    color: #333; text-decoration: none; white-space: nowrap;
+  }
+  .dropdown-menu a:hover { background: #f5f7fa; color: #3b82f6; }
+
+  .profile-dropdown { position: relative; }
+  .profile-menu {
+    display: none; position: absolute; top: 100%; right: 0;
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1); min-width: 220px;
+    z-index: 1000; padding: 8px 0; margin-top: 8px;
+  }
+  .profile-menu.show { display: block; }
+  .profile-menu a {
+    display: block; padding: 10px 16px; font-size: 14px;
+    color: #333; text-decoration: none;
+  }
+  .profile-menu a:hover { background: #f5f7fa; color: #3b82f6; }
+  .profile-menu .divider { height: 1px; background: #e8e8e8; margin: 8px 0; }
+  .profile-menu .logout { color: #ef4444; }
+  .profile-menu .logout:hover { background: #fee2e2; color: #dc2626; }
+
+  .burger {
+    display: none; background: none; border: none;
+    font-size: 24px; cursor: pointer; color: #333;
+  }
+
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 20px 60px;
+  }
+
+  .breadcrumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: #666; margin-bottom: 16px;
+  }
+  .breadcrumbs a { color: #3b82f6; text-decoration: none; }
+  .breadcrumbs a:hover { text-decoration: underline; }
+  .breadcrumbs .sep { color: #ccc; }
+
+  .page-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 24px; flex-wrap: wrap; gap: 16px;
+  }
+  .page-title { font-size: 28px; font-weight: 700; }
+  .projects-counter {
+    background: #eff6ff; color: #3b82f6;
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 13px; font-weight: 600;
+  }
+
+  .status-tabs {
+    display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .status-tab {
+    padding: 8px 16px; border-radius: 20px;
+    background: #fff; border: 1px solid #e5e7eb;
+    cursor: pointer; font-size: 13px; font-weight: 500;
+    transition: all 0.2s;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .status-tab:hover { border-color: #3b82f6; color: #3b82f6; }
+  .status-tab.active {
+    background: #3b82f6; color: #fff; border-color: #3b82f6;
+  }
+  .status-tab .count {
+    background: rgba(0,0,0,0.08);
+    padding: 1px 8px; border-radius: 10px;
+    font-size: 11px;
+  }
+  .status-tab.active .count { background: rgba(255,255,255,0.3); }
+
+  .filters-bar {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .filter-group label {
+    font-size: 12px; color: #666; font-weight: 500;
+  }
+  .filter-group input,
+  .filter-group select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    min-width: 180px;
+  }
+  .filter-group input:focus,
+  .filter-group select:focus {
+    border-color: #3b82f6;
+  }
+  .btn-filter {
+    background: #3b82f6;
+    color: #fff;
+    border: none;
+    padding: 9px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .btn-filter:hover { background: #2563eb; }
+  .btn-reset {
+    background: #fff; color: #666; border: 1px solid #ddd;
+    padding: 9px 18px; border-radius: 8px; font-size: 14px;
+    cursor: pointer;
+  }
+  .btn-reset:hover { background: #f9fafb; color: #333; }
+
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+  }
+  .project-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    position: relative;
+  }
+  .project-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  }
+  .project-card.hidden { display: none; }
+  .project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
+  .project-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .project-id {
+    font-size: 12px;
+    color: #999;
+  }
+  .project-status {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .project-status.active { background: #dbeafe; color: #2563eb; }
+  .project-status.completed { background: #d1fae5; color: #059669; }
+  .project-status.pending { background: #fef3c7; color: #d97706; }
+  .project-status.cancelled { background: #fee2e2; color: #dc2626; }
+
+  .project-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .meta-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #555;
+  }
+  .meta-row .icon {
+    font-size: 16px;
+    width: 20px;
+  }
+  .meta-row.client {
+    cursor: pointer; transition: color 0.2s;
+  }
+  .meta-row.client:hover { color: #3b82f6; }
+
+  .project-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 16px;
+    border-top: 1px solid #f0f0f0;
+  }
+  .project-budget {
+    font-size: 18px;
+    font-weight: 700;
+    color: #3b82f6;
+  }
+  .project-deadline {
+    font-size: 13px;
+    color: #888;
+  }
+  .project-deadline.overdue { color: #dc2626; font-weight: 600; }
+
+  .progress-bar {
+    width: 100%;
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 12px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: #3b82f6;
+    border-radius: 3px;
+    transition: width 0.3s;
+  }
+  .progress-fill.completed { background: #10b981; }
+  .progress-fill.pending { background: #f59e0b; }
+  .progress-fill.cancelled { background: #ef4444; }
+
+  .project-actions {
+    display: flex; gap: 8px; margin-top: 14px;
+  }
+  .btn-project {
+    flex: 1; padding: 8px;
+    border-radius: 8px; font-size: 13px;
+    font-weight: 500; cursor: pointer; border: none;
+    transition: all 0.2s;
+  }
+  .btn-project-primary { background: #3b82f6; color: #fff; }
+  .btn-project-primary:hover { background: #2563eb; }
+  .btn-project-secondary { background: #f3f4f6; color: #374151; }
+  .btn-project-secondary:hover { background: #e5e7eb; }
+
+  .empty-state {
+    grid-column: 1 / -1;
+    text-align: center; padding: 60px 20px;
+    background: #fff; border-radius: 16px;
+    display: none;
+  }
+  .empty-state.show { display: block; }
+  .empty-state .icon { font-size: 64px; margin-bottom: 16px; }
+  .empty-state h3 { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+  .empty-state p { font-size: 14px; color: #666; margin-bottom: 20px; }
+
+  .pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 40px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .pagination-info { font-size: 14px; color: #666; }
+  .pagination-btns { display: flex; gap: 8px; }
+  .pagination-btns button, .page-num {
+    padding: 8px 14px;
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .pagination-btns button:hover:not(:disabled), .page-num:hover:not(.active) {
+    background: #f5f5f5;
+  }
+  .pagination-btns button:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+  .page-num {
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600;
+  }
+  .page-num.active {
+    background: #3b82f6;
+    color: #fff;
+    border-color: #3b82f6;
+  }
+
+  .toast {
+    position: fixed; bottom: 20px; right: 20px;
+    background: #1a1a1a; color: #fff;
+    padding: 14px 20px; border-radius: 10px;
+    font-size: 14px; font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    transform: translateY(100px); opacity: 0;
+    transition: all 0.3s; z-index: 2000;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { background: #059669; }
+
+  @media (max-width: 768px) {
+    nav { display: none; }
+    nav.open {
+      display: flex; flex-direction: column;
+      position: absolute; top: 56px; left: 0; right: 0;
+      background: #fff; padding: 20px;
+      border-bottom: 1px solid #e8e8e8; z-index: 100; gap: 14px;
+    }
+    .burger { display: block; }
+    .projects-grid { grid-template-columns: 1fr; }
+    .filters-bar { flex-direction: column; align-items: stretch; }
+    .filter-group input, .filter-group select { min-width: 100%; }
+    .page-title { font-size: 22px; }
+    .dropdown-menu, .profile-menu {
+      position: fixed; top: 70px; right: 20px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="burger" onclick="document.querySelector('nav').classList.toggle('open')">☰</button>
+  <div class="header-logo">
+    <div class="avatar" onclick="document.querySelector('.profile-menu').classList.toggle('show')">МГ</div>
+    <span>Максим Гусев</span>
+  </div>
+  <nav>
+    <a href="dashboard.html">Рабочий стол</a>
+    <a href="projects.html" class="active">Проекты</a>
+    <a href="search.html">Поиск</a>
+    <a href="messages.html">Сообщения</a>
+    <a href="notifications.html">Уведомления</a>
+    <a href="finance.html">Финансы</a>
+    <div class="dropdown">
+      <a href="#" class="dropdown-toggle">Ещё ▾</a>
+      <div class="dropdown-menu">
+        <a href="calendar.html">📅 Календарь</a>
+        <a href="documents.html">📄 Документы</a>
+        <a href="reviews.html">⭐ Отзывы</a>
+        <a href="portfolio.html">🖼️ Портфолио</a>
+        <a href="workers.html">👷 Рабочие</a>
+        <a href="panels.html">📊 Панели</a>
+        <a href="reports.html">📈 Отчёты</a>
+        <a href="specializations.html">🔧 Специализация</a>
+        <a href="admin.html">⚙️ Администратор</a>
+        <a href="manager.html">👔 Менеджер</a>
+      </div>
+    </div>
+  </nav>
+  <div class="header-actions">
+    <button class="btn-create" onclick="location.href='request-form.html'">+ Новый проект</button>
+    <div class="profile-dropdown">
+      <div class="avatar" onclick="document.querySelector('.profile-menu').classList.toggle('show')">МГ</div>
+      <div class="profile-menu">
+        <a href="profile.html">👤 Мой профиль</a>
+        <a href="personal-data.html">📋 Персональные данные</a>
+        <a href="settings.html">⚙️ Настройки</a>
+        <a href="help.html">❓ Помощь</a>
+        <div class="divider"></div>
+        <a href="login.html" class="logout">🚪 Выйти</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="breadcrumbs">
+    <a href="dashboard.html">Рабочий стол</a>
+    <span class="sep">›</span>
+    <span>Проекты</span>
+  </div>
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Проекты</h1>
+    </div>
+    <span class="projects-counter" id="projects-counter">8 проектов</span>
+  </div>
+
+  <div class="status-tabs">
+    <div class="status-tab active" data-status="all" onclick="setStatusTab(this, 'all')">
+      Все <span class="count" id="count-all">8</span>
+    </div>
+    <div class="status-tab" data-status="active" onclick="setStatusTab(this, 'active')">
+      В работе <span class="count" id="count-active">3</span>
+    </div>
+    <div class="status-tab" data-status="pending" onclick="setStatusTab(this, 'pending')">
+      Ожидает <span class="count" id="count-pending">2</span>
+    </div>
+    <div class="status-tab" data-status="completed" onclick="setStatusTab(this, 'completed')">
+      Завершено <span class="count" id="count-completed">2</span>
+    </div>
+    <div class="status-tab" data-status="cancelled" onclick="setStatusTab(this, 'cancelled')">
+      Отменено <span class="count" id="count-cancelled">1</span>
+    </div>
+  </div>
+
+  <div class="filters-bar">
+    <div class="filter-group">
+      <label>Поиск</label>
+      <input type="text" id="search-input" placeholder="Название, заказчик...">
+    </div>
+    <div class="filter-group">
+      <label>Категория</label>
+      <select id="category-filter">
+        <option value="">Все категории</option>
+        <option value="electric">Электрика</option>
+        <option value="hvac">ОВиК</option>
+        <option value="plumbing">Сантехника</option>
+        <option value="furniture">Хозяйственные</option>
+        <option value="repair">Ремонт</option>
+        <option value="video">Видеонаблюдение</option>
+        <option value="cleaning">Клининг</option>
+        <option value="heating">Отопление</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Дата создания</label>
+      <input type="date" id="date-filter">
+    </div>
+    <button class="btn-filter" onclick="applyFilters()">Применить</button>
+    <button class="btn-reset" onclick="resetFilters()">Сбросить</button>
+  </div>
+
+  <div class="projects-grid" id="projects-grid">
+    <!-- 1 -->
+    <div class="project-card" data-status="active" data-category="electric" data-title="монтаж электропроводки в офисе" data-client="ооо стройка"
+         onclick="location.href='project-detail.html'">
+      <div class="project-header">
+        <div>
+          <div class="project-title">Монтаж электропроводки в офисе</div>
+          <div class="project-id">#PRJ-2026-001</div>
+        </div>
+        <span class="project-status active">В работе</span>
+      </div>
+      <div class="project-meta">
+        <div class="meta-row client" onclick="event.stopPropagation(); location.href='client-detail.html'">
+          <span class="icon">👤</span>
+          <span>ООО «Стройка»</span>
+        </div>
+        <div class="meta-row">
+          <span class="icon">📁</span>
+          <span>Электрика</span>
+        </div>
+        <div class="meta-row">
+          <span class="icon">📍</span>
+          <span>Калининград, ул. Ленина 45</span>
+        </div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 65%"></div>
+      </div>
+      <div class="project-footer">
+        <div class="project-budget">45 000 ₽</div>
+        <div class="project-deadline">до 15.06.2026</div>
+      </div>
+      <div class="project-actions">
+        <button class="btn-project btn-project-primary" onclick="event.stopPropagation(); location.href='client-detail.html'">Открыть</button>
+        <button class="btn-project btn-project-secondary" onclick="event.stopPropagation(); location.href='messages.html'">💬 Чат</button>
+      </div>
+    </div>
+
+    <!-- 2 -->
+    <div class="project-card" data-status="completed" data-category="hvac" data-title="установка кондиционера" data-client="ип петров"
+        onclick="location.href='project-detail.html'">
+      <div class="project-header">
+        <div>
+          <div class="project-title">Установка кондиционера</div>
+          <div class="project-id">#PRJ-2026-002</div>
+        </div>
+        <span class="project-status completed">Завершён</span>
+      </div>
+      <div class="project-meta">
+        <div class="meta-row client" onclick="event.stopPropagation(); location.href='client-detail.html'">
+          <span class="icon">👤</span>
+          <span>ИП Петров</span>
+        </div>
+        <div class="meta-row">
+          <span class="icon">📁</span>
+          <span>ОВиК</span>
+        </div>
+        <div class="meta-row">
+          <span class="icon">📍</span>
+          <span>Калининград, пр. Мира 12</span>
+        </div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill completed" style="width: 100%"></div>
+      </div>
+      <div class="project-footer">
+        <div class="project-budget">18 500 ₽</div>
+        <div class="project-deadline">завершён 08.06</div>
+      </div>
+      <div class="project-actions">
+        <button class="btn-project btn-project-primary" onclick="event.stopPropagation(); location.href='client-detail.html'">Открыть</button>
+        <button class="btn-project btn-project-secondary" onclick="event.stopPropagation(); location.href='reviews.html'">⭐ Отзыв</button>
+      </div>
+    </div>
+
+    <!-- 3 -->
+    <div class="project-card" data-status="pending" data-category="plumbing" data-title="ремонт сантехники" data-client="ао офис+"
+         onclick="location.href='project-detail.html'">
+      <div class="project-header">
+        <div>
+          <div class="project-title">Ремонт сантехники</div>
+          <div class="project-id">#PRJ-2026-003</div>
+        </div>
+        <span class="project-status pending">Ожидает</span>
+      </div>
+      <div class="project-meta">
+        <div class="meta-row client" onclick="event.stopPropagation(); location.href='client-detail.html'">
+          <span class="icon">👤</span>
+          <span>АО «Офис+»</span>
+        </div>
+        <div class="meta-row">
+          <span class="icon">📁</span>
+          <span>Сантехника</span>
+        </div>
+        <div class="meta-row">
+          <span class="icon">📍</span>
+          <span>Калининград, ул. Гагарина 8</span>
+        </div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill pending" style="width: 0%"></div>
+      </div>
+      <div class="project-footer">
+        <div class="project-budget">12 000 ₽</div>
+        <div class="project-deadline overdue">до 12.06.2026</div>
+      </div>
+      <div class="project-actions">
+        <button class="btn-project btn-project-primary" onclick="event.stopPropagation(); location.href='client-detail.html'">Открыть</button>
+        <button class="btn-project btn-project-secondary" onclick="event.stopPropagation(); location.href='manager.html'">👔 Назначить</button>
+      </div>
+    </div>
+
+    <!-- 4 -->
+    <div class="project-card" data-status="completed" data-category="furniture" data-title="сборка офисной мебели" data-client="ооо домсервис"
+         onclick="location.href='project-detail.html'">
+      <div class="project-header">
+        <div>
+          <div class="project-title">Сборка офисной мебели</div>
+          <div class="project-id">#PRJ-2026-004</div>
+        </div>
+        <span class="project-status completed">Завершён</span>
+      </div>
+      <div class="project-meta">
+        <div class="meta-row client" onclick="event.stopPropagation(); location.href='client-detail.html'">
+          <span class="icon">👤</span>
+          <span>ООО «ДомСервис»</span>
+        </div>
+        <div class="meta-row">
+          <span class="icon">📁</span>
+          <span>Хозяйственные работы</span>
+        </div>
+        <div class="meta-row">
+          <span class="icon">📍</span>
+          <span>Калининград, ул. Советская 22</span>
+        </div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill completed" style="width: 100%"></div>
+      </div>
+      <div class="project-footer">
+        <div class="project-budget">25 000 ₽</div>
+        <div class="project-deadline">завершён 07.06</div>
+      </div>
+      <div class="project-actions">
+        <button class="btn-project btn-project-primary" onclick="event.stopPropagation(); location.href='client-detail.html'">Открыть</button>
+        <button class="btn-project btn-project-secondary" onclick="event.stopPropagation(); location.href='reviews.html'">⭐ Отзыв</button>
+      </div>
+    </div>
+
+    <!-- 5 -->
+    <div class="project-card" data-status="active" data-category="repair" data-title="укладка плитки в ванной" data-client="иванов а.с."
+         onclick="location.href='project-detail.html'">
+      <div class="project-header">
+        <div>
+          <div class="project-title">Укладка плитки в ванной</div>
+          <div class="project-id">#PRJ-2026-005</div>
+        </div>
+        <span class="project-status active">В работе</span>
+      </div>
+      <div class="project-meta">
+        <div class="meta-row client" onclick="event.stopPropagation(); location.href='client-detail.html'">
+          <span class="icon">👤</span>
+          <span>Иванов А.С.</span>
+        </div>
+        <div class="meta-row">
+          <span class="icon">📁</span>
+          <span>Ремонт</span>
+        </div>
+        <div class="meta-row">
+          <span class="icon">📍</span>
+          <span>Калининград, ул. Кирова 67</span>
+        </div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 40%"></div>
+      </div>
+      <div class="project-footer">
+        <div class="project-budget">38 000 ₽</div>
+        <div class="project-deadline">до 15.06.2026</div>
+      </div>
+      <div class="project-actions">
+        <button class="btn-project btn-project-primary" onclick="event.stopPropagation(); location.href='client-detail.html'">Открыть</button>
+        <button class="btn-project btn-project-secondary" onclick="event.stopPropagation(); location.href='messages.html'">💬 Чат</button>
+      </div>
+    </div>
+
+    <!-- 6 -->
+    <div class="project-card" data-status="active" data-category="video" data-title="монтаж системы видеонаблюдения" data-client="ооо безопасность"
+         onclick="location.href='project-detail.html'">
+      <div class="project-header">
+        <div>
+          <div class="project-title">Монтаж системы видеонаблюдения</div>
+          <div class="project-id">#PRJ-2026-006</div>
+        </div>
+        <span class="project-status active">В работе</span>
+      </div>
+      <div class="project-meta">
+        <div class="meta-row client" onclick="event.stopPropagation(); location.href='client-detail.html'">
+          <span class="icon">👤</span>
+          <span>ООО «Безопасность»</span>
+        </div>
+        <div class="meta-row">
+          <span class="icon">📁</span>
+          <span>Видеонаблюдение</span>
+        </div>
+        <div class="meta-row">
+          <span class="icon">📍</span>
+          <span>Калининград, ш. Балтийское 15</span>
+        </div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 75%"></div>
+      </div>
+      <div class="project-footer">
+        <div class="project-budget">65 000 ₽</div>
+        <div class="project-deadline overdue">до 10.06.2026</div>
+      </div>
+      <div class="project-actions">
+        <button class="btn-project btn-project-primary" onclick="event.stopPropagation(); location.href='client-detail.html'">Открыть</button>
+        <button class="btn-project btn-project-secondary" onclick="event.stopPropagation(); location.href='messages.html'">💬 Чат</button>
+      </div>
+    </div>
+
+    <!-- 7 -->
+    <div class="project-card" data-status="cancelled" data-category="cleaning" data-title="генеральная уборка склада" data-client="ооо логистика"
+         onclick="location.href='project-detail.html'">
+      <div class="project-header">
+        <div>
+          <div class="project-title">Генеральная уборка склада</div>
+          <div class="project-id">#PRJ-2026-007</div>
+        </div>
+        <span class="project-status cancelled">Отменён</span>
+      </div>
+      <div class="project-meta">
+        <div class="meta-row client" onclick="event.stopPropagation(); location.href='client-detail.html'">
+          <span class="icon">👤</span>
+          <span>ООО «Логистика»</span>
+        </div>
+        <div class="meta-row">
+          <span class="icon">📁</span>
+          <span>Клининг</span>
+        </div>
+        <div class="meta-row">
+          <span class="icon">📍</span>
+          <span>Калининград, ул. Промышленная 3</span>
+        </div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill cancelled" style="width: 0%"></div>
+      </div>
+      <div class="project-footer">
+        <div class="project-budget">15 000 ₽</div>
+        <div class="project-deadline">отменён</div>
+      </div>
+      <div class="project-actions">
+        <button class="btn-project btn-project-primary" onclick="event.stopPropagation(); location.href='client-detail.html'">Открыть</button>
+        <button class="btn-project btn-project-secondary" onclick="event.stopPropagation(); showToast('Повторное создание проекта', 'success')">🔄 Создать заново</button>
+      </div>
+    </div>
+
+    <!-- 8 -->
+    <div class="project-card" data-status="pending" data-category="heating" data-title="замена радиаторов отопления" data-client="сидорова м.п."
+         onclick="location.href='project-detail.html'">
+      <div class="project-header">
+        <div>
+          <div class="project-title">Замена радиаторов отопления</div>
+          <div class="project-id">#PRJ-2026-008</div>
+        </div>
+        <span class="project-status pending">Ожидает</span>
+      </div>
+      <div class="project-meta">
+        <div class="meta-row client" onclick="event.stopPropagation(); location.href='client-detail.html'">
+          <span class="icon">👤</span>
+          <span>Сидорова М.П.</span>
+        </div>
+        <div class="meta-row">
+          <span class="icon">📁</span>
+          <span>Системы отопления</span>
+        </div>
+        <div class="meta-row">
+          <span class="icon">📍</span>
+          <span>Калининград, ул. Новая 34</span>
+        </div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill pending" style="width: 0%"></div>
+      </div>
+      <div class="project-footer">
+        <div class="project-budget">32 000 ₽</div>
+        <div class="project-deadline">до 20.06.2026</div>
+      </div>
+      <div class="project-actions">
+        <button class="btn-project btn-project-primary" onclick="event.stopPropagation(); location.href='client-detail.html'">Открыть</button>
+        <button class="btn-project btn-project-secondary" onclick="event.stopPropagation(); location.href='manager.html'">👔 Назначить</button>
+      </div>
+    </div>
+
+    <div class="empty-state" id="empty-state">
+      <div class="icon">📭</div>
+      <h3>Проекты не найдены</h3>
+      <p>Попробуйте изменить параметры фильтрации</p>
+      <button class="btn-reset" onclick="resetFilters()">Сбросить фильтры</button>
+    </div>
+  </div>
+
+  <div class="pagination">
+    <div class="pagination-info">Показано <span id="showing-count">8</span> из 8 проектов</div>
+    <div class="pagination-btns">
+      <button disabled>← Пред.</button>
+      <div class="page-num active">1</div>
+      <div class="page-num">2</div>
+      <div class="page-num">3</div>
+      <button>След. →</button>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // Burger
+  document.querySelector('.burger').addEventListener('click', function() {
+    document.querySelector('nav').classList.toggle('open');
+  });
+
+  // Закрытие меню профиля
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.profile-dropdown') && !e.target.closest('.header-logo .avatar')) {
+      document.querySelectorAll('.profile-menu').forEach(m => m.classList.remove('show'));
+    }
+  });
+
+  // Toast
+  function showToast(msg, type = '') {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.className = 'toast ' + type + ' show';
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  let currentStatus = 'all';
+
+  function setStatusTab(tab, status) {
+    document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentStatus = status;
+    applyFilters();
+  }
+
+  function applyFilters() {
+    const search = document.getElementById('search-input').value.toLowerCase();
+    const category = document.getElementById('category-filter').value;
+    const cards = document.querySelectorAll('.project-card');
+    let visible = 0;
+
+    cards.forEach(card => {
+      const matchStatus = currentStatus === 'all' || card.dataset.status === currentStatus;
+      const matchCat = !category || card.dataset.category === category;
+      const matchSearch = !search || 
+        card.dataset.title.includes(search) || 
+        card.dataset.client.includes(search);
+
+      if (matchStatus && matchCat && matchSearch) {
+        card.classList.remove('hidden');
+        visible++;
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+
+    updateCounter(visible);
+    document.getElementById('empty-state').classList.toggle('show', visible === 0);
+    document.getElementById('showing-count').textContent = visible;
+  }
+
+  function resetFilters() {
+    document.getElementById('search-input').value = '';
+    document.getElementById('category-filter').value = '';
+    document.getElementById('date-filter').value = '';
+    document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector('.status-tab[data-status="all"]').classList.add('active');
+    currentStatus = 'all';
+    applyFilters();
+    showToast('🔄 Фильтры сброшены');
+  }
+
+  function updateCounter(visible) {
+    document.getElementById('projects-counter').textContent = 
+      visible + ' ' + pluralize(visible, 'проект', 'проекта', 'проектов');
+  }
+
+  function pluralize(n, one, few, many) {
+    const mod10 = n % 10, mod100 = n % 100;
+    if (mod100 >= 11 && mod100 <= 19) return many;
+    if (mod10 === 1) return one;
+    if (mod10 >= 2 && mod10 <= 4) return few;
+    return many;
+  }
+
+  // Живой поиск
+  document.getElementById('search-input').addEventListener('input', applyFilters);
+  document.getElementById('category-filter').addEventListener('change', applyFilters);
+
+  // Кнопка "+ Новый проект" уже ведёт на request-form.html через onclick
+
+  // Пагинация (симуляция)
+  document.querySelectorAll('.page-num').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.page-num').forEach(p => p.classList.remove('active'));
+      this.classList.add('active');
+      showToast('📄 Страница ' + this.textContent, 'success');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+</script>
+
+</body>
+</html>

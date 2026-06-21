@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REMPRO — Рабочие</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f7fa; color: #1a1a1a; min-height: 100vh;
+  }
+
+  header {
+    display: flex; align-items: center; padding: 12px 24px;
+    background: #fff; border-bottom: 1px solid #e8e8e8; gap: 16px; position: relative;
+  }
+  .header-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 600; font-size: 16px; white-space: nowrap;
+  }
+  .header-logo .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 13px; font-weight: 600;
+    cursor: pointer;
+  }
+  nav {
+    display: flex; align-items: center; gap: 20px; flex: 1; overflow-x: auto;
+  }
+  nav a { text-decoration: none; color: #333; font-size: 14px; white-space: nowrap; }
+  nav a:hover, nav a.active { color: #3b82f6; }
+
+  .header-actions { display: flex; align-items: center; gap: 16px; }
+  .btn-create {
+    background: #3b82f6; border: none; color: #fff;
+    padding: 8px 20px; border-radius: 8px; font-size: 14px;
+    cursor: pointer; white-space: nowrap; font-weight: 500;
+  }
+  .btn-create:hover { background: #2563eb; }
+
+  .dropdown { position: relative; }
+  .dropdown-menu {
+    display: none; position: absolute; top: 100%; right: 0;
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1); min-width: 220px;
+    z-index: 1000; padding: 8px 0; margin-top: 8px;
+  }
+  .dropdown:hover .dropdown-menu { display: block; }
+  .dropdown-menu a {
+    display: block; padding: 10px 16px; font-size: 14px;
+    color: #333; text-decoration: none; white-space: nowrap;
+  }
+  .dropdown-menu a:hover { background: #f5f7fa; color: #3b82f6; }
+
+  .profile-dropdown { position: relative; }
+  .profile-menu {
+    display: none; position: absolute; top: 100%; right: 0;
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1); min-width: 220px;
+    z-index: 1000; padding: 8px 0; margin-top: 8px;
+  }
+  .profile-menu.show { display: block; }
+  .profile-menu a {
+    display: block; padding: 10px 16px; font-size: 14px;
+    color: #333; text-decoration: none;
+  }
+  .profile-menu a:hover { background: #f5f7fa; color: #3b82f6; }
+  .profile-menu .divider { height: 1px; background: #e8e8e8; margin: 8px 0; }
+  .profile-menu .logout { color: #ef4444; }
+  .profile-menu .logout:hover { background: #fee2e2; color: #dc2626; }
+
+  .burger {
+    display: none; background: none; border: none;
+    font-size: 24px; cursor: pointer; color: #333;
+  }
+
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 20px 60px;
+  }
+
+  .breadcrumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: #666; margin-bottom: 16px;
+  }
+  .breadcrumbs a { color: #3b82f6; text-decoration: none; }
+  .breadcrumbs a:hover { text-decoration: underline; }
+  .breadcrumbs .sep { color: #ccc; }
+
+  .page-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 24px; flex-wrap: wrap; gap: 16px;
+  }
+  .page-title { font-size: 28px; font-weight: 700; }
+  .workers-counter {
+    background: #eff6ff; color: #3b82f6;
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 13px; font-weight: 600;
+  }
+
+  /* Stats summary */
+  .stats-summary {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 16px; margin-bottom: 24px;
+  }
+  .summary-card {
+    background: #fff; border-radius: 12px; padding: 16px 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    display: flex; align-items: center; gap: 12px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .summary-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .summary-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+  }
+  .summary-icon.online { background: #d1fae5; }
+  .summary-icon.busy { background: #fef3c7; }
+  .summary-icon.offline { background: #f3f4f6; }
+  .summary-icon.total { background: #dbeafe; }
+  .summary-info { flex: 1; }
+  .summary-value { font-size: 22px; font-weight: 700; color: #1a1a1a; }
+  .summary-label { font-size: 12px; color: #6b7280; }
+
+  /* Filters */
+  .filters-bar {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .filter-group {
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .filter-group label {
+    font-size: 12px; color: #666; font-weight: 500;
+  }
+  .filter-group input,
+  .filter-group select {
+    padding: 9px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    min-width: 180px;
+    font-family: inherit;
+    transition: border-color 0.2s;
+  }
+  .filter-group input:focus,
+  .filter-group select:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+  .btn-reset {
+    background: #fff; color: #6b7280; border: 1px solid #d1d5db;
+    padding: 9px 16px; border-radius: 8px; font-size: 14px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-reset:hover { background: #f9fafb; color: #1a1a1a; border-color: #9ca3af; }
+
+  /* Workers grid */
+  .workers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+  }
+  .worker-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    position: relative;
+  }
+  .worker-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  }
+  .worker-card.hidden { display: none; }
+  .worker-card.favorited .fav-btn { color: #ef4444; }
+  .worker-card.favorited .fav-btn::before { content: "★"; }
+
+  .fav-btn {
+    position: absolute; top: 16px; right: 16px;
+    background: none; border: none;
+    font-size: 22px; color: #d1d5db;
+    cursor: pointer; transition: all 0.2s;
+    padding: 4px;
+  }
+  .fav-btn:hover { color: #fbbf24; transform: scale(1.2); }
+
+  .worker-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .worker-avatar {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 24px; font-weight: 600;
+    cursor: pointer; transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+  .worker-avatar:hover { transform: scale(1.08); }
+  .worker-info { flex: 1; min-width: 0; }
+  .worker-name {
+    font-size: 18px; font-weight: 600; margin-bottom: 4px;
+    cursor: pointer;
+  }
+  .worker-name:hover { color: #3b82f6; }
+  .worker-spec {
+    font-size: 13px; color: #666;
+  }
+  .worker-status {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .worker-status.online { background: #d1fae5; color: #059669; }
+  .worker-status.offline { background: #f3f4f6; color: #6b7280; }
+  .worker-status.busy { background: #fef3c7; color: #d97706; }
+
+  .worker-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 16px 0;
+    padding: 16px 0;
+    border-top: 1px solid #f0f0f0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .stat-item {
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .stat-item:hover { transform: scale(1.05); }
+  .stat-value {
+    font-size: 20px; font-weight: 700; color: #3b82f6;
+  }
+  .stat-label {
+    font-size: 12px; color: #888; margin-top: 4px;
+  }
+
+  .worker-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .meta-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #555;
+  }
+  .meta-row .icon { width: 20px; font-size: 16px; }
+  .meta-row a {
+    color: inherit; text-decoration: none;
+    transition: color 0.2s;
+  }
+  .meta-row a:hover { color: #3b82f6; }
+
+  .worker-rating {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .worker-rating:hover { color: #3b82f6; }
+  .stars { color: #fbbf24; letter-spacing: 2px; }
+
+  .worker-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .btn-small {
+    flex: 1;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+  }
+  .btn-primary {
+    background: #3b82f6; color: #fff;
+  }
+  .btn-primary:hover { background: #2563eb; transform: translateY(-1px); }
+  .btn-secondary {
+    background: #fff; color: #3b82f6;
+    border: 1px solid #3b82f6;
+  }
+  .btn-secondary:hover { background: #eff6ff; }
+  .btn-message {
+    background: #10b981; color: #fff;
+  }
+  .btn-message:hover { background: #059669; transform: translateY(-1px); }
+
+  .empty-state {
+    grid-column: 1 / -1;
+    text-align: center; padding: 60px 20px;
+    background: #fff; border-radius: 16px;
+    display: none;
+  }
+  .empty-state.show { display: block; }
+  .empty-state .icon { font-size: 64px; margin-bottom: 16px; }
+  .empty-state h3 { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+  .empty-state p { font-size: 14px; color: #666; margin-bottom: 20px; }
+
+  /* Modal */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+    z-index: 2000; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: #fff; border-radius: 20px;
+    max-width: 500px; width: 100%;
+    padding: 32px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: popIn 0.3s;
+    max-height: 90vh; overflow-y: auto;
+  }
+  @keyframes popIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .modal-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 20px;
+  }
+  .modal-avatar {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 20px; font-weight: 600;
+  }
+  .modal h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .modal .subtitle { font-size: 13px; color: #6b7280; }
+  .modal label {
+    display: block; font-size: 14px; font-weight: 500;
+    margin-bottom: 8px; margin-top: 16px;
+  }
+  .modal select, .modal textarea {
+    width: 100%; padding: 12px;
+    border: 1px solid #d1d5db; border-radius: 10px;
+    font-size: 14px; outline: none; font-family: inherit;
+    transition: border-color 0.2s;
+  }
+  .modal select:focus, .modal textarea:focus {
+    border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+  }
+  .modal textarea { resize: vertical; min-height: 80px; }
+  .modal-actions {
+    display: flex; gap: 10px; margin-top: 24px;
+  }
+  .modal-actions button {
+    flex: 1; padding: 12px; border-radius: 10px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    border: none;
+  }
+  .modal-cancel { background: #fff; color: #6b7280; border: 1px solid #d1d5db !important; }
+  .modal-cancel:hover { background: #f9fafb; }
+  .modal-confirm { background: #3b82f6; color: #fff; }
+  .modal-confirm:hover { background: #2563eb; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 20px; right: 20px;
+    background: #1a1a1a; color: #fff;
+    padding: 14px 20px; border-radius: 10px;
+    font-size: 14px; font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    transform: translateY(100px); opacity: 0;
+    transition: all 0.3s; z-index: 3000;
+    display: flex; align-items: center; gap: 10px;
+    max-width: 360px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { background: #059669; }
+  .toast.info { background: #2563eb; }
+
+  @media (max-width: 768px) {
+    nav { display: none; }
+    nav.open {
+      display: flex; flex-direction: column;
+      position: absolute; top: 56px; left: 0; right: 0;
+      background: #fff; padding: 20px;
+      border-bottom: 1px solid #e8e8e8; z-index: 100; gap: 14px;
+    }
+    .burger { display: block; }
+    .workers-grid { grid-template-columns: 1fr; }
+    .filters-bar { flex-direction: column; align-items: stretch; }
+    .filter-group input, .filter-group select { min-width: 100%; }
+    .stats-summary { grid-template-columns: repeat(2, 1fr); }
+    .dropdown-menu, .profile-menu {
+      position: fixed; top: 70px; right: 20px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="burger" onclick="document.querySelector('nav').classList.toggle('open')">☰</button>
+  <div class="header-logo">
+    <div class="avatar" onclick="document.querySelector('.profile-menu').classList.toggle('show')">МГ</div>
+    <span>Максим Гусев</span>
+  </div>
+  <nav>
+    <a href="dashboard.html">Рабочий стол</a>
+    <a href="projects.html">Проекты</a>
+    <a href="search.html">Поиск</a>
+    <a href="messages.html">Сообщения</a>
+    <a href="notifications.html">Уведомления</a>
+    <a href="finance.html">Финансы</a>
+    <div class="dropdown">
+      <a href="#" class="dropdown-toggle">Ещё ▾</a>
+      <div class="dropdown-menu">
+        <a href="calendar.html">📅 Календарь</a>
+        <a href="documents.html">📄 Документы</a>
+        <a href="reviews.html">⭐ Отзывы</a>
+        <a href="portfolio.html">🖼️ Портфолио</a>
+        <a href="workers.html" class="active" style="background:#eff6ff; color:#3b82f6;">👷 Рабочие</a>
+        <a href="panels.html">📊 Панели</a>
+        <a href="reports.html">📈 Отчёты</a>
+        <a href="specializations.html">🔧 Специализация</a>
+        <a href="admin.html">⚙️ Администратор</a>
+        <a href="manager.html">👔 Менеджер</a>
+      </div>
+    </div>
+  </nav>
+  <div class="header-actions">
+    <button class="btn-create" onclick="location.href='404.html'">+ Добавить рабочего</button>
+    <div class="profile-dropdown">
+      <div class="avatar" onclick="document.querySelector('.profile-menu').classList.toggle('show')">МГ</div>
+      <div class="profile-menu">
+        <a href="profile.html">👤 Мой профиль</a>
+        <a href="personal-data.html">📋 Персональные данные</a>
+        <a href="settings.html">⚙️ Настройки</a>
+        <a href="help.html">❓ Помощь</a>
+        <div class="divider"></div>
+        <a href="login.html" class="logout">🚪 Выйти</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="breadcrumbs">
+    <a href="dashboard.html">Рабочий стол</a>
+    <span class="sep">›</span>
+    <span>Рабочие</span>
+  </div>
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">👷 Рабочие</h1>
+    </div>
+    <span class="workers-counter" id="workers-counter">6 рабочих</span>
+  </div>
+
+  <!-- Stats summary -->
+  <div class="stats-summary">
+    <div class="summary-card" onclick="filterByStatus('all')">
+      <div class="summary-icon total">👥</div>
+      <div class="summary-info">
+        <div class="summary-value" id="stat-total">6</div>
+        <div class="summary-label">Всего рабочих</div>
+      </div>
+    </div>
+    <div class="summary-card" onclick="filterByStatus('online')">
+      <div class="summary-icon online">🟢</div>
+      <div class="summary-info">
+        <div class="summary-value" id="stat-online">3</div>
+        <div class="summary-label">Свободны</div>
+      </div>
+    </div>
+    <div class="summary-card" onclick="filterByStatus('busy')">
+      <div class="summary-icon busy">🟡</div>
+      <div class="summary-info">
+        <div class="summary-value" id="stat-busy">2</div>
+        <div class="summary-label">Заняты</div>
+      </div>
+    </div>
+    <div class="summary-card" onclick="filterByStatus('offline')">
+      <div class="summary-icon offline">⚪</div>
+      <div class="summary-info">
+        <div class="summary-value" id="stat-offline">1</div>
+        <div class="summary-label">Неактивны</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-bar">
+    <div class="filter-group">
+      <label>🔍 Поиск</label>
+      <input type="text" id="search-input" placeholder="Имя, фамилия, специализация...">
+    </div>
+    <div class="filter-group">
+      <label>Специализация</label>
+      <select id="spec-filter">
+        <option value="">Все специализации</option>
+        <option value="electric">Электрик</option>
+        <option value="plumber">Сантехник</option>
+        <option value="installer">Монтажник</option>
+        <option value="cleaner">Клинер</option>
+        <option value="handyman">Разнорабочий</option>
+        <option value="welder">Сварщик</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Статус</label>
+      <select id="status-filter">
+        <option value="">Все статусы</option>
+        <option value="online">Свободен</option>
+        <option value="busy">Занят</option>
+        <option value="offline">Неактивен</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Сортировка</label>
+      <select id="sort-filter">
+        <option value="rating">По рейтингу</option>
+        <option value="projects">По проектам</option>
+        <option value="name">По имени</option>
+        <option value="experience">По опыту</option>
+      </select>
+    </div>
+    <button class="btn-reset" onclick="resetFilters()">🔄 Сбросить</button>
+  </div>
+
+  <!-- Workers grid -->
+  <div class="workers-grid" id="workers-grid">
+    <!-- Worker 1 -->
+    <div class="worker-card" data-name="алексей петров" data-spec="electric" data-status="online" data-rating="4.9" data-projects="89" data-experience="2">
+      <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite(this)">☆</button>
+      <div class="worker-header">
+        <div class="worker-avatar" onclick="event.stopPropagation(); location.href='worker-detail.html'">АП</div>
+        <div class="worker-info">
+          <div class="worker-name" onclick="event.stopPropagation(); location.href='worker-detail.html'">Алексей Петров</div>
+          <div class="worker-spec">Электрик, монтажник</div>
+        </div>
+        <span class="worker-status online">● Свободен</span>
+      </div>
+      <div class="worker-stats">
+        <div class="stat-item" onclick="event.stopPropagation(); location.href='reports.html'">
+          <div class="stat-value">89</div>
+          <div class="stat-label">Проектов</div>
+        </div>
+        <div class="stat-item" onclick="event.stopPropagation(); location.href='reviews.html'">
+          <div class="stat-value">4.9</div>
+          <div class="stat-label">Рейтинг</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">2</div>
+          <div class="stat-label">Года</div>
+        </div>
+      </div>
+      <div class="worker-meta">
+        <div class="meta-row"><span class="icon">📍</span><span>Калининград</span></div>
+        <div class="meta-row"><span class="icon">📞</span><a href="tel:+79062118819" onclick="event.stopPropagation()">+7 (906) 211-88-19</a></div>
+        <div class="meta-row"><span class="icon">✉️</span><a href="mailto:petrov@mail.ru" onclick="event.stopPropagation()">petrov@mail.ru</a></div>
+      </div>
+      <div class="worker-rating" onclick="event.stopPropagation(); location.href='reviews.html'">
+        <span class="stars">★★★★★</span>
+        <span>(47 отзывов)</span>
+      </div>
+      <div class="worker-actions">
+        <button class="btn-small btn-secondary" onclick="event.stopPropagation(); location.href='worker-detail.html'">👤 Профиль</button>
+        <button class="btn-small btn-message" onclick="event.stopPropagation(); location.href='messages.html'">💬 Чат</button>
+        <button class="btn-small btn-primary" onclick="event.stopPropagation(); openAssignModal('Алексей Петров', 'АП')">Назначить</button>
+      </div>
+    </div>
+
+    <!-- Worker 2 -->
+    <div class="worker-card" data-name="иван сидоров" data-spec="plumber" data-status="busy" data-rating="4.8" data-projects="124" data-experience="3">
+      <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite(this)">☆</button>
+      <div class="worker-header">
+        <div class="worker-avatar" onclick="event.stopPropagation(); location.href='worker-detail.html'">ИС</div>
+        <div class="worker-info">
+          <div class="worker-name" onclick="event.stopPropagation(); location.href='worker-detail.html'">Иван Сидоров</div>
+          <div class="worker-spec">Сантехник</div>
+        </div>
+        <span class="worker-status busy">● Занят</span>
+      </div>
+      <div class="worker-stats">
+        <div class="stat-item" onclick="event.stopPropagation(); location.href='reports.html'">
+          <div class="stat-value">124</div>
+          <div class="stat-label">Проектов</div>
+        </div>
+        <div class="stat-item" onclick="event.stopPropagation(); location.href='reviews.html'">
+          <div class="stat-value">4.8</div>
+          <div class="stat-label">Рейтинг</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">3</div>
+          <div class="stat-label">Года</div>
+        </div>
+      </div>
+      <div class="worker-meta">
+        <div class="meta-row"><span class="icon">📍</span><span>Калининград</span></div>
+        <div class="meta-row"><span class="icon">📞</span><a href="tel:+79114567890" onclick="event.stopPropagation()">+7 (911) 456-78-90</a></div>
+        <div class="meta-row"><span class="icon">✉️</span><a href="mailto:sidorov@mail.ru" onclick="event.stopPropagation()">sidorov@mail.ru</a></div>
+      </div>
+      <div class="worker-rating" onclick="event.stopPropagation(); location.href='reviews.html'">
+        <span class="stars">★★★★★</span>
+        <span>(68 отзывов)</span>
+      </div>
+      <div class="worker-actions">
+        <button class="btn-small btn-secondary" onclick="event.stopPropagation(); location.href='worker-detail.html'">👤 Профиль</button>
+        <button class="btn-small btn-message" onclick="event.stopPropagation(); location.href='messages.html'">💬 Чат</button>
+        <button class="btn-small btn-primary" onclick="event.stopPropagation(); openAssignModal('Иван Сидоров', 'ИС')">Назначить</button>
+      </div>
+    </div>
+
+    <!-- Worker 3 -->
+    <div class="worker-card" data-name="мария козлова" data-spec="cleaner" data-status="online" data-rating="4.7" data-projects="56" data-experience="1">
+      <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite(this)">☆</button>
+      <div class="worker-header">
+        <div class="worker-avatar" onclick="event.stopPropagation(); location.href='worker-detail.html'">МК</div>
+        <div class="worker-info">
+          <div class="worker-name" onclick="event.stopPropagation(); location.href='worker-detail.html'">Мария Козлова</div>
+          <div class="worker-spec">Клинер, уборщица</div>
+        </div>
+        <span class="worker-status online">● Свободен</span>
+      </div>
+      <div class="worker-stats">
+        <div class="stat-item" onclick="event.stopPropagation(); location.href='reports.html'">
+          <div class="stat-value">56</div>
+          <div class="stat-label">Проектов</div>
+        </div>
+        <div class="stat-item" onclick="event.stopPropagation(); location.href='reviews.html'">
+          <div class="stat-value">4.7</div>
+          <div class="stat-label">Рейтинг</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">1</div>
+          <div class="stat-label">Год</div>
+        </div>
+      </div>
+      <div class="worker-meta">
+        <div class="meta-row"><span class="icon">📍</span><span>Калининград</span></div>
+        <div class="meta-row"><span class="icon">📞</span><a href="tel:+79212345678" onclick="event.stopPropagation()">+7 (921) 234-56-78</a></div>
+        <div class="meta-row"><span class="icon">✉️</span><a href="mailto:kozlova@mail.ru" onclick="event.stopPropagation()">kozlova@mail.ru</a></div>
+      </div>
+      <div class="worker-rating" onclick="event.stopPropagation(); location.href='reviews.html'">
+        <span class="stars">★★★★★</span>
+        <span>(34 отзыва)</span>
+      </div>
+      <div class="worker-actions">
+        <button class="btn-small btn-secondary" onclick="event.stopPropagation(); location.href='worker-detail.html'">👤 Профиль</button>
+        <button class="btn-small btn-message" onclick="event.stopPropagation(); location.href='messages.html'">💬 Чат</button>
+        <button class="btn-small btn-primary" onclick="event.stopPropagation(); openAssignModal('Мария Козлова', 'МК')">Назначить</button>
+      </div>
+    </div>
+
+    <!-- Worker 4 -->
+    <div class="worker-card" data-name="дмитрий волков" data-spec="installer" data-status="online" data-rating="4.9" data-projects="72" data-experience="2">
+      <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite(this)">☆</button>
+      <div class="worker-header">
+        <div class="worker-avatar" onclick="event.stopPropagation(); location.href='worker-detail.html'">ДВ</div>
+        <div class="worker-info">
+          <div class="worker-name" onclick="event.stopPropagation(); location.href='worker-detail.html'">Дмитрий Волков</div>
+          <div class="worker-spec">Монтажник ОВиК</div>
+        </div>
+        <span class="worker-status online">● Свободен</span>
+      </div>
+      <div class="worker-stats">
+        <div class="stat-item" onclick="event.stopPropagation(); location.href='reports.html'">
+          <div class="stat-value">72</div>
+          <div class="stat-label">Проектов</div>
+        </div>
+        <div class="stat-item" onclick="event.stopPropagation(); location.href='reviews.html'">
+          <div class="stat-value">4.9</div>
+          <div class="stat-label">Рейтинг</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">2</div>
+          <div class="stat-label">Года</div>
+        </div>
+      </div>
+      <div class="worker-meta">
+        <div class="meta-row"><span class="icon">📍</span><span>Калининград</span></div>
+        <div class="meta-row"><span class="icon">📞</span><a href="tel:+79058765432" onclick="event.stopPropagation()">+7 (905) 876-54-32</a></div>
+        <div class="meta-row"><span class="icon">✉️</span><a href="mailto:volkov@mail.ru" onclick="event.stopPropagation()">volkov@mail.ru</a></div>
+      </div>
+      <div class="worker-rating" onclick="event.stopPropagation(); location.href='reviews.html'">
+        <span class="stars">★★★★★</span>
+        <span>(51 отзыв)</span>
+      </div>
+      <div class="worker-actions">
+        <button class="btn-small btn-secondary" onclick="event.stopPropagation(); location.href='worker-detail.html'">👤 Профиль</button>
+        <button class="btn-small btn-message" onclick="event.stopPropagation(); location.href='messages.html'">💬 Чат</button>
+        <button class="btn-small btn-primary" onclick="event.stopPropagation(); openAssignModal('Дмитрий Волков', 'ДВ')">Назначить</button>
+      </div>
+    </div>
+
+    <!-- Worker 5 -->
+    <div class="worker-card" data-name="елена новикова" data-spec="handyman" data-status="offline" data-rating="4.5" data-projects="34" data-experience="0.7">
+      <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite(this)">☆</button>
+      <div class="worker-header">
+        <div class="worker-avatar" onclick="event.stopPropagation(); location.href='worker-detail.html'">ЕН</div>
+        <div class="worker-info">
+          <div class="worker-name" onclick="event.stopPropagation(); location.href='worker-detail.html'">Елена Новикова</div>
+          <div class="worker-spec">Разнорабочий</div>
+        </div>
+        <span class="worker-status offline">● Неактивен</span>
+      </div>
+      <div class="worker-stats">
+        <div class="stat-item" onclick="event.stopPropagation(); location.href='reports.html'">
+          <div class="stat-value">34</div>
+          <div class="stat-label">Проектов</div>
+        </div>
+        <div class="stat-item" onclick="event.stopPropagation(); location.href='reviews.html'">
+          <div class="stat-value">4.5</div>
+          <div class="stat-label">Рейтинг</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">8 мес.</div>
+          <div class="stat-label">Опыт</div>
+        </div>
+      </div>
+      <div class="worker-meta">
+        <div class="meta-row"><span class="icon">📍</span><span>Калининград</span></div>
+        <div class="meta-row"><span class="icon">📞</span><a href="tel:+79123456789" onclick="event.stopPropagation()">+7 (912) 345-67-89</a></div>
+        <div class="meta-row"><span class="icon">✉️</span><a href="mailto:novikova@mail.ru" onclick="event.stopPropagation()">novikova@mail.ru</a></div>
+      </div>
+      <div class="worker-rating" onclick="event.stopPropagation(); location.href='reviews.html'">
+        <span class="stars">★★★★☆</span>
+        <span>(22 отзыва)</span>
+      </div>
+      <div class="worker-actions">
+        <button class="btn-small btn-secondary" onclick="event.stopPropagation(); location.href='worker-detail.html'">👤 Профиль</button>
+        <button class="btn-small btn-message" onclick="event.stopPropagation(); location.href='messages.html'">💬 Чат</button>
+        <button class="btn-small btn-primary" onclick="event.stopPropagation(); openAssignModal('Елена Новикова', 'ЕН')">Назначить</button>
+      </div>
+    </div>
+
+    <!-- Worker 6 -->
+    <div class="worker-card" data-name="сергей морозов" data-spec="welder" data-status="busy" data-rating="4.9" data-projects="145" data-experience="5">
+      <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite(this)">☆</button>
+      <div class="worker-header">
+        <div class="worker-avatar" onclick="event.stopPropagation(); location.href='worker-detail.html'">СМ</div>
+        <div class="worker-info">
+          <div class="worker-name" onclick="event.stopPropagation(); location.href='worker-detail.html'">Сергей Морозов</div>
+          <div class="worker-spec">Сварщик, монтажник</div>
+        </div>
+        <span class="worker-status busy">● Занят</span>
+      </div>
+      <div class="worker-stats">
+        <div class="stat-item" onclick="event.stopPropagation(); location.href='reports.html'">
+          <div class="stat-value">145</div>
+          <div class="stat-label">Проектов</div>
+        </div>
+        <div class="stat-item" onclick="event.stopPropagation(); location.href='reviews.html'">
+          <div class="stat-value">4.9</div>
+          <div class="stat-label">Рейтинг</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">5</div>
+          <div class="stat-label">Лет</div>
+        </div>
+      </div>
+      <div class="worker-meta">
+        <div class="meta-row"><span class="icon">📍</span><span>Калининград</span></div>
+        <div class="meta-row"><span class="icon">📞</span><a href="tel:+79087654321" onclick="event.stopPropagation()">+7 (908) 765-43-21</a></div>
+        <div class="meta-row"><span class="icon">✉️</span><a href="mailto:morozov@mail.ru" onclick="event.stopPropagation()">morozov@mail.ru</a></div>
+      </div>
+      <div class="worker-rating" onclick="event.stopPropagation(); location.href='reviews.html'">
+        <span class="stars">★★★★★</span>
+        <span>(89 отзывов)</span>
+      </div>
+      <div class="worker-actions">
+        <button class="btn-small btn-secondary" onclick="event.stopPropagation(); location.href='worker-detail.html'">👤 Профиль</button>
+        <button class="btn-small btn-message" onclick="event.stopPropagation(); location.href='messages.html'">💬 Чат</button>
+        <button class="btn-small btn-primary" onclick="event.stopPropagation(); openAssignModal('Сергей Морозов', 'СМ')">Назначить</button>
+      </div>
+    </div>
+
+    <div class="empty-state" id="empty-state">
+      <div class="icon">🔍</div>
+      <h3>Рабочие не найдены</h3>
+      <p>Попробуйте изменить параметры фильтрации или сбросить фильтры</p>
+      <button class="btn-small btn-primary" onclick="resetFilters()" style="padding:12px 24px;">🔄 Сбросить фильтры</button>
+    </div>
+  </div>
+</main>
+
+<!-- Modal: Assign worker -->
+<div class="modal-overlay" id="assign-modal" onclick="if(event.target===this) closeAssignModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-avatar" id="modal-avatar">АП</div>
+      <div>
+        <h2>Назначить на проект</h2>
+        <div class="subtitle" id="modal-worker-name">Алексей Петров</div>
+      </div>
+    </div>
+
+    <label>📋 Выберите проект</label>
+    <select id="project-select">
+      <option value="">— Выберите проект —</option>
+      <option value="1">#PRJ-2026-003 · Ремонт сантехники · 12 000 ₽</option>
+      <option value="2">#PRJ-2026-008 · Замена радиаторов · 32 000 ₽</option>
+      <option value="3">#PRJ-2026-005 · Укладка плитки · 38 000 ₽</option>
+    </select>
+
+    <label>📅 Дата начала</label>
+    <input type="date" style="width:100%; padding:12px; border:1px solid #d1d5db; border-radius:10px; font-size:14px; outline:none;">
+
+    <label>💬 Комментарий для рабочего</label>
+    <textarea placeholder="Опишите детали задания, адрес объекта, контакты заказчика..."></textarea>
+
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeAssignModal()">Отмена</button>
+      <button class="modal-confirm" onclick="confirmAssign()">✓ Назначить</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // Burger
+  document.querySelector('.burger').addEventListener('click', function() {
+    document.querySelector('nav').classList.toggle('open');
+  });
+
+  // Закрытие меню профиля
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.profile-dropdown') && !e.target.closest('.header-logo .avatar')) {
+      document.querySelectorAll('.profile-menu').forEach(m => m.classList.remove('show'));
+    }
+  });
+
+  // Toast
+  function showToast(msg, type = '') {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.className = 'toast ' + type + ' show';
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  // Плюрализация
+  function pluralize(n, one, few, many) {
+    const mod10 = n % 10, mod100 = n % 100;
+    if (mod100 >= 11 && mod100 <= 19) return many;
+    if (mod10 === 1) return one;
+    if (mod10 >= 2 && mod10 <= 4) return few;
+    return many;
+  }
+
+  // Избранные
+  function toggleFavorite(btn) {
+    const card = btn.closest('.worker-card');
+    card.classList.toggle('favorited');
+    const name = card.querySelector('.worker-name').textContent;
+    if (card.classList.contains('favorited')) {
+      btn.textContent = '★';
+      showToast('⭐ ' + name + ' добавлен в избранное', 'success');
+    } else {
+      btn.textContent = '☆';
+      showToast('Удалён из избранного', 'info');
+    }
+  }
+
+  // Фильтрация
+  function applyFilters() {
+    const search = document.getElementById('search-input').value.toLowerCase().trim();
+    const spec = document.getElementById('spec-filter').value;
+    const status = document.getElementById('status-filter').value;
+    const sort = document.getElementById('sort-filter').value;
+
+    const cards = Array.from(document.querySelectorAll('.worker-card'));
+    let visible = 0;
+
+    cards.forEach(card => {
+      const name = card.dataset.name;
+      const cardSpec = card.dataset.spec;
+      const cardStatus = card.dataset.status;
+
+      let show = true;
+      if (search && !name.includes(search)) show = false;
+      if (spec && cardSpec !== spec) show = false;
+      if (status && cardStatus !== status) show = false;
+
+      if (show) {
+        card.classList.remove('hidden');
+        visible++;
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+
+    // Сортировка
+    const visibleCards = cards.filter(c => !c.classList.contains('hidden'));
+    visibleCards.sort((a, b) => {
+      if (sort === 'rating') return parseFloat(b.dataset.rating) - parseFloat(a.dataset.rating);
+      if (sort === 'projects') return parseInt(b.dataset.projects) - parseInt(a.dataset.projects);
+      if (sort === 'name') return a.dataset.name.localeCompare(b.dataset.name);
+      if (sort === 'experience') return parseFloat(b.dataset.experience) - parseFloat(a.dataset.experience);
+      return 0;
+    });
+
+    const grid = document.getElementById('workers-grid');
+    const emptyState = document.getElementById('empty-state');
+    visibleCards.forEach(card => grid.insertBefore(card, emptyState));
+
+    document.getElementById('empty-state').classList.toggle('show', visible === 0);
+    document.getElementById('workers-counter').textContent = 
+      visible + ' ' + pluralize(visible, 'рабочий', 'рабочих', 'рабочих');
+  }
+
+  function filterByStatus(status) {
+    document.getElementById('status-filter').value = status === 'all' ? '' : status;
+    applyFilters();
+    const labels = { all: 'все', online: 'свободные', busy: 'занятые', offline: 'неактивные' };
+    showToast('👥 Показаны ' + labels[status], 'info');
+  }
+
+  function resetFilters() {
+    document.getElementById('search-input').value = '';
+    document.getElementById('spec-filter').value = '';
+    document.getElementById('status-filter').value = '';
+    document.getElementById('sort-filter').value = 'rating';
+    applyFilters();
+    showToast('🔄 Фильтры сброшены', 'info');
+  }
+
+  // Слушатели фильтров
+  document.getElementById('search-input').addEventListener('input', applyFilters);
+  document.getElementById('spec-filter').addEventListener('change', applyFilters);
+  document.getElementById('status-filter').addEventListener('change', applyFilters);
+  document.getElementById('sort-filter').addEventListener('change', applyFilters);
+
+  // Модальное окно назначения
+  let currentWorker = '';
+  function openAssignModal(name, initials) {
+    currentWorker = name;
+    document.getElementById('modal-worker-name').textContent = name;
+    document.getElementById('modal-avatar').textContent = initials;
+    document.getElementById('assign-modal').classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeAssignModal() {
+    document.getElementById('assign-modal').classList.remove('show');
+    document.body.style.overflow = '';
+    document.getElementById('project-select').value = '';
+  }
+  function confirmAssign() {
+    const project = document.getElementById('project-select').value;
+    if (!project) {
+      showToast('⚠ Выберите проект для назначения', '');
+      return;
+    }
+    closeAssignModal();
+    showToast('✅ ' + currentWorker + ' успешно назначен на проект!', 'success');
+  }
+
+  // Закрытие модалки по Esc
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeAssignModal();
+  });
+
+  // Обновление статистики
+  function updateStats() {
+    const cards = document.querySelectorAll('.worker-card');
+    let total = 0, online = 0, busy = 0, offline = 0;
+    cards.forEach(card => {
+      total++;
+      if (card.dataset.status === 'online') online++;
+      if (card.dataset.status === 'busy') busy++;
+      if (card.dataset.status === 'offline') offline++;
+    });
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-online').textContent = online;
+    document.getElementById('stat-busy').textContent = busy;
+    document.getElementById('stat-offline').textContent = offline;
+  }
+
+  updateStats();
+</script>
+
+</body>
+</html>

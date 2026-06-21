@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REMPRO — Карточка заказчика</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #1a1a1a; min-height: 100vh; }
+  
+  /* Навигация */
+  .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 16px 32px; background: #fff; border-bottom: 1px solid #e8e8e8; position: sticky; top: 0; z-index: 100; }
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 20px; text-decoration: none; color: #1a1a1a; }
+  .logo-icon { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #3b82f6, #1e40af); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 18px; font-weight: 700; }
+  .nav-links { display: flex; gap: 24px; }
+  .nav-links a { text-decoration: none; color: #666; font-weight: 500; font-size: 14px; }
+  .nav-links a:hover, .nav-links a.active { color: #3b82f6; }
+  
+  /* Контент */
+  .container { max-width: 1000px; margin: 0 auto; padding: 32px 20px; }
+  .btn-back { background: none; border: none; color: #6b7280; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; text-decoration: none; margin-bottom: 24px; }
+  .btn-back:hover { color: #374151; }
+
+  /* Шапка клиента */
+  .profile-header { background: #fff; border-radius: 16px; padding: 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 24px; display: flex; gap: 24px; align-items: center; }
+  .profile-avatar { width: 80px; height: 80px; border-radius: 16px; background: #374151; display: flex; justify-content: center; align-items: center; font-size: 28px; font-weight: bold; color: #fff; flex-shrink: 0; }
+  .profile-info { flex-grow: 1; }
+  .profile-name { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+  .profile-meta { color: #6b7280; font-size: 14px; display: flex; gap: 16px; align-items: center; }
+  
+  /* Сетка */
+  .layout { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+  
+  /* Карточки */
+  .card { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 24px; }
+  .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  h3 { font-size: 18px; font-weight: 600; }
+  
+  /* Список проектов */
+  .project-list-item { 
+    border: 1px solid #e8e8e8; border-radius: 12px; padding: 16px; 
+    margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;
+    cursor: pointer; transition: 0.2s;
+  }
+  .project-list-item:hover { border-color: #3b82f6; }
+  .project-list-item h4 { font-size: 15px; margin-bottom: 4px; color: #1a1a1a; }
+  .project-list-item p { color: #6b7280; font-size: 13px; margin: 0; }
+  .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .status-active { background: #e0f2fe; color: #0284c7; }
+  .status-done { background: #dcfce7; color: #16a34a; }
+
+  /* Кнопки */
+  .btn { width: 100%; padding: 12px 16px; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; border: none; transition: 0.2s; text-align: center; }
+  .btn-primary { background: #3b82f6; color: #fff; margin-bottom: 12px; }
+  .btn-secondary { background: #f3f4f6; color: #374151; }
+
+  /* Контакты */
+  .contact-item { margin-bottom: 12px; }
+  .contact-label { display: block; font-size: 12px; color: #6b7280; margin-bottom: 2px; }
+  .contact-value { font-size: 14px; font-weight: 500; color: #1f2937; }
+</style>
+</head>
+<body>
+
+  <header class="top-bar">
+    <a href="dashboard.html" class="logo"><div class="logo-icon">R</div> REMPRO</a>
+    <nav class="nav-links">
+      <a href="dashboard.html">Дашборд</a>
+      <a href="projects.html" class="active">Проекты</a>
+      <a href="search.html">Биржа</a>
+      <a href="finance.html">Финансы</a>
+    </nav>
+    <div class="user-profile">
+      <button class="btn btn-secondary" style="width: auto; padding: 8px 16px;" onclick="location.href='settings.html'">Настройки</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <button class="btn-back" onclick="history.back()">← Назад</button>
+    
+    <!-- Шапка клиента -->
+    <div class="profile-header">
+      <div class="profile-avatar">СК</div>
+      <div class="profile-info">
+        <h1 class="profile-name">ООО "СтройКомплект" (Юр. лицо)</h1>
+        <div class="profile-meta">
+          <span>ИНН: 7701234567</span>
+          <span>На платформе с марта 2021 г.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="layout">
+      <!-- Основное инфо -->
+      <main>
+        <div class="card">
+          <div class="card-header">
+            <h3>История проектов (3)</h3>
+          </div>
+          
+          <div class="project-list-item" onclick="location.href='project-detail.html'">
+            <div>
+              <h4>Разводка электрики в новостройке (3-к квартира)</h4>
+              <p>г. Санкт-Петербург, Мурино</p>
+            </div>
+            <span class="status-badge status-active">В работе (Вы)</span>
+          </div>
+          
+          <div class="project-list-item">
+            <div>
+              <h4>Ремонт офиса open-space (150 м²)</h4>
+              <p>г. Москва, БЦ "Омега"</p>
+            </div>
+            <span class="status-badge status-done">Завершено</span>
+          </div>
+
+          <div class="project-list-item">
+            <div>
+              <h4>Косметический ремонт склада</h4>
+              <p>г. Подольск</p>
+            </div>
+            <span class="status-badge status-done">Завершено</span>
+          </div>
+        </div>
+      </main>
+
+      <!-- Инфопанель -->
+      <aside>
+        <div class="card">
+          <button class="btn btn-primary" onclick="location.href='messages.html'">Написать сообщение</button>
+<button class="btn btn-secondary" onclick="location.href='request-form.html'">Предложить проект</button>
+
+          <hr style="border: 0; border-top: 1px solid #e8e8e8; margin: 24px 0;">
+          
+          <h3>Контактные данные</h3>
+          <div style="margin-top: 16px;">
+            <div class="contact-item">
+              <span class="contact-label">Контактное лицо</span>
+              <span class="contact-value">Игорь Валерьевич (Директор)</span>
+            </div>
+            <div class="contact-item">
+              <span class="contact-label">Телефон</span>
+              <span class="contact-value">+7 (999) 123-45-67</span>
+            </div>
+            <div class="contact-item">
+              <span class="contact-label">Email</span>
+              <span class="contact-value">info@stroykomplekt.ru</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+</body>
+</html>

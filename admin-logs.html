@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REMPRO — Логи системы</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f7fa; color: #1a1a1a; min-height: 100vh;
+  }
+  header {
+    display: flex; align-items: center; padding: 12px 24px;
+    background: #fff; border-bottom: 1px solid #e8e8e8; gap: 16px; position: relative;
+  }
+  .header-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 600; font-size: 16px; white-space: nowrap;
+  }
+  .header-logo .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 13px; font-weight: 600;
+  }
+  nav { display: flex; align-items: center; gap: 20px; flex: 1; overflow-x: auto; }
+  nav a { text-decoration: none; color: #333; font-size: 14px; white-space: nowrap; }
+  nav a:hover, nav a.active { color: #3b82f6; }
+  .btn-create {
+    background: #3b82f6; border: none; color: #fff;
+    padding: 8px 20px; border-radius: 8px; font-size: 14px;
+    cursor: pointer; white-space: nowrap; font-weight: 500;
+  }
+  .btn-create:hover { background: #2563eb; }
+  .burger { display: none; background: none; border: none; font-size: 24px; cursor: pointer; color: #333; }
+
+  main { max-width: 1400px; margin: 0 auto; padding: 32px 20px 60px; }
+  .page-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 24px; flex-wrap: wrap; gap: 16px;
+  }
+  .page-title { font-size: 28px; font-weight: 700; }
+
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    margin-bottom: 24px;
+  }
+  .stat-box {
+    background: #fff; border-radius: 12px; padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .stat-box-label { font-size: 13px; color: #666; margin-bottom: 8px; }
+  .stat-box-value { font-size: 28px; font-weight: 700; }
+  .stat-box-value.blue { color: #3b82f6; }
+  .stat-box-value.green { color: #10b981; }
+  .stat-box-value.orange { color: #f59e0b; }
+  .stat-box-value.red { color: #ef4444; }
+
+  .filters-bar {
+    background: #fff; border-radius: 12px; padding: 16px 20px;
+    margin-bottom: 24px; display: flex; gap: 16px; flex-wrap: wrap; align-items: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .filter-group { display: flex; flex-direction: column; gap: 4px; }
+  .filter-group label { font-size: 12px; color: #666; font-weight: 500; }
+  .filter-group input, .filter-group select {
+    padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px;
+    font-size: 14px; outline: none; min-width: 180px;
+  }
+
+  .logs-table-wrap {
+    background: #fff; border-radius: 16px; padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow-x: auto;
+  }
+  .logs-table {
+    width: 100%; border-collapse: collapse; min-width: 1000px;
+  }
+  .logs-table th {
+    text-align: left; padding: 12px; font-size: 13px; color: #666;
+    font-weight: 600; border-bottom: 2px solid #e5e7eb;
+  }
+  .logs-table td {
+    padding: 14px 12px; border-bottom: 1px solid #f0f0f0; font-size: 13px;
+  }
+  .logs-table tr:hover td { background: #f9fafb; }
+
+  .log-level {
+    padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
+  }
+  .log-level.info { background: #dbeafe; color: #1e40af; }
+  .log-level.warning { background: #fef3c7; color: #92400e; }
+  .log-level.error { background: #fee2e2; color: #991b1b; }
+  .log-level.critical { background: #fecaca; color: #7f1d1d; }
+
+  .log-module {
+    padding: 4px 8px; background: #f3f4f6; border-radius: 6px;
+    font-size: 11px; font-weight: 500;
+  }
+
+  .log-message {
+    max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  .btn-export {
+    background: #fff; color: #3b82f6; border: 1px solid #3b82f6;
+    padding: 8px 16px; border-radius: 8px; font-size: 14px;
+    cursor: pointer; font-weight: 500;
+  }
+  .btn-export:hover { background: #eff6ff; }
+
+  .pagination {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 24px; flex-wrap: wrap; gap: 16px;
+  }
+  .pagination-info { font-size: 14px; color: #666; }
+  .pagination-btns { display: flex; gap: 8px; }
+  .pagination-btns button {
+    padding: 8px 14px; border: 1px solid #ddd; background: #fff;
+    border-radius: 8px; cursor: pointer; font-size: 14px;
+  }
+  .pagination-btns button:hover:not(:disabled) { background: #f5f5f5; }
+  .pagination-btns button:disabled { opacity: 0.4; cursor: default; }
+  .pagination-btns button.active { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+
+  @media (max-width: 768px) {
+    nav { display: none; }
+    nav.open {
+      display: flex; flex-direction: column;
+      position: absolute; top: 56px; left: 0; right: 0;
+      background: #fff; padding: 20px;
+      border-bottom: 1px solid #e8e8e8; z-index: 100; gap: 14px;
+    }
+    .burger { display: block; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="burger" onclick="document.querySelector('nav').classList.toggle('open')">☰</button>
+  <div class="header-logo">
+    <div class="avatar">МГ</div>
+    <span>Максим Гусев</span>
+  </div>
+  <nav>
+    <a href="dashboard.html">Рабочий стол</a>
+    <a href="projects.html">Проекты</a>
+    <a href="search.html">Поиск</a>
+    <a href="panels.html">Панели</a>
+    <a href="admin.html">Администратор</a>
+    <a href="manager.html">Менеджер</a>
+    <a href="workers.html">Рабочие</a>
+  </nav>
+  <button class="btn-export">📥 Экспорт логов</button>
+</header>
+
+<main>
+  <div class="page-header">
+    <h1 class="page-title">Логи системы</h1>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-box-label">Всего записей</div>
+      <div class="stat-box-value blue">45,892</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-label">INFO</div>
+      <div class="stat-box-value green">42,156</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-label">WARNING</div>
+      <div class="stat-box-value orange">3,421</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-label">ERROR / CRITICAL</div>
+      <div class="stat-box-value red">315</div>
+    </div>
+  </div>
+
+  <div class="filters-bar">
+    <div class="filter-group">
+      <label>Поиск</label>
+      <input type="text" placeholder="Поиск по сообщению...">
+    </div>
+    <div class="filter-group">
+      <label>Уровень</label>
+      <select>
+        <option>Все уровни</option>
+        <option>INFO</option>
+        <option>WARNING</option>
+        <option>ERROR</option>
+        <option>CRITICAL</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Модуль</label>
+      <select>
+        <option>Все модули</option>
+        <option>Auth</option>
+        <option>Payments</option>
+        <option>Projects</option>
+        <option>Users</option>
+        <option>API</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Период</label>
+      <input type="date">
+    </div>
+    <button class="btn-create">Применить</button>
+  </div>
+
+  <div class="logs-table-wrap">
+    <table class="logs-table">
+      <thead>
+        <tr>
+          <th>Время</th>
+          <th>Уровень</th>
+          <th>Модуль</th>
+          <th>Пользователь</th>
+          <th>Сообщение</th>
+          <th>IP</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>08.06.2026 14:32:15</td>
+          <td><span class="log-level info">INFO</span></td>
+          <td><span class="log-module">Auth</span></td>
+          <td>petrov@mail.ru</td>
+          <td class="log-message">Успешный вход в систему</td>
+          <td>192.168.1.45</td>
+        </tr>
+        <tr>
+          <td>08.06.2026 14:28:03</td>
+          <td><span class="log-level warning">WARNING</span></td>
+          <td><span class="log-module">Payments</span></td>
+          <td>—</td>
+          <td class="log-message">Превышен лимит попыток оплаты для заказа #8821</td>
+          <td>10.0.0.12</td>
+        </tr>
+        <tr>
+          <td>08.06.2026 14:15:47</td>
+          <td><span class="log-level error">ERROR</span></td>
+          <td><span class="log-module">API</span></td>
+          <td>—</td>
+          <td class="log-message">Ошибка подключения к внешнему сервису: timeout after 30s</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>08.06.2026 13:52:19</td>
+          <td><span class="log-level info">INFO</span></td>
+          <td><span class="log-module">Projects</span></td>
+          <td>sidorov@mail.ru</td>
+          <td class="log-message">Создан новый проект #PRJ-2026-089</td>
+          <td>192.168.1.78</td>
+        </tr>
+        <tr>
+          <td>08.06.2026 13:41:08</td>
+          <td><span class="log-level critical">CRITICAL</span></td>
+          <td><span class="log-module">Payments</span></td>
+          <td>—</td>
+          <td class="log-message">Критическая ошибка платёжного шлюза: соединение разорвано</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>08.06.2026 13:22:56</td>
+          <td><span class="log-level info">INFO</span></td>
+          <td><span class="log-module">Users</span></td>
+          <td>admin@rempro.ru</td>
+          <td class="log-message">Изменены права пользователя ID:1045</td>
+          <td>192.168.1.1</td>
+        </tr>
+        <tr>
+          <td>08.06.2026 12:58:34</td>
+          <td><span class="log-level warning">WARNING</span></td>
+          <td><span class="log-module">Auth</span></td>
+          <td>unknown@mail.ru</td>
+          <td class="log-message">Неудачная попытка входа (неверный пароль)</td>
+          <td>203.0.113.42</td>
+        </tr>
+        <tr>
+          <td>08.06.2026 12:35:12</td>
+          <td><span class="log-level info">INFO</span></td>
+          <td><span class="log-module">Projects</span></td>
+          <td>kozlova@mail.ru</td>
+          <td class="log-message">Проект #PRJ-2026-076 изменён: статус → Завершён</td>
+          <td>192.168.1.92</td>
+        </tr>
+        <tr>
+          <td>08.06.2026 11:47:29</td>
+          <td><span class="log-level error">ERROR</span></td>
+          <td><span class="log-module">API</span></td>
+          <td>—</td>
+          <td class="log-message">Rate limit exceeded для IP 185.220.101.34</td>
+          <td>185.220.101.34</td>
+        </tr>
+        <tr>
+          <td>08.06.2026 11:23:45</td>
+          <td><span class="log-level info">INFO</span></td>
+          <td><span class="log-module">Users</span></td>
+          <td>volkov@mail.ru</td>
+          <td class="log-message">Загружен документ: паспорт.pdf (2.4 MB)</td>
+          <td>192.168.1.56</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination">
+    <div class="pagination-info">Показано 1-10 из 45,892 записей</div>
+    <div class="pagination-btns">
+      <button disabled>← Пред.</button>
+      <button class="active">1</button>
+      <button>2</button>
+      <button>3</button>
+      <button>...</button>
+      <button>4,590</button>
+      <button>След. →</button>
+    </div>
+  </div>
+</main>
+
+<script>
+  document.querySelector('.burger').addEventListener('click', function() {
+    document.querySelector('nav').classList.toggle('open');
+  });
+</script>
+
+</body>
+</html>

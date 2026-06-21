@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REMPRO — Профиль исполнителя</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #1a1a1a; min-height: 100vh; }
+  
+  /* Навигация */
+  .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 16px 32px; background: #fff; border-bottom: 1px solid #e8e8e8; position: sticky; top: 0; z-index: 100; }
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 20px; text-decoration: none; color: #1a1a1a; }
+  .logo-icon { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #3b82f6, #1e40af); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 18px; font-weight: 700; }
+  .nav-links { display: flex; gap: 24px; }
+  .nav-links a { text-decoration: none; color: #666; font-weight: 500; font-size: 14px; }
+  .nav-links a:hover, .nav-links a.active { color: #3b82f6; }
+  
+  /* Контент */
+  .container { max-width: 1000px; margin: 0 auto; padding: 32px 20px; }
+  .btn-back { background: none; border: none; color: #6b7280; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; text-decoration: none; margin-bottom: 24px; }
+  .btn-back:hover { color: #374151; }
+
+  /* Профиль (Шапка) */
+  .profile-header { background: #fff; border-radius: 16px; padding: 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 24px; display: flex; gap: 24px; align-items: center; }
+  .profile-avatar { width: 100px; height: 100px; border-radius: 50%; background: #e5e7eb; display: flex; justify-content: center; align-items: center; font-size: 32px; font-weight: bold; color: #9ca3af; flex-shrink: 0; }
+  .profile-info { flex-grow: 1; }
+  .profile-name { font-size: 24px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .verified-icon { color: #10b981; font-size: 18px; }
+  .profile-role { color: #4b5563; font-size: 16px; margin-bottom: 12px; }
+  .badges { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; background: #f3f4f6; color: #4b5563; }
+  
+  /* Сетка */
+  .layout { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+  
+  /* Карточки */
+  .card { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 24px; }
+  h3 { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
+  p { font-size: 15px; line-height: 1.6; color: #4b5563; margin-bottom: 16px; }
+  
+  /* Отзывы */
+  .review { border-bottom: 1px solid #e8e8e8; padding-bottom: 16px; margin-bottom: 16px; }
+  .review:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+  .review-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+  .review-author { font-weight: 600; font-size: 14px; }
+  .review-date { color: #9ca3af; font-size: 12px; }
+  .rating { color: #fbbf24; font-size: 14px; margin-bottom: 4px; }
+
+  /* Кнопки */
+  .btn { width: 100%; padding: 12px 16px; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; border: none; transition: 0.2s; text-align: center; }
+  .btn-primary { background: #3b82f6; color: #fff; margin-bottom: 12px; }
+  .btn-secondary { background: #f3f4f6; color: #374151; }
+
+  /* Статистика */
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .stat-item { text-align: center; padding: 16px; background: #f9fafb; border-radius: 12px; }
+  .stat-value { font-size: 24px; font-weight: 700; color: #3b82f6; }
+  .stat-label { font-size: 12px; color: #6b7280; font-weight: 500; margin-top: 4px; }
+</style>
+</head>
+<body>
+
+  <header class="top-bar">
+    <a href="dashboard.html" class="logo"><div class="logo-icon">R</div> REMPRO</a>
+    <nav class="nav-links">
+      <a href="dashboard.html">Дашборд</a>
+      <a href="projects.html" class="active">Проекты</a> <!-- Активно, т.к. обычно ищут рабочих в свой проект -->
+      <a href="search.html">Биржа</a>
+      <a href="finance.html">Финансы</a>
+    </nav>
+    <div class="user-profile">
+      <button class="btn btn-secondary" style="width: auto; padding: 8px 16px;" onclick="location.href='settings.html'">Настройки</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <a href="workers.html" class="btn-back">← Вернуться к списку исполнителей</a>
+    
+    <!-- Шапка профиля -->
+    <div class="profile-header">
+      <div class="profile-avatar">МС</div>
+      <div class="profile-info">
+        <h1 class="profile-name">
+          Михаил Смирнов 
+          <span class="verified-icon" title="Профиль подтвержден">✔</span>
+        </h1>
+        <div class="profile-role">Бригадир (Отделочные работы) · Опыт 8 лет</div>
+        <div class="badges">
+          <span class="badge">Малярные работы</span>
+          <span class="badge">Штукатурка</span>
+          <span class="badge">Плитка</span>
+          <span class="badge" style="background: #e0f2fe; color: #0284c7;">Свой инструмент</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="layout">
+      <!-- Основное инфо -->
+      <main>
+        <div class="card">
+          <h3>Обо мне</h3>
+          <p>
+            Профессионально занимаюсь внутренней отделкой жилых и коммерческих помещений. 
+            В составе моей бригады 4 человека (универсалы, плиточник). Работаем строго по СНИП.
+            Соблюдаем сроки, не пьем, на объекте поддерживаем чистоту.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>Последние отзывы (12)</h3>
+          
+          <div class="review">
+            <div class="review-header">
+              <span class="review-author">Анна К. (ЖК "Светлый")</span>
+              <span class="review-date">12 Сентября 2023</span>
+            </div>
+            <div class="rating">★★★★★</div>
+            <p style="font-size: 14px; margin-bottom: 0;">Ребята молодцы, сделали ремонт в двушке за полтора месяца как и обещали. Плитка в ванной выложена идеально.</p>
+          </div>
+          
+          <div class="review">
+            <div class="review-header">
+              <span class="review-author">ИП Воронов (Офис)</span>
+              <span class="review-date">5 Июля 2023</span>
+            </div>
+            <div class="rating">★★★★☆</div>
+            <p style="font-size: 14px; margin-bottom: 0;">Хорошее качество работы. Немного задержали сдачу из-за проблем с поставкой краски, но в остальном претензий нет.</p>
+          </div>
+        </div>
+      </main>
+
+      <!-- Сайдбар -->
+      <aside>
+        <div class="card">
+          <button class="btn btn-primary" onclick="alert('Предложение отправлено исполнителю!')">Пригласить в проект</button>
+          <button class="btn btn-secondary" onclick="alert('Чат с исполнителем открыт')">Написать сообщение</button>
+
+          <hr style="border: 0; border-top: 1px solid #e8e8e8; margin: 24px 0;">
+          
+          <h3>Статистика</h3>
+          <div class="stat-grid">
+            <div class="stat-item">
+              <div class="stat-value">4.8</div>
+              <div class="stat-label">Рейтинг</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">34</div>
+              <div class="stat-label">Сдано объектов</div>
+            </div>
+          </div>
+
+          <div style="font-size: 14px; color: #4b5563; margin-top: 16px;">
+            <strong>Город:</strong> Москва, МО<br>
+            <strong>Ставка:</strong> от 4000 ₽ / смена
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+</body>
+</html>

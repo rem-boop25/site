@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REMPRO — Детали задания</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f7fa; color: #1a1a1a; min-height: 100vh;
+  }
+  
+  /* Навигация */
+  .top-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 32px; background: #fff; border-bottom: 1px solid #e8e8e8;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 20px; text-decoration: none; color: #1a1a1a; }
+  .logo-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 18px; font-weight: 700;
+  }
+  .nav-links { display: flex; gap: 24px; }
+  .nav-links a { text-decoration: none; color: #666; font-weight: 500; font-size: 14px; }
+  .nav-links a:hover, .nav-links a.active { color: #3b82f6; }
+  
+  /* Основной контент */
+  .container { max-width: 1000px; margin: 0 auto; padding: 32px 20px; }
+  
+  .btn-back { background: none; border: none; color: #6b7280; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; text-decoration: none; margin-bottom: 24px; }
+  .btn-back:hover { color: #374151; }
+
+  /* Карточки и Сетка */
+  .layout { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+  .card {
+    background: #fff; border-radius: 16px; padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 24px;
+  }
+  
+  .task-header { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #e8e8e8; }
+  .task-title { font-size: 24px; font-weight: 700; margin-bottom: 12px; }
+  .task-price { font-size: 28px; font-weight: 700; color: #16a34a; margin-bottom: 12px; }
+  
+  .badges { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .badge-status { background: #e0f2fe; color: #0284c7; }
+  .badge-type { background: #f3f4f6; color: #4b5563; }
+
+  h3 { font-size: 16px; font-weight: 600; margin-bottom: 12px; }
+  .task-desc { font-size: 15px; line-height: 1.6; color: #4b5563; margin-bottom: 24px; }
+  
+  .req-list { list-style: inside; color: #4b5563; font-size: 14px; margin-bottom: 24px; }
+  .req-list li { margin-bottom: 8px; }
+
+  .meta-item { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
+  .meta-label { font-size: 12px; color: #6b7280; }
+  .meta-value { font-size: 14px; font-weight: 500; }
+
+  .map-placeholder { width: 100%; height: 150px; background: #e5e7eb; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #9ca3af; margin-bottom: 16px; }
+
+  /* Кнопки */
+  .btn { width: 100%; padding: 12px 16px; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; border: none; transition: 0.2s; text-align: center; }
+  .btn-primary { background: #3b82f6; color: #fff; margin-bottom: 12px; }
+  .btn-primary:hover { background: #2563eb; }
+  .btn-secondary { background: #f3f4f6; color: #374151; }
+  .btn-secondary:hover { background: #e5e7eb; }
+    /* Toast-уведомления */
+    .toast {
+    position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
+    background: #333; color: #fff; padding: 12px 24px; border-radius: 8px;
+    font-size: 14px; font-weight: 500; transition: bottom 0.3s ease; z-index: 9999;
+  }
+  .toast.show { bottom: 30px; }
+  .client-info { display: flex; align-items: center; gap: 12px; margin-top: 8px; cursor: pointer; }
+  .avatar { width: 48px; height: 48px; border-radius: 50%; background: #d1d5db; display: flex; justify-content: center; align-items: center; font-weight: bold; color: #4b5563; }
+</style>
+</head>
+<body>
+
+  <!-- Шапка сайта -->
+  <header class="top-bar">
+    <a href="dashboard.html" class="logo">
+      <div class="logo-icon">R</div> REMPRO
+    </a>
+    <nav class="nav-links">
+      <a href="dashboard.html">Дашборд</a>
+      <a href="projects.html">Проекты</a>
+      <a href="search.html" class="active">Биржа</a>
+      <a href="finance.html">Финансы</a>
+    </nav>
+    <div class="user-profile">
+      <button class="btn btn-secondary" style="width: auto; padding: 8px 16px;" onclick="location.href='settings.html'">Настройки</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <a href="search.html" class="btn-back">← Вернуться к списку заявок</a>
+    
+    <div class="layout">
+      <!-- Основное описание -->
+      <main>
+        <div class="card">
+          <div class="task-header">
+            <div class="badges">
+              <span class="badge badge-status">Открыто</span>
+              <span class="badge badge-type">Электромонтаж</span>
+              <span class="badge badge-type">Срочно</span>
+            </div>
+            <h1 class="task-title">Разводка электрики в новостройке (3-к квартира)</h1>
+            <div class="task-price">85 000 ₽</div>
+            <span style="color: #6b7280; font-size: 14px;">Опубликовано: сегодня в 10:30 • Просмотров: 24</span>
+          </div>
+
+          <h3>Описание задачи</h3>
+          <div class="task-desc">
+            Требуется выполнить полную разводку электрики в трехкомнатной квартире (85 м²). 
+            Материалы уже закуплены (ВВГнг-LS, автоматика ABB, щиток). Черновая стяжка еще не залита, 
+            штробление стен из газоблока и кирпича. Нужно собрать щиток на 24 модуля, установить 
+            около 40 подрозетников и вывести кабели под натяжной потолок.
+          </div>
+
+          <h3>Требования к исполнителю</h3>
+          <ul class="req-list">
+            <li>Наличие собственного профессионального инструмента (штроборез, пылесос обязательно).</li>
+            <li>Опыт работы от 3-х лет, наличие портфолио или отзывов.</li>
+            <li>Чтение электропроектов (проект предоставим).</li>
+            <li>Возможность приступить в течение 2-3 дней.</li>
+          </ul>
+
+          <div style="background: #f9fafb; padding: 16px; border-radius: 12px; margin-top: 24px;">
+            <strong style="display: block; margin-bottom: 8px; font-size: 14px;">Прикрепленные файлы:</strong>
+            <a href="#" style="color: #3b82f6; text-decoration: none; font-size: 14px;">electro_project_v2.pdf (2.4 MB)</a>
+          </div>
+        </div>
+      </main>
+
+      <!-- Инфопанель -->
+      <aside>
+        <div class="card">
+          <button class="btn btn-primary" onclick="showToast('✅ Ваш отклик отправлен заказчику!', 'success')">Откликнуться на задание</button>
+<button class="btn btn-secondary" onclick="showToast('👁️ Задание скрыто из вашей ленты', 'info'); setTimeout(() => location.href='search.html', 1500)">Скрыть</button>
+
+          <hr style="border: 0; border-top: 1px solid #e8e8e8; margin: 24px 0;">
+
+          <div class="meta-item">
+            <span class="meta-label">Сроки выполнения</span>
+            <span class="meta-value">до 25 Октября (7-10 дней)</span>
+          </div>
+
+          <div class="meta-item">
+            <span class="meta-label">Местоположение</span>
+            <span class="meta-value">г. Санкт-Петербург, Мурино, ул. Шувалова, д. 15</span>
+          </div>
+          
+          <div class="map-placeholder">
+            [ Интерактивная карта ]
+          </div>
+
+          <hr style="border: 0; border-top: 1px solid #e8e8e8; margin: 24px 0;">
+
+          <h3>Заказчик</h3>
+          <div class="client-info" onclick="location.href='client-detail.html'">
+            <div class="avatar">СК</div>
+            <div>
+              <div style="font-weight: 600; font-size: 14px; color: #3b82f6;">ООО "СтройКомплект"</div>
+              <div style="font-size: 12px; color: #666;">На платформе с 2021 г. • 15 заданий</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+  <script>
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.style.background = type === 'success' ? '#10b981' : '#3b82f6';
+      toast.classList.add('show');
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

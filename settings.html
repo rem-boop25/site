@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REMPRO — Настройки</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f7fa; color: #1a1a1a; min-height: 100vh;
+  }
+
+  header {
+    display: flex; align-items: center; padding: 12px 24px;
+    background: #fff; border-bottom: 1px solid #e8e8e8; gap: 16px; position: relative;
+  }
+  .header-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 600; font-size: 16px; white-space: nowrap;
+  }
+  .header-logo .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 13px; font-weight: 600;
+    cursor: pointer;
+  }
+  nav {
+    display: flex; align-items: center; gap: 20px; flex: 1; overflow-x: auto;
+  }
+  nav a { text-decoration: none; color: #333; font-size: 14px; white-space: nowrap; }
+  nav a:hover, nav a.active { color: #3b82f6; }
+
+  .header-actions { display: flex; align-items: center; gap: 16px; }
+  .btn-create {
+    background: #3b82f6; border: none; color: #fff;
+    padding: 8px 20px; border-radius: 8px; font-size: 14px;
+    cursor: pointer; white-space: nowrap; font-weight: 500;
+  }
+  .btn-create:hover { background: #2563eb; }
+
+  .dropdown { position: relative; }
+  .dropdown-menu {
+    display: none; position: absolute; top: 100%; right: 0;
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1); min-width: 220px;
+    z-index: 1000; padding: 8px 0; margin-top: 8px;
+  }
+  .dropdown:hover .dropdown-menu { display: block; }
+  .dropdown-menu a {
+    display: block; padding: 10px 16px; font-size: 14px;
+    color: #333; text-decoration: none; white-space: nowrap;
+  }
+  .dropdown-menu a:hover { background: #f5f7fa; color: #3b82f6; }
+
+  .profile-dropdown { position: relative; }
+  .profile-menu {
+    display: none; position: absolute; top: 100%; right: 0;
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1); min-width: 220px;
+    z-index: 1000; padding: 8px 0; margin-top: 8px;
+  }
+  .profile-menu.show { display: block; }
+  .profile-menu a {
+    display: block; padding: 10px 16px; font-size: 14px;
+    color: #333; text-decoration: none;
+  }
+  .profile-menu a:hover { background: #f5f7fa; color: #3b82f6; }
+  .profile-menu .divider { height: 1px; background: #e8e8e8; margin: 8px 0; }
+  .profile-menu .logout { color: #ef4444; }
+  .profile-menu .logout:hover { background: #fee2e2; color: #dc2626; }
+
+  .burger {
+    display: none; background: none; border: none;
+    font-size: 24px; cursor: pointer; color: #333;
+  }
+
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 20px 60px;
+  }
+
+  .breadcrumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: #666; margin-bottom: 16px;
+  }
+  .breadcrumbs a { color: #3b82f6; text-decoration: none; }
+  .breadcrumbs a:hover { text-decoration: underline; }
+  .breadcrumbs .sep { color: #ccc; }
+
+  .page-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+  }
+  .page-title { font-size: 28px; font-weight: 700; }
+  .save-indicator {
+    font-size: 13px; color: #6b7280;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .save-indicator.unsaved { color: #f59e0b; }
+  .save-indicator.saved { color: #10b981; }
+
+  .settings-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 24px;
+  }
+
+  .settings-nav {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+  }
+  .nav-title {
+    font-size: 12px; color: #6b7280; text-transform: uppercase;
+    letter-spacing: 0.5px; margin-bottom: 12px; font-weight: 600;
+  }
+  .nav-item {
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #374151;
+    border: none; background: none; width: 100%; text-align: left;
+    font-family: inherit;
+  }
+  .nav-item:hover { background: #f5f7fa; color: #3b82f6; }
+  .nav-item.active {
+    background: #3b82f6;
+    color: #fff;
+  }
+  .nav-item .nav-arrow { margin-left: auto; opacity: 0.5; font-size: 12px; }
+  .nav-item.active .nav-arrow { opacity: 1; }
+
+  .nav-divider {
+    height: 1px; background: #e5e7eb; margin: 12px 0;
+  }
+
+  .settings-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+
+  .settings-view { display: none; animation: fadeIn 0.3s; }
+  .settings-view.active { display: block; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .view-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 24px; padding-bottom: 20px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .view-title { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .view-subtitle { font-size: 14px; color: #6b7280; }
+
+  .settings-section {
+    margin-bottom: 32px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .settings-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+  .section-title {
+    font-size: 16px; font-weight: 600; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .form-group { margin-bottom: 20px; position: relative; }
+  .form-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #374151;
+  }
+  .form-group label .req { color: #ef4444; }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+  }
+  .form-group textarea { resize: vertical; min-height: 100px; }
+  .form-group input.error { border-color: #ef4444; background: #fef2f2; }
+  .form-group input.success { border-color: #10b981; }
+  .field-hint { font-size: 12px; color: #6b7280; margin-top: 4px; }
+  .field-error { font-size: 12px; color: #ef4444; margin-top: 4px; display: none; }
+  .field-error.show { display: block; }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .toggle-setting {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid #f0f0f0;
+    gap: 16px;
+  }
+  .toggle-setting:last-child { border-bottom: none; }
+  .toggle-info { flex: 1; }
+  .toggle-title {
+    font-size: 14px; font-weight: 600; margin-bottom: 4px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .toggle-badge {
+    background: #dbeafe; color: #1e40af;
+    padding: 1px 8px; border-radius: 10px;
+    font-size: 10px; font-weight: 700;
+  }
+  .toggle-desc { font-size: 13px; color: #6b7280; line-height: 1.4; }
+
+  .toggle {
+    position: relative;
+    width: 48px; height: 26px;
+    flex-shrink: 0;
+  }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle .slider {
+    position: absolute; cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #ccc; border-radius: 26px;
+    transition: 0.3s;
+  }
+  .toggle .slider::before {
+    content: ""; position: absolute;
+    height: 20px; width: 20px;
+    left: 3px; bottom: 3px;
+    background: #fff; border-radius: 50%;
+    transition: 0.3s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .toggle input:checked + .slider { background: #3b82f6; }
+  .toggle input:checked + .slider::before { transform: translateX(22px); }
+
+  .btn-save {
+    background: #3b82f6;
+    color: #fff;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: all 0.2s;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-save:hover:not(:disabled) { background: #2563eb; transform: translateY(-1px); }
+  .btn-save:disabled { background: #93c5fd; cursor: not-allowed; }
+
+  .btn-secondary {
+    background: #fff; color: #374151;
+    border: 1px solid #d1d5db;
+    padding: 12px 24px; border-radius: 10px;
+    font-size: 14px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-secondary:hover { background: #f9fafb; border-color: #9ca3af; }
+
+  .btn-danger {
+    background: #fff;
+    color: #dc2626;
+    border: 1px solid #fee2e2;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-danger:hover { background: #fef2f2; border-color: #fca5a5; }
+
+  .btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+
+  .danger-zone {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 16px;
+  }
+  .danger-zone h4 {
+    color: #991b1b; font-size: 15px; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .danger-zone p {
+    font-size: 13px; color: #7f1d1d; margin-bottom: 16px; line-height: 1.5;
+  }
+
+  /* Password strength */
+  .pwd-strength { display: flex; gap: 4px; margin-top: 8px; }
+  .pwd-strength-bar {
+    flex: 1; height: 4px; background: #e5e7eb;
+    border-radius: 2px; transition: background 0.3s;
+  }
+  .pwd-strength-text { font-size: 12px; margin-top: 4px; font-weight: 500; }
+  .pwd-weak { color: #ef4444; }
+  .pwd-medium { color: #f59e0b; }
+  .pwd-strong { color: #10b981; }
+
+  /* Working days */
+  .days-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+  }
+  .day-btn {
+    padding: 10px 4px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 13px; font-weight: 500;
+    cursor: pointer; text-align: center;
+    transition: all 0.2s;
+    color: #374151;
+  }
+  .day-btn:hover { border-color: #3b82f6; color: #3b82f6; }
+  .day-btn.selected {
+    background: #3b82f6; color: #fff; border-color: #3b82f6;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+    z-index: 2000; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: #fff; border-radius: 20px;
+    max-width: 480px; width: 100%;
+    padding: 32px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: popIn 0.3s;
+  }
+  @keyframes popIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .modal-icon {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: #fee2e2; color: #dc2626;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px; margin: 0 auto 16px;
+  }
+  .modal h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; text-align: center; }
+  .modal .subtitle { font-size: 14px; color: #6b7280; margin-bottom: 20px; text-align: center; line-height: 1.5; }
+  .modal input {
+    width: 100%; padding: 12px 16px;
+    border: 1px solid #d1d5db; border-radius: 10px;
+    font-size: 14px; outline: none; margin-bottom: 16px;
+    font-family: inherit;
+  }
+  .modal input:focus { border-color: #ef4444; }
+  .modal-actions { display: flex; gap: 10px; }
+  .modal-actions button { flex: 1; padding: 12px; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 20px; right: 20px;
+    background: #1a1a1a; color: #fff;
+    padding: 14px 20px; border-radius: 10px;
+    font-size: 14px; font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    transform: translateY(100px); opacity: 0;
+    transition: all 0.3s; z-index: 3000;
+    display: flex; align-items: center; gap: 10px;
+    max-width: 360px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { background: #059669; }
+  .toast.error { background: #dc2626; }
+  .toast.info { background: #2563eb; }
+
+  @media (max-width: 768px) {
+    nav { display: none; }
+    nav.open {
+      display: flex; flex-direction: column;
+      position: absolute; top: 56px; left: 0; right: 0;
+      background: #fff; padding: 20px;
+      border-bottom: 1px solid #e8e8e8; z-index: 100; gap: 14px;
+    }
+    .burger { display: block; }
+    .settings-layout { grid-template-columns: 1fr; }
+    .settings-nav { position: static; }
+    .form-row { grid-template-columns: 1fr; }
+    .days-grid { grid-template-columns: repeat(4, 1fr); }
+    .dropdown-menu, .profile-menu {
+      position: fixed; top: 70px; right: 20px;
+    }
+    .settings-card { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="burger" onclick="document.querySelector('nav').classList.toggle('open')">☰</button>
+  <div class="header-logo">
+    <div class="avatar" onclick="document.querySelector('.profile-menu').classList.toggle('show')">МГ</div>
+    <span>Максим Гусев</span>
+  </div>
+  <nav>
+    <a href="dashboard.html">Рабочий стол</a>
+    <a href="projects.html">Проекты</a>
+    <a href="search.html">Поиск</a>
+    <a href="messages.html">Сообщения</a>
+    <a href="notifications.html">Уведомления</a>
+    <a href="finance.html">Финансы</a>
+    <div class="dropdown">
+      <a href="#" class="dropdown-toggle">Ещё ▾</a>
+      <div class="dropdown-menu">
+        <a href="calendar.html">📅 Календарь</a>
+        <a href="documents.html">📄 Документы</a>
+        <a href="reviews.html">⭐ Отзывы</a>
+        <a href="portfolio.html">🖼️ Портфолио</a>
+        <a href="workers.html">👷 Рабочие</a>
+        <a href="panels.html">📊 Панели</a>
+        <a href="reports.html">📈 Отчёты</a>
+        <a href="specializations.html">🔧 Специализация</a>
+        <a href="admin.html">⚙️ Администратор</a>
+        <a href="manager.html">👔 Менеджер</a>
+      </div>
+    </div>
+  </nav>
+  <div class="header-actions">
+    <button class="btn-create" onclick="saveAll()">💾 Сохранить</button>
+    <div class="profile-dropdown">
+      <div class="avatar" onclick="document.querySelector('.profile-menu').classList.toggle('show')">МГ</div>
+      <div class="profile-menu">
+        <a href="profile.html">👤 Мой профиль</a>
+        <a href="personal-data.html">📋 Персональные данные</a>
+        <a href="settings.html" style="background:#eff6ff; color:#3b82f6;">⚙️ Настройки</a>
+        <a href="help.html">❓ Помощь</a>
+        <div class="divider"></div>
+        <a href="login.html" class="logout">🚪 Выйти</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="breadcrumbs">
+    <a href="dashboard.html">Рабочий стол</a>
+    <span class="sep">›</span>
+    <a href="profile.html">Профиль</a>
+    <span class="sep">›</span>
+    <span>Настройки</span>
+  </div>
+
+  <div class="page-header">
+    <h1 class="page-title">⚙️ Настройки</h1>
+    <div class="save-indicator" id="save-indicator">
+      <span>✓</span> Все изменения сохранены
+    </div>
+  </div>
+
+  <div class="settings-layout">
+    <!-- Sidebar -->
+    <aside class="settings-nav">
+      <div class="nav-title">Настройки</div>
+      <button class="nav-item active" onclick="switchView('profile', this)">
+        👤 Профиль
+        <span class="nav-arrow">→</span>
+      </button>
+      <button class="nav-item" onclick="switchView('security', this)">
+        🔐 Безопасность
+        <span class="nav-arrow">→</span>
+      </button>
+      <button class="nav-item" onclick="switchView('notifications', this)">
+        🔔 Уведомления
+        <span class="nav-arrow">→</span>
+      </button>
+      <button class="nav-item" onclick="switchView('work', this)">
+        🗺️ Работа
+        <span class="nav-arrow">→</span>
+      </button>
+      <button class="nav-item" onclick="switchView('payments', this)">
+        💳 Платежи
+        <span class="nav-arrow">→</span>
+      </button>
+      <button class="nav-item" onclick="switchView('privacy', this)">
+        🔒 Приватность
+        <span class="nav-arrow">→</span>
+      </button>
+
+      <div class="nav-divider"></div>
+      <div class="nav-title">Действия</div>
+      <button class="nav-item" onclick="location.href='personal-data.html'">
+        📋 Персональные данные
+      </button>
+      <button class="nav-item" onclick="location.href='specializations.html'">
+        🔧 Специализация
+      </button>
+      <button class="nav-item" onclick="location.href='help.html'">
+        ❓ Помощь
+      </button>
+    </aside>
+
+    <!-- Content -->
+    <div class="settings-card">
+      <!-- VIEW: PROFILE -->
+      <div class="settings-view active" id="view-profile">
+        <div class="view-header">
+          <div>
+            <div class="view-title">👤 Профиль</div>
+            <div class="view-subtitle">Основная информация о вас</div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="section-title">📝 Личные данные</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Имя <span class="req">*</span></label>
+              <input type="text" id="s-fname" value="Максим" oninput="markUnsaved()">
+            </div>
+            <div class="form-group">
+              <label>Фамилия <span class="req">*</span></label>
+              <input type="text" id="s-lname" value="Гусев" oninput="markUnsaved()">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Отчество</label>
+            <input type="text" value="Андреевич" oninput="markUnsaved()">
+          </div>
+          <div class="form-group">
+            <label>О себе</label>
+            <textarea oninput="markUnsaved()" placeholder="Расскажите о себе...">Опытный мастер с 5-летним стажем. Специализация: электрика, сантехника, монтаж.</textarea>
+            <div class="field-hint">Кратко опишите свой опыт и навыки — это увидят клиенты</div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="section-title">📞 Контакты</div>
+          <div class="form-group">
+            <label>Email <span class="req">*</span></label>
+            <input type="email" id="s-email" value="maksim7892@gmail.com" oninput="validateEmail(this); markUnsaved()">
+            <div class="field-error" id="email-error">⚠ Введите корректный email</div>
+          </div>
+          <div class="form-group">
+            <label>Телефон <span class="req">*</span></label>
+            <input type="tel" id="s-phone" value="+7 (906) 211-88-19" oninput="markUnsaved()">
+            <div class="field-hint">Используется для входа и связи с клиентами</div>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-save" onclick="saveSection('Профиль')">💾 Сохранить изменения</button>
+          <button class="btn-secondary" onclick="location.href='personal-data.html'">📋 Персональные данные →</button>
+        </div>
+      </div>
+
+      <!-- VIEW: SECURITY -->
+      <div class="settings-view" id="view-security">
+        <div class="view-header">
+          <div>
+            <div class="view-title">🔐 Безопасность</div>
+            <div class="view-subtitle">Пароль и защита аккаунта</div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="section-title">🔑 Смена пароля</div>
+          <div class="form-group">
+            <label>Текущий пароль <span class="req">*</span></label>
+            <input type="password" id="pwd-current" placeholder="Введите текущий пароль">
+          </div>
+          <div class="form-group">
+            <label>Новый пароль <span class="req">*</span></label>
+            <input type="password" id="pwd-new" placeholder="Минимум 8 символов" oninput="checkPwdStrength()">
+            <div class="pwd-strength" id="pwd-strength">
+              <div class="pwd-strength-bar"></div>
+              <div class="pwd-strength-bar"></div>
+              <div class="pwd-strength-bar"></div>
+              <div class="pwd-strength-bar"></div>
+            </div>
+            <div class="pwd-strength-text" id="pwd-strength-text"></div>
+          </div>
+          <div class="form-group">
+            <label>Подтверждение пароля <span class="req">*</span></label>
+            <input type="password" id="pwd-confirm" placeholder="Повторите новый пароль">
+            <div class="field-error" id="pwd-match-error">⚠ Пароли не совпадают</div>
+          </div>
+          <button class="btn-save" onclick="changePassword()">🔒 Сменить пароль</button>
+        </div>
+
+        <div class="settings-section">
+          <div class="section-title">🛡️ Двухфакторная аутентификация</div>
+          <div class="toggle-setting">
+            <div class="toggle-info">
+              <div class="toggle-title">
+                2FA через SMS
+                <span class="toggle-badge">РЕКОМЕНДУЕМ</span>
+              </div>
+              <div class="toggle-desc">Дополнительный код при входе в аккаунт</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" onchange="toggle2FA(this, 'SMS')">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-setting">
+            <div class="toggle-info">
+              <div class="toggle-title">2FA через приложение</div>
+              <div class="toggle-desc">Google Authenticator, Authy или другое</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" onchange="toggle2FA(this, 'приложение')">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="section-title">📱 Активные сессии</div>
+          <div class="toggle-setting">
+            <div class="toggle-info">
+              <div class="toggle-title">💻 Chrome · Windows</div>
+              <div class="toggle-desc">Калининград · Сейчас активна</div>
+            </div>
+            <span style="font-size:12px; color:#10b981; font-weight:600;">● Текущая</span>
+          </div>
+          <div class="toggle-setting">
+            <div class="toggle-info">
+              <div class="toggle-title">📱 Safari · iPhone</div>
+              <div class="toggle-desc">Калининград · 2 часа назад</div>
+            </div>
+            <button class="btn-secondary" style="padding:6px 14px; font-size:12px;" onclick="revokeSession(this)">Завершить</button>
+          </div>
+          <button class="btn-secondary" style="margin-top:12px;" onclick="revokeAllSessions()">🚪 Завершить все сессии</button>
+        </div>
+      </div>
+
+      <!-- VIEW: NOTIFICATIONS -->
+      <div class="settings-view" id="view-notifications">
+        <div class="view-header">
+          <div>
+            <div class="view-title">🔔 Уведомления</div>
+            <div class="view-subtitle">Настройте, какие уведомления получать</div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="section-title">📧 Каналы уведомлений</div>
+          <div class="toggle-setting">
+            <div class="toggle-info">
+              <div class="toggle-title">Email уведомления</div>
+              <div class="toggle-desc">Получать письма о новых заказах и событиях</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" checked onchange="markUnsaved()">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-setting">
+            <div class="toggle-info">
+              <div class="toggle-title">SMS уведомления</div>
+              <div class="toggle-desc">Короткие сообщения о срочных заказах</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" checked onchange="markUnsaved()">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-setting">
+            <div class="toggle-info">
+              <div class="toggle-title">Push уведомления</div>
+              <div class="toggle-desc">Всплывающие уведомления в браузере</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" onchange="markUnsaved()">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="section-title">📋 Типы уведомлений</div>
+          <div class="toggle-setting">
+            <div class="toggle-info">
+              <div class="toggle-title">Новые заказы</div>
+              <div class="toggle-desc">Уведомления о подходящих заказах в вашем регионе</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" checked onchange="markUnsaved()">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-setting">
+            <div class="toggle-info">
+              <div class="toggle-title">Сообщения от клиентов</div>
+              <div class="toggle-desc">Новые сообщения в чатах</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" checked onchange="markUnsaved()">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-setting">
+            <div class="toggle-info">
+              <div class="toggle-title">Отзывы клиентов</div>
+              <div class="toggle-desc">Когда клиент оставляет отзыв о вашей работе</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" checked onchange="markUnsaved()">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-setting">
+            <div class="toggle-info">
+              <div class="toggle-title">Платежи и выводы</div>
+              <div class="toggle-desc">Поступления, комиссии, выводы средств</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" checked onchange="markUnsaved()">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-setting">
+            <div class="toggle-info">
+              <div class="toggle-title">Новости платформы</div>
+              <div class="toggle-desc">Обновления, акции, новые функции</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" onchange="markUnsaved()">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-setting">
+            <div class="toggle-info">
+              <div class="toggle-title">Маркетинговые рассылки</div>
+              <div class="toggle-desc">Спецпредложения и партнёрские программы</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" onchange="markUnsaved()">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <button class="btn-save" onclick="saveSection('Уведомления')">💾 Сохранить настройки</button>
+      </div>
+
+      <!-- VIEW: WORK -->
+      <div class="settings-view" id="view-work">
+        <div class="view-header">
+          <div>
+            <div class="view-title">🗺️ Работа</div>
+            <div class="view-subtitle">Где и когда вы работаете</div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="section-title">📍 Местоположение</div>
+          <div class="form-group">
+            <label>Основной город <span class="req">*</span></label>
+            <input type="text" value="Калининград" oninput="markUnsaved()">
+            <div class="field-hint">Город, в котором вы чаще всего работаете</div>
+          </div>
+          <div class="form-group">
+            <label>Радиус работы (км)</label>
+            <select onchange="markUnsaved()">
+              <option>До 10 км</option>
+              <option selected>До 25 км</option>
+              <option>До 50 км</option>
+              <option>По всей области</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="section-title">🕐 Рабочее время</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Начало рабочего дня</label>
+              <input type="time" value="09:00" onchange="markUnsaved()">
+            </div>
+            <div class="form-group">
+              <label>Конец рабочего дня</label>
+              <input type="time" value="18:00" onchange="markUnsaved()">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Рабочие дни</label>
+            <div class="days-grid">
+              <button class="day-btn selected" onclick="toggleDay(this)">Пн</button>
+              <button class="day-btn selected" onclick="toggleDay(this)">Вт</button>
+              <button class="day-btn selected" onclick="toggleDay(this)">Ср</button>
+              <button class="day-btn selected" onclick="toggleDay(this)">Чт</button>
+              <button class="day-btn selected" onclick="toggleDay(this)">Пт</button>
+              <button class="day-btn" onclick="toggleDay(this)">Сб</button>
+              <button class="day-btn" onclick="toggleDay(this)">Вс</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="section-title">⚡ Статус доступности</div>
+          <div class="toggle-setting">
+            <div class="toggle-info">
+              <div class="toggle-title">🟢 Доступен для заказов</div>
+              <div class="toggle-desc">Клиенты видят вас в поиске и могут отправлять заявки</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" checked onchange="toggleAvailability(this)">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-setting">
+            <div class="toggle-info">
+              <div class="toggle-title">⏸️ Автоответчик</div>
+              <div class="toggle-desc">Автоматически отвечать клиентам, когда вы заняты</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" onchange="markUnsaved()">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <button class="btn-save" onclick="saveSection('Рабочие настройки')">💾 Сохранить</button>
+      </div>
+
+      <!-- VIEW: PAYMENTS -->
+      <div class="settings-view" id="view-payments">
+        <div class="view-header">
+          <div>
+            <div class="view-title">💳 Платежи</div>
+            <div class="view-subtitle">Банковские карты и способы вывода</div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="section-title">💰 Способы вывода средств</div>
+          <div class="toggle-setting">
+            <div class="toggle-info">
+              <div class="toggle-title">💳 Visa •••• 4521</div>
+              <div class="toggle-desc">Основная карта · Срок 12/27</div>
+            </div>
+            <span style="font-size:12px; color:#10b981; font-weight:600;">✓ Основная</span>
+          </div>
+          <div class="toggle-setting">
+            <div class="toggle-info">
+              <div class="toggle-title">🏦 Счёт в Сбербанке</div>
+              <div class="toggle-desc">•••• 7842 · БИК 044525225</div>
+            </div>
+            <button class="btn-secondary" style="padding:6px 14px; font-size:12px;" onclick="location.href='404.html'">Удалить</button>
+          </div>
+          <button class="btn-secondary" style="margin-top:12px;" onclick="location.href='404.html'">+ Добавить способ вывода</button>
+        </div>
+
+        <div class="settings-section">
+          <div class="section-title">⚙️ Параметры выплат</div>
+          <div class="form-group">
+            <label>Минимальная сумма вывода</label>
+            <select onchange="markUnsaved()">
+              <option>500 ₽</option>
+              <option selected>1 000 ₽</option>
+              <option>5 000 ₽</option>
+              <option>10 000 ₽</option>
+            </select>
+          </div>
+          <div class="toggle-setting">
+            <div class="toggle-info">
+              <div class="toggle-title">Авто-вывод средств</div>
+              <div class="toggle-desc">Автоматически выводить заработанное каждый понедельник</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" onchange="markUnsaved()">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-save" onclick="saveSection('Платежи')">💾 Сохранить</button>
+          <button class="btn-secondary" onclick="location.href='finance.html'">📊 Перейти к финансам →</button>
+        </div>
+      </div>
+
+      <!-- VIEW: PRIVACY -->
+      <div class="settings-view" id="view-privacy">
+        <div class="view-header">
+          <div>
+            <div class="view-title">🔒 Приватность</div>
+            <div class="view-subtitle">Контроль над вашими данными</div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="section-title">👁️ Видимость профиля</div>
+          <div class="toggle-setting">
+            <div class="toggle-info">
+              <div class="toggle-title">Публичный профиль</div>
+              <div class="toggle-desc">Клиенты могут видеть ваш профиль в поиске</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" checked onchange="markUnsaved()">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-setting">
+            <div class="toggle-info">
+              <div class="toggle-title">Показывать телефон</div>
+              <div class="toggle-desc">Отображать номер телефона в профиле</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" onchange="markUnsaved()">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-setting">
+            <div class="toggle-info">
+              <div class="toggle-title">Показывать email</div>
+              <div class="toggle-desc">Отображать email в профиле</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" onchange="markUnsaved()">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="section-title">📥 Мои данные</div>
+          <p style="font-size:14px; color:#6b7280; margin-bottom:16px;">
+            Вы можете запросить копию всех ваших данных или удалить их.
+          </p>
+          <div class="btn-row">
+            <button class="btn-secondary" onclick="exportData()">📥 Экспорт всех данных</button>
+            <button class="btn-secondary" onclick="location.href='privacy.html'">📄 Политика конфиденциальности</button>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="section-title">⚠️ Опасная зона</div>
+          <div class="danger-zone">
+            <h4>🚨 Удаление аккаунта</h4>
+            <p>Это действие <strong>необратимо</strong>. Все ваши данные, проекты, отзывы и история будут удалены без возможности восстановления.</p>
+            <button class="btn-danger" onclick="openDeleteModal()">🗑️ Удалить мой аккаунт</button>
+          </div>
+        </div>
+
+        <button class="btn-save" onclick="saveSection('Приватность')">💾 Сохранить</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Modal: Delete account -->
+<div class="modal-overlay" id="delete-modal" onclick="if(event.target===this) closeDeleteModal()">
+  <div class="modal">
+    <div class="modal-icon">⚠️</div>
+    <h2>Удалить аккаунт?</h2>
+    <div class="subtitle">
+      Это действие нельзя отменить. Все ваши данные будут удалены навсегда.<br>
+      Для подтверждения введите <strong>УДАЛИТЬ</strong>
+    </div>
+    <input type="text" id="delete-confirm" placeholder="Введите УДАЛИТЬ" oninput="checkDeleteConfirm()">
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeDeleteModal()">Отмена</button>
+      <button class="btn-danger" id="btn-confirm-delete" onclick="confirmDelete()" disabled style="opacity:0.5;">🗑️ Удалить навсегда</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // Burger
+  document.querySelector('.burger').addEventListener('click', function() {
+    document.querySelector('nav').classList.toggle('open');
+  });
+
+  // Закрытие меню профиля
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.profile-dropdown') && !e.target.closest('.header-logo .avatar')) {
+      document.querySelectorAll('.profile-menu').forEach(m => m.classList.remove('show'));
+    }
+  });
+
+  // Toast
+  function showToast(msg, type = '') {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.className = 'toast ' + type + ' show';
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  // Переключение view
+  function switchView(view, btn) {
+    document.querySelectorAll('.settings-view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('view-' + view).classList.add('active');
+    btn.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Индикатор сохранения
+  function markUnsaved() {
+    const ind = document.getElementById('save-indicator');
+    ind.innerHTML = '<span>●</span> Есть несохранённые изменения';
+    ind.className = 'save-indicator unsaved';
+  }
+  function markSaved() {
+    const ind = document.getElementById('save-indicator');
+    ind.innerHTML = '<span>✓</span> Все изменения сохранены';
+    ind.className = 'save-indicator saved';
+  }
+
+  // Сохранение секции
+  function saveSection(name) {
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Сохранение...';
+
+    setTimeout(() => {
+      btn.innerHTML = '✓ Сохранено';
+      btn.style.background = '#10b981';
+      markSaved();
+      showToast('✅ ' + name + ' успешно сохранены', 'success');
+
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+        btn.style.background = '';
+      }, 1500);
+    }, 600);
+  }
+
+  function saveAll() {
+    showToast('💾 Все настройки сохранены', 'success');
+    markSaved();
+  }
+
+  // Валидация email
+  function validateEmail(input) {
+    const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value);
+    const err = document.getElementById('email-error');
+    if (input.value && !valid) {
+      input.classList.add('error');
+      err.classList.add('show');
+    } else {
+      input.classList.remove('error');
+      if (input.value && valid) input.classList.add('success');
+      err.classList.remove('show');
+    }
+  }
+
+  // Сила пароля
+  function checkPwdStrength() {
+    const pwd = document.getElementById('pwd-new').value;
+    let score = 0;
+    if (pwd.length >= 8) score++;
+    if (pwd.length >= 12) score++;
+    if (/[A-ZА-Я]/.test(pwd) && /[a-zа-я]/.test(pwd)) score++;
+    if (/\d/.test(pwd)) score++;
+    if (/[^A-Za-zА-Яа-я0-9]/.test(pwd)) score++;
+
+    const bars = document.querySelectorAll('#pwd-strength .pwd-strength-bar');
+    const text = document.getElementById('pwd-strength-text');
+    bars.forEach(b => b.style.background = '#e5e7eb');
+
+    if (pwd.length === 0) {
+      text.textContent = '';
+      return;
+    }
+
+    let level = 0, label = '', cls = '';
+    if (score <= 1) { level = 1; label = '⚠ Слабый пароль'; cls = 'pwd-weak'; }
+    else if (score <= 2) { level = 2; label = '⚠ Средний пароль'; cls = 'pwd-medium'; }
+    else if (score <= 3) { level = 3; label = '✓ Хороший пароль'; cls = 'pwd-medium'; }
+    else { level = 4; label = '✓✓ Отличный пароль'; cls = 'pwd-strong'; }
+
+    const color = cls === 'pwd-weak' ? '#ef4444' : cls === 'pwd-medium' ? '#f59e0b' : '#10b981';
+    for (let i = 0; i < level; i++) bars[i].style.background = color;
+    text.textContent = label;
+    text.className = 'pwd-strength-text ' + cls;
+  }
+
+  // Смена пароля
+  function changePassword() {
+    const current = document.getElementById('pwd-current').value;
+    const newPwd = document.getElementById('pwd-new').value;
+    const confirm = document.getElementById('pwd-confirm').value;
+    const err = document.getElementById('pwd-match-error');
+
+    if (!current || !newPwd || !confirm) {
+      showToast('⚠ Заполните все поля', 'error');
+      return;
+    }
+    if (newPwd.length < 8) {
+      showToast('⚠ Пароль должен быть не менее 8 символов', 'error');
+      return;
+    }
+    if (newPwd !== confirm) {
+      err.classList.add('show');
+      document.getElementById('pwd-confirm').classList.add('error');
+      showToast('⚠ Пароли не совпадают', 'error');
+      return;
+    }
+    err.classList.remove('show');
+    document.getElementById('pwd-confirm').classList.remove('error');
+
+    showToast('🔒 Пароль успешно изменён', 'success');
+    document.getElementById('pwd-current').value = '';
+    document.getElementById('pwd-new').value = '';
+    document.getElementById('pwd-confirm').value = '';
+    document.querySelectorAll('#pwd-strength .pwd-strength-bar').forEach(b => b.style.background = '#e5e7eb');
+    document.getElementById('pwd-strength-text').textContent = '';
+  }
+
+  // 2FA
+  function toggle2FA(checkbox, method) {
+    if (checkbox.checked) {
+      showToast('🛡️ 2FA через ' + method + ' включена', 'success');
+    } else {
+      showToast('🛡️ 2FA через ' + method + ' отключена', 'info');
+    }
+  }
+
+  // Сессии
+  function revokeSession(btn) {
+    const setting = btn.closest('.toggle-setting');
+    setting.style.opacity = '0.5';
+    btn.disabled = true;
+    btn.textContent = '✓ Завершена';
+    showToast('🚪 Сессия завершена', 'success');
+  }
+
+  function revokeAllSessions() {
+    if (confirm('Завершить все сессии кроме текущей?\n\nВам придётся войти заново на других устройствах.')) {
+      showToast('🚪 Все сессии кроме текущей завершены', 'success');
+    }
+  }
+
+  // Рабочие дни
+  function toggleDay(btn) {
+    btn.classList.toggle('selected');
+    markUnsaved();
+  }
+
+  // Доступность
+  function toggleAvailability(checkbox) {
+    if (checkbox.checked) {
+      showToast('🟢 Вы снова доступны для заказов', 'success');
+    } else {
+      showToast('⏸️ Вы скрыты из поиска заказов', 'info');
+    }
+  }
+
+  // Экспорт данных
+  function exportData() {
+    showToast('📥 Формируем архив с вашими данными...');
+    setTimeout(() => {
+      showToast('✓ Данные готовы к скачиванию', 'success');
+    }, 1500);
+  }
+
+  // Удаление аккаунта
+  function openDeleteModal() {
+    document.getElementById('delete-modal').classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeDeleteModal() {
+    document.getElementById('delete-modal').classList.remove('show');
+    document.body.style.overflow = '';
+    document.getElementById('delete-confirm').value = '';
+    document.getElementById('btn-confirm-delete').disabled = true;
+    document.getElementById('btn-confirm-delete').style.opacity = '0.5';
+  }
+  function checkDeleteConfirm() {
+    const val = document.getElementById('delete-confirm').value;
+    const btn = document.getElementById('btn-confirm-delete');
+    if (val === 'УДАЛИТЬ') {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.style.background = '#dc2626';
+    } else {
+      btn.disabled = true;
+      btn.style.opacity = '0.5';
+      btn.style.background = '';
+    }
+  }
+  function confirmDelete() {
+    showToast('🗑️ Аккаунт удалён. Перенаправление...', 'error');
+    setTimeout(() => {
+      location.href = 'login.html';
+    }, 1500);
+  }
+
+  // Закрытие модалки по Esc
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeDeleteModal();
+  });
+</script>
+
+</body>
+</html>

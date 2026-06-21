@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REMPRO — Панели</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f7fa; color: #1a1a1a; min-height: 100vh;
+  }
+
+  header {
+    display: flex; align-items: center; padding: 12px 24px;
+    background: #fff; border-bottom: 1px solid #e8e8e8; gap: 16px; position: relative;
+  }
+  .header-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 600; font-size: 16px; white-space: nowrap;
+  }
+  .header-logo .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 13px; font-weight: 600;
+    cursor: pointer;
+  }
+  nav {
+    display: flex; align-items: center; gap: 20px; flex: 1; overflow-x: auto;
+  }
+  nav a { text-decoration: none; color: #333; font-size: 14px; white-space: nowrap; }
+  nav a:hover, nav a.active { color: #3b82f6; }
+
+  .header-actions { display: flex; align-items: center; gap: 16px; }
+  .btn-create {
+    background: #3b82f6; border: none; color: #fff;
+    padding: 8px 20px; border-radius: 8px; font-size: 14px;
+    cursor: pointer; white-space: nowrap; font-weight: 500;
+  }
+  .btn-create:hover { background: #2563eb; }
+
+  .dropdown { position: relative; }
+  .dropdown-toggle { cursor: pointer; }
+  .dropdown-menu {
+    display: none; position: absolute; top: 100%; right: 0;
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1); min-width: 220px;
+    z-index: 1000; padding: 8px 0; margin-top: 8px;
+  }
+  .dropdown:hover .dropdown-menu { display: block; }
+  .dropdown-menu a {
+    display: block; padding: 10px 16px; font-size: 14px;
+    color: #333; text-decoration: none; white-space: nowrap;
+  }
+  .dropdown-menu a:hover { background: #f5f7fa; color: #3b82f6; }
+
+  .profile-dropdown { position: relative; }
+  .profile-menu {
+    display: none; position: absolute; top: 100%; right: 0;
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1); min-width: 200px;
+    z-index: 1000; padding: 8px 0; margin-top: 8px;
+  }
+  .profile-menu.show { display: block; }
+  .profile-menu a {
+    display: block; padding: 10px 16px; font-size: 14px;
+    color: #333; text-decoration: none;
+  }
+  .profile-menu a:hover { background: #f5f7fa; color: #3b82f6; }
+  .profile-menu .divider { height: 1px; background: #e8e8e8; margin: 8px 0; }
+  .profile-menu .logout { color: #ef4444; }
+  .profile-menu .logout:hover { background: #fee2e2; color: #dc2626; }
+
+  .burger {
+    display: none; background: none; border: none;
+    font-size: 24px; cursor: pointer; color: #333;
+  }
+
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 20px 60px;
+  }
+
+  .page-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 24px; flex-wrap: wrap; gap: 16px;
+  }
+  .page-title { font-size: 28px; font-weight: 700; }
+  .panel-counter {
+    background: #eff6ff; color: #3b82f6;
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 13px; font-weight: 600;
+  }
+
+  .tabs {
+    display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap;
+  }
+  .tab {
+    padding: 10px 20px;
+    border-radius: 10px;
+    background: #fff;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .tab:hover { background: #f9fafb; }
+  .tab.active {
+    background: #3b82f6;
+    color: #fff;
+    border-color: #3b82f6;
+  }
+  .tab .count {
+    background: rgba(0,0,0,0.08);
+    padding: 1px 8px; border-radius: 10px;
+    font-size: 12px;
+  }
+  .tab.active .count { background: rgba(255,255,255,0.3); }
+
+  .panels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 20px;
+  }
+  .panel-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+  }
+  .panel-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  }
+  .panel-card.hidden { display: none; }
+  .panel-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 20px;
+  }
+  .panel-title {
+    font-size: 18px; font-weight: 600;
+  }
+  .panel-subtitle {
+    font-size: 13px; color: #999; margin-top: 4px;
+  }
+  .panel-type {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    background: #dbeafe;
+    color: #2563eb;
+  }
+  .panel-type.finance { background: #d1fae5; color: #065f46; }
+  .panel-type.team { background: #fef3c7; color: #92400e; }
+  .panel-type.category { background: #ede9fe; color: #6d28d9; }
+  .panel-type.activity { background: #fee2e2; color: #991b1b; }
+  .panel-type.calendar { background: #cffafe; color: #155e75; }
+
+  .panel-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .panel-stat {
+    background: #f9fafb;
+    padding: 16px;
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .panel-stat:hover {
+    background: #eff6ff;
+    transform: translateY(-2px);
+  }
+  .panel-stat-value {
+    font-size: 28px; font-weight: 700; color: #3b82f6;
+  }
+  .panel-stat-label {
+    font-size: 12px; color: #666; margin-top: 4px;
+  }
+
+  .panel-chart {
+    height: 120px;
+    background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%);
+    border-radius: 10px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    padding: 12px;
+  }
+  .chart-bar {
+    width: 30px;
+    background: linear-gradient(180deg, #3b82f6, #1e40af);
+    border-radius: 6px 6px 0 0;
+    transition: all 0.3s;
+    cursor: pointer;
+    position: relative;
+  }
+  .chart-bar:hover {
+    transform: scaleY(1.05);
+    background: linear-gradient(180deg, #60a5fa, #2563eb);
+  }
+  .chart-bar:hover::after {
+    content: attr(data-value);
+    position: absolute;
+    top: -24px; left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a1a; color: #fff;
+    padding: 3px 8px; border-radius: 4px;
+    font-size: 11px; font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .panel-activity {
+    margin-bottom: 16px;
+    padding: 12px;
+    background: #f9fafb;
+    border-radius: 10px;
+    font-size: 13px;
+  }
+  .activity-item {
+    padding: 8px 0;
+    border-bottom: 1px solid #e5e7eb;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .activity-item:last-child { border-bottom: none; }
+  .activity-item:hover { color: #3b82f6; }
+
+  .panel-footer {
+    display: flex; gap: 10px;
+  }
+  .btn-panel {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-panel-primary {
+    background: #3b82f6; color: #fff;
+  }
+  .btn-panel-primary:hover { background: #2563eb; }
+  .btn-panel-secondary {
+    background: #fff; color: #3b82f6;
+    border: 1px solid #3b82f6;
+  }
+  .btn-panel-secondary:hover { background: #eff6ff; }
+
+  .empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    background: #fff;
+    border-radius: 16px;
+    display: none;
+  }
+  .empty-state.show { display: block; }
+  .empty-state .icon { font-size: 64px; margin-bottom: 16px; }
+  .empty-state h3 { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+  .empty-state p { font-size: 14px; color: #666; }
+
+  .toast {
+    position: fixed; bottom: 20px; right: 20px;
+    background: #1a1a1a; color: #fff;
+    padding: 14px 20px;
+    border-radius: 10px;
+    font-size: 14px; font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    transform: translateY(100px); opacity: 0;
+    transition: all 0.3s;
+    z-index: 2000;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  @media (max-width: 768px) {
+    nav { display: none; }
+    nav.open {
+      display: flex; flex-direction: column;
+      position: absolute; top: 56px; left: 0; right: 0;
+      background: #fff; padding: 20px;
+      border-bottom: 1px solid #e8e8e8; z-index: 100; gap: 14px;
+    }
+    .burger { display: block; }
+    .panels-grid { grid-template-columns: 1fr; }
+    .dropdown-menu, .profile-menu {
+      position: fixed; top: 70px; right: 20px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="burger" onclick="document.querySelector('nav').classList.toggle('open')">☰</button>
+  <div class="header-logo">
+    <div class="avatar" onclick="document.querySelector('.profile-menu').classList.toggle('show')">МГ</div>
+    <span>Максим Гусев</span>
+  </div>
+  <nav>
+    <a href="dashboard.html">Рабочий стол</a>
+    <a href="projects.html">Проекты</a>
+    <a href="search.html">Поиск</a>
+    <a href="messages.html">Сообщения</a>
+    <a href="notifications.html">Уведомления</a>
+    <a href="finance.html">Финансы</a>
+    <div class="dropdown">
+      <a href="#" class="dropdown-toggle">Ещё ▾</a>
+      <div class="dropdown-menu">
+        <a href="calendar.html">📅 Календарь</a>
+        <a href="documents.html">📄 Документы</a>
+        <a href="reviews.html">⭐ Отзывы</a>
+        <a href="portfolio.html">🖼️ Портфолио</a>
+        <a href="workers.html">👷 Рабочие</a>
+        <a href="panels.html" class="active">📊 Панели</a>
+        <a href="reports.html">📈 Отчёты</a>
+        <a href="specializations.html">🔧 Специализация</a>
+        <a href="admin.html">⚙️ Администратор</a>
+        <a href="manager.html">👔 Менеджер</a>
+      </div>
+    </div>
+  </nav>
+  <div class="header-actions">
+    <button class="btn-create" onclick="location.href='admin-settings.html'">+ Создать панель</button>
+    <div class="profile-dropdown">
+      <div class="avatar" onclick="document.querySelector('.profile-menu').classList.toggle('show')">МГ</div>
+      <div class="profile-menu">
+        <a href="profile.html">👤 Мой профиль</a>
+        <a href="personal-data.html">📋 Персональные данные</a>
+        <a href="settings.html">⚙️ Настройки</a>
+        <a href="help.html">❓ Помощь</a>
+        <div class="divider"></div>
+        <a href="login.html" class="logout">🚪 Выйти</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Панели управления</h1>
+    </div>
+    <span class="panel-counter" id="panel-counter">6 панелей</span>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-filter="all" onclick="filterPanels(this, 'all')">
+      Все панели <span class="count" id="count-all">6</span>
+    </div>
+    <div class="tab" data-filter="project" onclick="filterPanels(this, 'project')">
+      Мои проекты <span class="count" id="count-project">2</span>
+    </div>
+    <div class="tab" data-filter="finance" onclick="filterPanels(this, 'finance')">
+      Финансы <span class="count" id="count-finance">1</span>
+    </div>
+    <div class="tab" data-filter="performance" onclick="filterPanels(this, 'performance')">
+      Производительность <span class="count" id="count-performance">1</span>
+    </div>
+    <div class="tab" data-filter="analytics" onclick="filterPanels(this, 'analytics')">
+      Аналитика <span class="count" id="count-analytics">2</span>
+    </div>
+  </div>
+
+  <div class="panels-grid" id="panels-grid">
+    <!-- 1. Общая статистика -->
+    <div class="panel-card" data-category="project">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Общая статистика</div>
+          <div class="panel-subtitle">Обновлено 5 минут назад</div>
+        </div>
+        <span class="panel-type">Основная</span>
+      </div>
+      <div class="panel-stats">
+        <div class="panel-stat" onclick="location.href='projects.html'" title="Перейти к проектам">
+          <div class="panel-stat-value">12</div>
+          <div class="panel-stat-label">Активных проектов</div>
+        </div>
+        <div class="panel-stat" onclick="location.href='projects.html'" title="Завершённые проекты">
+          <div class="panel-stat-value">147</div>
+          <div class="panel-stat-label">Завершено</div>
+        </div>
+        <div class="panel-stat" onclick="location.href='finance.html'" title="Финансы">
+          <div class="panel-stat-value">285K ₽</div>
+          <div class="panel-stat-label">Доход</div>
+        </div>
+        <div class="panel-stat" onclick="location.href='reviews.html'" title="Отзывы">
+          <div class="panel-stat-value">4.8</div>
+          <div class="panel-stat-label">Рейтинг</div>
+        </div>
+      </div>
+      <div class="panel-footer">
+        <button class="btn-panel btn-panel-primary" onclick="location.href='dashboard.html'">Открыть</button>
+        <button class="btn-panel btn-panel-secondary" onclick="location.href='admin-settings.html'">Настроить</button>
+      </div>
+    </div>
+
+    <!-- 2. Финансовая панель -->
+    <div class="panel-card" data-category="finance">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Финансовая панель</div>
+          <div class="panel-subtitle">Обновлено 1 час назад</div>
+        </div>
+        <span class="panel-type finance">Финансы</span>
+      </div>
+      <div class="panel-chart">
+        <div class="chart-bar" style="height: 60%" data-value="28K ₽" title="Янв"></div>
+        <div class="chart-bar" style="height: 80%" data-value="38K ₽" title="Фев"></div>
+        <div class="chart-bar" style="height: 45%" data-value="21K ₽" title="Мар"></div>
+        <div class="chart-bar" style="height: 90%" data-value="43K ₽" title="Апр"></div>
+        <div class="chart-bar" style="height: 70%" data-value="33K ₽" title="Май"></div>
+        <div class="chart-bar" style="height: 85%" data-value="40K ₽" title="Июн"></div>
+        <div class="chart-bar" style="height: 65%" data-value="31K ₽" title="Июл"></div>
+      </div>
+      <div class="panel-stats">
+        <div class="panel-stat" onclick="location.href='reports.html'" title="Отчёт о доходах">
+          <div class="panel-stat-value">+18%</div>
+          <div class="panel-stat-label">Рост дохода</div>
+        </div>
+        <div class="panel-stat" onclick="location.href='finance.html'" title="Перейти к финансам">
+          <div class="panel-stat-value">42K ₽</div>
+          <div class="panel-stat-label">В этом месяце</div>
+        </div>
+      </div>
+      <div class="panel-footer">
+        <button class="btn-panel btn-panel-primary" onclick="location.href='finance.html'">Открыть</button>
+        <button class="btn-panel btn-panel-secondary" onclick="location.href='admin-settings.html'">Настроить</button>
+      </div>
+    </div>
+
+    <!-- 3. Производительность команды -->
+    <div class="panel-card" data-category="performance">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Производительность команды</div>
+          <div class="panel-subtitle">Обновлено 2 часа назад</div>
+        </div>
+        <span class="panel-type team">Команда</span>
+      </div>
+      <div class="panel-stats">
+        <div class="panel-stat" onclick="location.href='workers.html'" title="Список рабочих">
+          <div class="panel-stat-value">8</div>
+          <div class="panel-stat-label">Рабочих</div>
+        </div>
+        <div class="panel-stat" onclick="location.href='reports.html'" title="Отчёт о производительности">
+          <div class="panel-stat-value">94%</div>
+          <div class="panel-stat-label">Выполнено в срок</div>
+        </div>
+        <div class="panel-stat" onclick="location.href='manager.html'" title="Панель менеджера">
+          <div class="panel-stat-value">3.2</div>
+          <div class="panel-stat-label">Задач на человека</div>
+        </div>
+        <div class="panel-stat" onclick="location.href='projects.html'" title="Проекты в работе">
+          <div class="panel-stat-value">12</div>
+          <div class="panel-stat-label">В работе</div>
+        </div>
+      </div>
+      <div class="panel-footer">
+        <button class="btn-panel btn-panel-primary" onclick="location.href='workers.html'">Открыть</button>
+        <button class="btn-panel btn-panel-secondary" onclick="location.href='admin-settings.html'">Настроить</button>
+      </div>
+    </div>
+
+    <!-- 4. Задачи по категориям -->
+    <div class="panel-card" data-category="analytics">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Задачи по категориям</div>
+          <div class="panel-subtitle">Обновлено 3 часа назад</div>
+        </div>
+        <span class="panel-type category">Категории</span>
+      </div>
+      <div class="panel-stats">
+        <div class="panel-stat" onclick="location.href='search.html'" title="Заказы: Электрика">
+          <div class="panel-stat-value">24</div>
+          <div class="panel-stat-label">⚡ Электрика</div>
+        </div>
+        <div class="panel-stat" onclick="location.href='search.html'" title="Заказы: Сантехника">
+          <div class="panel-stat-value">18</div>
+          <div class="panel-stat-label">🚿 Сантехника</div>
+        </div>
+        <div class="panel-stat" onclick="location.href='search.html'" title="Заказы: Монтаж">
+          <div class="panel-stat-value">15</div>
+          <div class="panel-stat-label">🔧 Монтаж</div>
+        </div>
+        <div class="panel-stat" onclick="location.href='search.html'" title="Заказы: Клининг">
+          <div class="panel-stat-value">9</div>
+          <div class="panel-stat-label">🧹 Клининг</div>
+        </div>
+      </div>
+      <div class="panel-footer">
+        <button class="btn-panel btn-panel-primary" onclick="location.href='reports.html'">Открыть</button>
+        <button class="btn-panel btn-panel-secondary" onclick="location.href='admin-settings.html'">Настроить</button>
+      </div>
+    </div>
+
+    <!-- 5. Последняя активность -->
+    <div class="panel-card" data-category="project">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Последняя активность</div>
+          <div class="panel-subtitle">Обновлено только что</div>
+        </div>
+        <span class="panel-type activity">Активность</span>
+      </div>
+      <div class="panel-activity">
+        <div class="activity-item" onclick="location.href='projects.html'">✅ <strong>Иван Сидоров</strong> завершил проект #PRJ-2026-002</div>
+        <div class="activity-item" onclick="location.href='search.html'">🆕 <strong>Новый заказ</strong> на монтаж вентиляции</div>
+        <div class="activity-item" onclick="location.href='reviews.html'">⭐ <strong>Отзыв 5★</strong> от ООО «Стройка»</div>
+      </div>
+      <div class="panel-footer">
+        <button class="btn-panel btn-panel-primary" onclick="location.href='notifications.html'">Открыть</button>
+        <button class="btn-panel btn-panel-secondary" onclick="location.href='admin-settings.html'">Настроить</button>
+      </div>
+    </div>
+
+    <!-- 6. Календарь проектов -->
+    <div class="panel-card" data-category="analytics">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Календарь проектов</div>
+          <div class="panel-subtitle">Обновлено сегодня</div>
+        </div>
+        <span class="panel-type calendar">Календарь</span>
+      </div>
+      <div class="panel-stats">
+        <div class="panel-stat" onclick="location.href='calendar.html'" title="Задачи на сегодня">
+          <div class="panel-stat-value">5</div>
+          <div class="panel-stat-label">Сегодня</div>
+        </div>
+        <div class="panel-stat" onclick="location.href='calendar.html'" title="Задачи на неделю">
+          <div class="panel-stat-value">8</div>
+          <div class="panel-stat-label">Эта неделя</div>
+        </div>
+        <div class="panel-stat" onclick="location.href='projects.html'" title="Просроченные проекты">
+          <div class="panel-stat-value" style="color:#ef4444;">3</div>
+          <div class="panel-stat-label">Просрочено</div>
+        </div>
+        <div class="panel-stat" onclick="location.href='calendar.html'" title="Задачи на месяц">
+          <div class="panel-stat-value">22</div>
+          <div class="panel-stat-label">В этом месяце</div>
+        </div>
+      </div>
+      <div class="panel-footer">
+        <button class="btn-panel btn-panel-primary" onclick="location.href='calendar.html'">Открыть</button>
+        <button class="btn-panel btn-panel-secondary" onclick="location.href='admin-settings.html'">Настроить</button>
+      </div>
+    </div>
+
+    <div class="empty-state" id="empty-state">
+      <div class="icon">📊</div>
+      <h3>Нет панелей в этой категории</h3>
+      <p>Попробуйте выбрать другую вкладку</p>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // Burger
+  document.querySelector('.burger').addEventListener('click', function() {
+    document.querySelector('nav').classList.toggle('open');
+  });
+
+  // Закрытие меню профиля
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.profile-dropdown')) {
+      document.querySelectorAll('.profile-menu').forEach(m => m.classList.remove('show'));
+    }
+  });
+
+  // Фильтрация панелей
+  function filterPanels(tab, category) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+
+    const cards = document.querySelectorAll('.panel-card');
+    let visible = 0;
+    cards.forEach(card => {
+      if (category === 'all' || card.dataset.category === category) {
+        card.classList.remove('hidden');
+        visible++;
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+
+    document.getElementById('empty-state').classList.toggle('show', visible === 0);
+    document.getElementById('panel-counter').textContent = visible + ' ' + pluralize(visible, 'панель', 'панели', 'панелей');
+  }
+
+  function pluralize(n, one, few, many) {
+    const mod10 = n % 10, mod100 = n % 100;
+    if (mod100 >= 11 && mod100 <= 19) return many;
+    if (mod10 === 1) return one;
+    if (mod10 >= 2 && mod10 <= 4) return few;
+    return many;
+  }
+
+  // Toast
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  // Клик по столбцам диаграммы
+  document.querySelectorAll('.chart-bar').forEach(bar => {
+    bar.addEventListener('click', () => {
+      const value = bar.getAttribute('data-value');
+      const month = bar.getAttribute('title');
+      showToast('📊 ' + month + ': ' + value);
+    });
+  });
+</script>
+
+</body>
+</html>

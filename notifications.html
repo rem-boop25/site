@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REMPRO — Уведомления</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f7fa; color: #1a1a1a; min-height: 100vh;
+  }
+
+  header {
+    display: flex; align-items: center; padding: 12px 24px;
+    background: #fff; border-bottom: 1px solid #e8e8e8; gap: 16px; position: relative;
+  }
+  .header-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 600; font-size: 16px; white-space: nowrap;
+  }
+  .header-logo .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 13px; font-weight: 600;
+    cursor: pointer;
+  }
+  nav {
+    display: flex; align-items: center; gap: 20px; flex: 1; overflow-x: auto;
+  }
+  nav a { text-decoration: none; color: #333; font-size: 14px; white-space: nowrap; }
+  nav a:hover, nav a.active { color: #3b82f6; }
+
+  .header-actions { display: flex; align-items: center; gap: 16px; }
+  .btn-create {
+    background: #3b82f6; border: none; color: #fff;
+    padding: 8px 20px; border-radius: 8px; font-size: 14px;
+    cursor: pointer; white-space: nowrap; font-weight: 500;
+  }
+  .btn-create:hover { background: #2563eb; }
+
+  .dropdown { position: relative; }
+  .dropdown-toggle { cursor: pointer; }
+  .dropdown-menu {
+    display: none; position: absolute; top: 100%; right: 0;
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1); min-width: 220px;
+    z-index: 1000; padding: 8px 0; margin-top: 8px;
+  }
+  .dropdown:hover .dropdown-menu { display: block; }
+  .dropdown-menu a {
+    display: block; padding: 10px 16px; font-size: 14px;
+    color: #333; text-decoration: none; white-space: nowrap;
+  }
+  .dropdown-menu a:hover { background: #f5f7fa; color: #3b82f6; }
+
+  .profile-dropdown { position: relative; }
+  .profile-menu {
+    display: none; position: absolute; top: 100%; right: 0;
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1); min-width: 200px;
+    z-index: 1000; padding: 8px 0; margin-top: 8px;
+  }
+  .profile-menu.show { display: block; }
+  .profile-menu a {
+    display: block; padding: 10px 16px; font-size: 14px;
+    color: #333; text-decoration: none;
+  }
+  .profile-menu a:hover { background: #f5f7fa; color: #3b82f6; }
+  .profile-menu .divider { height: 1px; background: #e8e8e8; margin: 8px 0; }
+  .profile-menu .logout { color: #ef4444; }
+  .profile-menu .logout:hover { background: #fee2e2; color: #dc2626; }
+
+  .burger {
+    display: none; background: none; border: none;
+    font-size: 24px; cursor: pointer; color: #333;
+  }
+
+  main {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 32px 20px 60px;
+  }
+
+  .page-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+  }
+  .page-title { font-size: 28px; font-weight: 700; }
+  .unread-counter {
+    background: #eff6ff; color: #3b82f6;
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 13px; font-weight: 600;
+  }
+  .unread-counter.empty {
+    background: #f3f4f6; color: #9ca3af;
+  }
+
+  .notif-tabs {
+    display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap;
+  }
+  .notif-tab {
+    padding: 10px 20px;
+    border-radius: 10px;
+    background: #fff;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .notif-tab:hover { background: #f9fafb; }
+  .notif-tab.active {
+    background: #3b82f6;
+    color: #fff;
+    border-color: #3b82f6;
+  }
+  .notif-tab .count {
+    background: rgba(0,0,0,0.08);
+    padding: 1px 8px; border-radius: 10px;
+    font-size: 12px;
+  }
+  .notif-tab.active .count { background: rgba(255,255,255,0.3); }
+
+  .notif-actions-top {
+    display: flex; gap: 8px; margin-bottom: 16px;
+  }
+  .btn-action-top {
+    padding: 8px 16px; border-radius: 8px;
+    background: #fff; border: 1px solid #ddd;
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-action-top:hover { background: #f9fafb; border-color: #3b82f6; color: #3b82f6; }
+  .btn-action-top.danger:hover { border-color: #ef4444; color: #ef4444; }
+
+  .notif-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .notif-item {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    transition: all 0.2s;
+    position: relative;
+    cursor: pointer;
+  }
+  .notif-item:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  }
+  .notif-item.unread {
+    border-left: 4px solid #3b82f6;
+    background: #f8fbff;
+  }
+  .notif-item.read {
+    opacity: 0.7;
+  }
+  .notif-item.hidden { display: none; }
+  .notif-item.removing {
+    animation: slideOut 0.3s forwards;
+  }
+  @keyframes slideOut {
+    to { opacity: 0; transform: translateX(100px); height: 0; padding: 0; margin: 0; overflow: hidden; }
+  }
+
+  .notif-icon {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+  .notif-icon.order { background: #dbeafe; }
+  .notif-icon.review { background: #d1fae5; }
+  .notif-icon.payment { background: #fef3c7; }
+  .notif-icon.system { background: #f3f4f6; }
+  .notif-icon.urgent { background: #fee2e2; }
+  .notif-icon.message { background: #ede9fe; }
+
+  .notif-content { flex: 1; min-width: 0; }
+  .notif-title {
+    font-size: 15px; font-weight: 600; margin-bottom: 4px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .notif-new-badge {
+    background: #3b82f6; color: #fff;
+    font-size: 10px; padding: 2px 6px;
+    border-radius: 4px; font-weight: 700;
+  }
+  .notif-text {
+    font-size: 14px; color: #666; line-height: 1.5; margin-bottom: 8px;
+  }
+  .notif-time {
+    font-size: 12px; color: #999;
+  }
+  .notif-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+  .btn-notif {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    border: none;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .btn-notif-primary { background: #3b82f6; color: #fff; }
+  .btn-notif-primary:hover { background: #2563eb; }
+  .btn-notif-secondary { background: #f3f4f6; color: #374151; }
+  .btn-notif-secondary:hover { background: #e5e7eb; }
+  .btn-notif-danger { background: #fee2e2; color: #dc2626; }
+  .btn-notif-danger:hover { background: #fecaca; }
+
+  .notif-close {
+    position: absolute; top: 16px; right: 16px;
+    background: transparent; border: none;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; color: #9ca3af;
+    opacity: 0; transition: all 0.2s;
+  }
+  .notif-item:hover .notif-close { opacity: 1; }
+  .notif-close:hover { background: #f3f4f6; color: #ef4444; }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: #fff;
+    border-radius: 16px;
+  }
+  .empty-state .icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+  }
+  .empty-state h3 {
+    font-size: 20px; font-weight: 600; margin-bottom: 8px;
+  }
+  .empty-state p {
+    font-size: 14px; color: #666;
+  }
+
+  /* Toast уведомления */
+  .toast {
+    position: fixed; bottom: 20px; right: 20px;
+    background: #1a1a1a; color: #fff;
+    padding: 14px 20px;
+    border-radius: 10px;
+    font-size: 14px; font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    transform: translateY(100px); opacity: 0;
+    transition: all 0.3s;
+    z-index: 2000;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  @media (max-width: 768px) {
+    nav { display: none; }
+    nav.open {
+      display: flex; flex-direction: column;
+      position: absolute; top: 56px; left: 0; right: 0;
+      background: #fff; padding: 20px;
+      border-bottom: 1px solid #e8e8e8; z-index: 100; gap: 14px;
+    }
+    .burger { display: block; }
+    .dropdown-menu, .profile-menu {
+      position: fixed; top: 70px; right: 20px;
+    }
+    .page-header { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="burger" onclick="document.querySelector('nav').classList.toggle('open')">☰</button>
+  <div class="header-logo">
+    <div class="avatar" onclick="document.querySelector('.profile-menu').classList.toggle('show')">МГ</div>
+    <span>Максим Гусев</span>
+  </div>
+  <nav>
+    <a href="dashboard.html">Рабочий стол</a>
+    <a href="projects.html">Проекты</a>
+    <a href="search.html">Поиск</a>
+    <a href="messages.html">Сообщения</a>
+    <a href="notifications.html" class="active">Уведомления</a>
+    <a href="finance.html">Финансы</a>
+    <div class="dropdown">
+      <a href="#" class="dropdown-toggle">Ещё ▾</a>
+      <div class="dropdown-menu">
+        <a href="calendar.html">📅 Календарь</a>
+        <a href="documents.html">📄 Документы</a>
+        <a href="reviews.html">⭐ Отзывы</a>
+        <a href="portfolio.html">🖼️ Портфолио</a>
+        <a href="workers.html">👷 Рабочие</a>
+        <a href="panels.html">📊 Панели</a>
+        <a href="reports.html">📈 Отчёты</a>
+        <a href="specializations.html">🔧 Специализация</a>
+        <a href="admin.html">⚙️ Администратор</a>
+        <a href="manager.html">👔 Менеджер</a>
+      </div>
+    </div>
+  </nav>
+  <div class="header-actions">
+    <button class="btn-create" onclick="markAllRead()">✓ Отметить все</button>
+    <div class="profile-dropdown">
+      <div class="avatar" onclick="document.querySelector('.profile-menu').classList.toggle('show')">МГ</div>
+      <div class="profile-menu">
+        <a href="profile.html">👤 Мой профиль</a>
+        <a href="personal-data.html">📋 Персональные данные</a>
+        <a href="settings.html">⚙️ Настройки</a>
+        <a href="help.html">❓ Помощь</a>
+        <div class="divider"></div>
+        <a href="login.html" class="logout">🚪 Выйти</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Уведомления</h1>
+    </div>
+    <span class="unread-counter" id="unread-counter">5 новых</span>
+  </div>
+
+  <div class="notif-tabs">
+    <div class="notif-tab active" data-filter="all" onclick="filterNotif(this, 'all')">
+      Все <span class="count" id="count-all">8</span>
+    </div>
+    <div class="notif-tab" data-filter="order" onclick="filterNotif(this, 'order')">
+      Заказы <span class="count" id="count-order">3</span>
+    </div>
+    <div class="notif-tab" data-filter="review" onclick="filterNotif(this, 'review')">
+      Отзывы <span class="count" id="count-review">1</span>
+    </div>
+    <div class="notif-tab" data-filter="payment" onclick="filterNotif(this, 'payment')">
+      Платежи <span class="count" id="count-payment">1</span>
+    </div>
+    <div class="notif-tab" data-filter="system" onclick="filterNotif(this, 'system')">
+      Системные <span class="count" id="count-system">2</span>
+    </div>
+    <div class="notif-tab" data-filter="message" onclick="filterNotif(this, 'message')">
+      Сообщения <span class="count" id="count-message">1</span>
+    </div>
+  </div>
+
+  <div class="notif-actions-top">
+    <button class="btn-action-top" onclick="markAllRead()">✓ Отметить все как прочитанные</button>
+    <button class="btn-action-top danger" onclick="clearAllRead()">🗑️ Удалить прочитанные</button>
+    <button class="btn-action-top" onclick="location.href='settings.html'">⚙️ Настройки уведомлений</button>
+  </div>
+
+  <div class="notif-list" id="notif-list">
+    <div class="notif-item unread" data-category="order" onclick="markAsRead(this)">
+      <div class="notif-icon urgent">🔔</div>
+      <div class="notif-content">
+        <div class="notif-title">
+          Срочный новый заказ!
+          <span class="notif-new-badge">НОВОЕ</span>
+        </div>
+        <div class="notif-text">Поступил срочный заказ на ремонт электропроводки. Бюджет: 8 500 ₽. Успейте откликнуться первым!</div>
+        <div class="notif-time">5 минут назад</div>
+        <div class="notif-actions">
+          <button class="btn-notif btn-notif-primary" onclick="event.stopPropagation(); location.href='search.html'">Посмотреть заказ</button>
+          <button class="btn-notif btn-notif-secondary" onclick="event.stopPropagation(); declineOrder(this)">Отклонить</button>
+        </div>
+      </div>
+      <button class="notif-close" onclick="event.stopPropagation(); removeNotif(this)" title="Удалить">×</button>
+    </div>
+
+    <div class="notif-item unread" data-category="review" onclick="markAsRead(this)">
+      <div class="notif-icon review">⭐</div>
+      <div class="notif-content">
+        <div class="notif-title">
+          Новый отзыв 5★
+          <span class="notif-new-badge">НОВОЕ</span>
+        </div>
+        <div class="notif-text">ООО «Стройка» оставило положительный отзыв о вашей работе: «Отличный мастер! Всё сделал быстро и качественно. Рекомендую!»</div>
+        <div class="notif-time">2 часа назад</div>
+        <div class="notif-actions">
+          <button class="btn-notif btn-notif-primary" onclick="event.stopPropagation(); location.href='reviews.html'">Ответить</button>
+          <button class="btn-notif btn-notif-secondary" onclick="event.stopPropagation(); sayThanks(this)">Спасибо</button>
+        </div>
+      </div>
+      <button class="notif-close" onclick="event.stopPropagation(); removeNotif(this)" title="Удалить">×</button>
+    </div>
+
+    <div class="notif-item unread" data-category="payment" onclick="markAsRead(this)">
+      <div class="notif-icon payment">💰</div>
+      <div class="notif-content">
+        <div class="notif-title">
+          Поступила оплата
+          <span class="notif-new-badge">НОВОЕ</span>
+        </div>
+        <div class="notif-text">За проект #PRJ-2026-002 «Установка кондиционера» поступила оплата: 18 500 ₽</div>
+        <div class="notif-time">5 часов назад</div>
+        <div class="notif-actions">
+          <button class="btn-notif btn-notif-primary" onclick="event.stopPropagation(); location.href='finance.html'">Детали</button>
+          <button class="btn-notif btn-notif-secondary" onclick="event.stopPropagation(); location.href='documents.html'">Документы</button>
+        </div>
+      </div>
+      <button class="notif-close" onclick="event.stopPropagation(); removeNotif(this)" title="Удалить">×</button>
+    </div>
+
+    <div class="notif-item unread" data-category="message" onclick="markAsRead(this)">
+      <div class="notif-icon message">💬</div>
+      <div class="notif-content">
+        <div class="notif-title">
+          Новое сообщение
+          <span class="notif-new-badge">НОВОЕ</span>
+        </div>
+        <div class="notif-text">Иван Сидоров: «Хорошо, договорились. Буду в 10:00»</div>
+        <div class="notif-time">6 часов назад</div>
+        <div class="notif-actions">
+          <button class="btn-notif btn-notif-primary" onclick="event.stopPropagation(); location.href='messages.html'">Открыть чат</button>
+        </div>
+      </div>
+      <button class="notif-close" onclick="event.stopPropagation(); removeNotif(this)" title="Удалить">×</button>
+    </div>
+
+    <div class="notif-item unread" data-category="order" onclick="markAsRead(this)">
+      <div class="notif-icon order">📋</div>
+      <div class="notif-content">
+        <div class="notif-title">
+          Новый отклик на заказ
+          <span class="notif-new-badge">НОВОЕ</span>
+        </div>
+        <div class="notif-text">Исполнитель Дмитрий Волков откликнулся на ваш заказ «Укладка плитки в ванной». Рейтинг: 4.9 ★</div>
+        <div class="notif-time">8 часов назад</div>
+        <div class="notif-actions">
+          <button class="btn-notif btn-notif-primary" onclick="event.stopPropagation(); location.href='workers.html'">Профиль исполнителя</button>
+          <button class="btn-notif btn-notif-secondary" onclick="event.stopPropagation(); location.href='projects.html'">Принять</button>
+        </div>
+      </div>
+      <button class="notif-close" onclick="event.stopPropagation(); removeNotif(this)" title="Удалить">×</button>
+    </div>
+
+    <div class="notif-item read" data-category="order" onclick="markAsRead(this)">
+      <div class="notif-icon order">📋</div>
+      <div class="notif-content">
+        <div class="notif-title">Заказ принят в работу</div>
+        <div class="notif-text">Ваш отклик на заказ «Монтаж видеонаблюдения» принят. Свяжитесь с заказчиком для уточнения деталей.</div>
+        <div class="notif-time">Вчера, 14:30</div>
+        <div class="notif-actions">
+          <button class="btn-notif btn-notif-primary" onclick="event.stopPropagation(); location.href='messages.html'">Написать заказчику</button>
+        </div>
+      </div>
+      <button class="notif-close" onclick="event.stopPropagation(); removeNotif(this)" title="Удалить">×</button>
+    </div>
+
+    <div class="notif-item read" data-category="system" onclick="markAsRead(this)">
+      <div class="notif-icon system">⚙️</div>
+      <div class="notif-content">
+        <div class="notif-title">Напоминание о документах</div>
+        <div class="notif-text">Не забудьте загрузить скан паспорта для верификации аккаунта. Это займёт не больше 1 минуты.</div>
+        <div class="notif-time">Вчера, 10:00</div>
+        <div class="notif-actions">
+          <button class="btn-notif btn-notif-primary" onclick="event.stopPropagation(); location.href='personal-data.html'">Загрузить</button>
+        </div>
+      </div>
+      <button class="notif-close" onclick="event.stopPropagation(); removeNotif(this)" title="Удалить">×</button>
+    </div>
+
+    <div class="notif-item read" data-category="system" onclick="markAsRead(this)">
+      <div class="notif-icon order">📦</div>
+      <div class="notif-content">
+        <div class="notif-title">Проект завершён</div>
+        <div class="notif-text">Проект #PRJ-2026-004 «Сборка офисной мебели» успешно завершён. Ожидайте оплату в течение 3 рабочих дней.</div>
+        <div class="notif-time">07.06.2026</div>
+        <div class="notif-actions">
+          <button class="btn-notif btn-notif-primary" onclick="event.stopPropagation(); location.href='projects.html'">Открыть проект</button>
+        </div>
+      </div>
+      <button class="notif-close" onclick="event.stopPropagation(); removeNotif(this)" title="Удалить">×</button>
+    </div>
+  </div>
+
+  <div class="empty-state" id="empty-state" style="display:none;">
+    <div class="icon">📭</div>
+    <h3>Нет уведомлений</h3>
+    <p>В этой категории пока нет уведомлений</p>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let currentFilter = 'all';
+
+  function filterNotif(tab, category) {
+    document.querySelectorAll('.notif-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentFilter = category;
+    applyFilter();
+  }
+
+  function applyFilter() {
+    const items = document.querySelectorAll('.notif-item');
+    let visible = 0;
+    items.forEach(item => {
+      if (currentFilter === 'all' || item.dataset.category === currentFilter) {
+        item.classList.remove('hidden');
+        visible++;
+      } else {
+        item.classList.add('hidden');
+      }
+    });
+    document.getElementById('empty-state').style.display = visible === 0 ? 'block' : 'none';
+  }
+
+  function markAsRead(item) {
+    if (item.classList.contains('unread')) {
+      item.classList.remove('unread');
+      item.classList.add('read');
+      const badge = item.querySelector('.notif-new-badge');
+      if (badge) badge.remove();
+      updateCounter();
+    }
+  }
+
+  function markAllRead() {
+    document.querySelectorAll('.notif-item.unread').forEach(item => {
+      item.classList.remove('unread');
+      item.classList.add('read');
+      const badge = item.querySelector('.notif-new-badge');
+      if (badge) badge.remove();
+    });
+    updateCounter();
+    showToast('✓ Все уведомления отмечены как прочитанные');
+  }
+
+  function clearAllRead() {
+    const readItems = document.querySelectorAll('.notif-item.read');
+    if (readItems.length === 0) {
+      showToast('Нет прочитанных уведомлений для удаления');
+      return;
+    }
+    if (!confirm('Удалить ' + readItems.length + ' прочитанных уведомлений?')) return;
+    readItems.forEach(item => {
+      item.classList.add('removing');
+      setTimeout(() => item.remove(), 300);
+    });
+    setTimeout(() => {
+      updateCounts();
+      applyFilter();
+      showToast('🗑️ Удалено ' + readItems.length + ' уведомлений');
+    }, 350);
+  }
+
+  function removeNotif(btn) {
+    const item = btn.closest('.notif-item');
+    item.classList.add('removing');
+    setTimeout(() => {
+      item.remove();
+      updateCounts();
+      updateCounter();
+      applyFilter();
+    }, 300);
+  }
+
+  function declineOrder(btn) {
+    if (confirm('Отклонить этот заказ? Вы больше не сможете на него откликнуться.')) {
+      const item = btn.closest('.notif-item');
+      item.classList.add('removing');
+      setTimeout(() => {
+        item.remove();
+        updateCounts();
+        updateCounter();
+        applyFilter();
+        showToast('Заказ отклонён');
+      }, 300);
+    }
+  }
+
+  function sayThanks(btn) {
+    btn.textContent = '✓ Отправлено';
+    btn.disabled = true;
+    showToast('💙 Благодарность отправлена!');
+    markAsRead(btn.closest('.notif-item'));
+  }
+
+  function updateCounter() {
+    const unread = document.querySelectorAll('.notif-item.unread:not(.hidden)').length;
+    const counter = document.getElementById('unread-counter');
+    counter.textContent = unread + ' ' + pluralize(unread, 'новое', 'новых', 'новых');
+    counter.classList.toggle('empty', unread === 0);
+  }
+
+  function updateCounts() {
+    const all = document.querySelectorAll('.notif-item').length;
+    const order = document.querySelectorAll('.notif-item[data-category="order"]').length;
+    const review = document.querySelectorAll('.notif-item[data-category="review"]').length;
+    const payment = document.querySelectorAll('.notif-item[data-category="payment"]').length;
+    const system = document.querySelectorAll('.notif-item[data-category="system"]').length;
+    const message = document.querySelectorAll('.notif-item[data-category="message"]').length;
+    
+    document.getElementById('count-all').textContent = all;
+    document.getElementById('count-order').textContent = order;
+    document.getElementById('count-review').textContent = review;
+    document.getElementById('count-payment').textContent = payment;
+    document.getElementById('count-system').textContent = system;
+    document.getElementById('count-message').textContent = message;
+  }
+
+  function pluralize(n, one, few, many) {
+    const mod10 = n % 10, mod100 = n % 100;
+    if (mod100 >= 11 && mod100 <= 19) return many;
+    if (mod10 === 1) return one;
+    if (mod10 >= 2 && mod10 <= 4) return few;
+    return many;
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  // Burger
+  document.querySelector('.burger').addEventListener('click', function() {
+    document.querySelector('nav').classList.toggle('open');
+  });
+
+  // Закрытие меню профиля
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.profile-dropdown')) {
+      document.querySelectorAll('.profile-menu').forEach(m => m.classList.remove('show'));
+    }
+  });
+
+  updateCounter();
+</script>
+
+</body>
+</html>

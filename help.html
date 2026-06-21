@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>REMPRO — Центр поддержки | Помощь и контакты</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
+      background: #f6f9fe;
+      color: #1A2C3E;
+      line-height: 1.45;
+    }
+
+    /* header */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 28px;
+      background: #ffffff;
+      border-bottom: 1px solid #eef2f9;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .burger {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 28px;
+      cursor: pointer;
+      color: #2c3e4e;
+      line-height: 1;
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      transition: background 0.2s;
+    }
+
+    .burger:hover {
+      background: #f0f2f8;
+    }
+
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 1.2rem;
+      white-space: nowrap;
+    }
+
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #2A6F8F, #17506f);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 15px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .user-name {
+      font-weight: 600;
+      color: #1f3a4b;
+      font-size: 0.95rem;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 26px;
+      flex: 1;
+      flex-wrap: wrap;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: #4a6279;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      white-space: nowrap;
+      border-bottom: 2px solid transparent;
+      padding-bottom: 4px;
+    }
+
+    nav a:hover,
+    nav a.active {
+      color: #2c7da0;
+      border-bottom-color: #2c7da0;
+    }
+
+    .btn-create {
+      background: #1e5a7a;
+      border: none;
+      color: white;
+      padding: 9px 24px;
+      border-radius: 40px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .btn-create:hover {
+      background: #11435c;
+      transform: translateY(-1px);
+    }
+
+    /* main */
+    main {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 36px 28px 70px;
+    }
+
+    .page-title {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 28px;
+      background: linear-gradient(135deg, #1f4868, #143e58);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      letter-spacing: -0.3px;
+    }
+
+    .help-layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 28px;
+    }
+
+    /* cards common */
+    .faq-card,
+    .ticket-form,
+    .sidebar-card {
+      background: #ffffff;
+      border-radius: 28px;
+      padding: 28px 28px 32px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.02), 0 2px 6px rgba(0, 0, 0, 0.02);
+      border: 1px solid #edf2f9;
+      transition: transform 0.1s ease;
+    }
+
+    .section-title {
+      font-size: 1.45rem;
+      font-weight: 700;
+      margin-bottom: 22px;
+      color: #1b3d54;
+      letter-spacing: -0.2px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .faq-item {
+      border-bottom: 1px solid #eff3f8;
+    }
+
+    .faq-question {
+      padding: 18px 0;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      font-size: 1rem;
+      color: #1f3e55;
+      transition: color 0.2s;
+    }
+
+    .faq-question:hover {
+      color: #2c7da0;
+    }
+
+    .faq-arrow {
+      transition: transform 0.25s ease;
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: #7e95ab;
+    }
+
+    .faq-item.open .faq-arrow {
+      transform: rotate(180deg);
+    }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      font-size: 0.9rem;
+      color: #4f6579;
+      line-height: 1.55;
+      padding-right: 8px;
+    }
+
+    .faq-item.open .faq-answer {
+      max-height: 300px;
+      padding-bottom: 20px;
+    }
+
+    /* ticket form */
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #2b4d68;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid #e4ebf3;
+      border-radius: 16px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      transition: all 0.2s;
+      background: #ffffff;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: #2c7da0;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(44, 125, 160, 0.1);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 110px;
+    }
+
+    .btn-submit {
+      background: #1e5f81;
+      color: white;
+      border: none;
+      padding: 14px 20px;
+      border-radius: 40px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      width: 100%;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 6px;
+    }
+
+    .btn-submit:hover {
+      background: #0f4865;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.04);
+    }
+
+    /* sidebar */
+    .sidebar-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 18px;
+      color: #1f3a4c;
+      border-left: 4px solid #2c7da0;
+      padding-left: 12px;
+    }
+
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid #f0f4fa;
+    }
+
+    .contact-item:last-child {
+      border-bottom: none;
+    }
+
+    .contact-icon {
+      font-size: 1.6rem;
+      min-width: 36px;
+      text-align: center;
+    }
+
+    .contact-info {
+      flex: 1;
+    }
+
+    .contact-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      color: #859eaf;
+      letter-spacing: 0.5px;
+    }
+
+    .contact-value {
+      font-weight: 600;
+      color: #1f3e56;
+      font-size: 0.9rem;
+    }
+
+    .badge-dot {
+      font-size: 1rem;
+    }
+
+    /* responsive */
+    @media (max-width: 880px) {
+      .help-layout {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+      main {
+        padding: 28px 20px 56px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      header {
+        padding: 10px 20px;
+      }
+      .header-left {
+        gap: 12px;
+      }
+      .burger {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      nav {
+        display: none;
+        position: absolute;
+        top: 68px;
+        left: 0;
+        right: 0;
+        background: #fff;
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 22px 28px;
+        gap: 18px;
+        border-bottom: 1px solid #e9eef4;
+        box-shadow: 0 18px 25px -12px rgba(0, 0, 0, 0.1);
+        z-index: 99;
+      }
+      nav.open {
+        display: flex;
+      }
+      nav a {
+        width: 100%;
+        padding: 6px 0;
+        font-size: 1rem;
+      }
+      .user-name {
+        font-size: 0.85rem;
+      }
+      .page-title {
+        font-size: 1.7rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .faq-card, .ticket-form, .sidebar-card {
+        padding: 20px;
+      }
+      .section-title {
+        font-size: 1.3rem;
+      }
+      .btn-create {
+        padding: 7px 18px;
+        font-size: 0.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <button class="burger" id="burgerBtn" aria-label="Меню">☰</button>
+    <div class="header-logo">
+      <div class="avatar">МГ</div>
+      <span class="user-name">Максим Гусев</span>
+    </div>
+  </div>
+  <nav id="mainNav">
+    <a href="#" class="nav-link">Рабочий стол</a>
+    <a href="#" class="nav-link">Проекты</a>
+    <a href="#" class="nav-link">Поиск</a>
+    <a href="#" class="nav-link">Панели</a>
+    <a href="#" class="nav-link">Администратор</a>
+    <a href="#" class="nav-link">Менеджер</a>
+    <a href="#" class="nav-link">Рабочие</a>
+  </nav>
+  <button class="btn-create" id="newTicketBtn">➕ Новый тикет</button>
+</header>
+
+<main>
+  <h1 class="page-title">Помощь и поддержка</h1>
+
+  <div class="help-layout">
+    <!-- Левая колонка: FAQ + форма тикета -->
+    <div>
+      <!-- Блок FAQ -->
+      <div class="faq-card">
+        <h2 class="section-title">❓ Часто задаваемые вопросы</h2>
+        <div class="faq-item" id="faq1">
+          <div class="faq-question">
+            Как создать новый проект?
+            <span class="faq-arrow">▼</span>
+          </div>
+          <div class="faq-answer">
+            Перейдите в раздел «Проекты» и нажмите кнопку «+ Новый проект». Заполните все обязательные поля (название, категория, бюджет) и нажмите «Создать». После создания проект появится в вашем списке и будет доступен для назначения исполнителей.
+          </div>
+        </div>
+        <div class="faq-item" id="faq2">
+          <div class="faq-question">
+            Как вывести заработанные средства?
+            <span class="faq-arrow">▼</span>
+          </div>
+          <div class="faq-answer">
+            Перейдите в раздел «Финансы» → «Вывести средства». Выберите способ вывода (банковская карта, счёт или электронный кошелек). Укажите сумму (минимальная сумма от 1000 ₽) и подтвердите операцию. Вывод занимает от 1 до 5 рабочих дней.
+          </div>
+        </div>
+        <div class="faq-item" id="faq3">
+          <div class="faq-question">
+            Как изменить специализацию?
+            <span class="faq-arrow">▼</span>
+          </div>
+          <div class="faq-answer">
+            Откройте раздел «Профиль» → «Специализация и навыки». Выберите нужные категории (ремонт, сантехника, электрика и т.д.) и сохраните изменения. Ваш профиль будет обновлён в поиске исполнителей.
+          </div>
+        </div>
+        <div class="faq-item" id="faq4">
+          <div class="faq-question">
+            Что делать, если заказчик не оплатил работу?
+            <span class="faq-arrow">▼</span>
+          </div>
+          <div class="faq-answer">
+            Создайте тикет в этом разделе поддержки с описанием ситуации, приложите скриншоты переписки и данные о проекте. Наша команда рассмотрит спор в течение 24 часов. Все платежи защищены системой эскроу.
+          </div>
+        </div>
+        <div class="faq-item" id="faq5">
+          <div class="faq-question">
+            Как получить статус ИП или самозанятого?
+            <span class="faq-arrow">▼</span>
+          </div>
+          <div class="faq-answer">
+            Перейдите в «Настройки аккаунта» → «Налоговый статус». Выберите «ИП» или «Самозанятый» и загрузите необходимые документы. Поддержка проверит данные в течение 48 часов.
+          </div>
+        </div>
+        <div class="faq-item" id="faq6">
+          <div class="faq-question">
+            Как работает рейтинг и отзывы?
+            <span class="faq-arrow">▼</span>
+          </div>
+          <div class="faq-answer">
+            После завершения каждого проекта заказчик может оставить отзыв и оценку от 1 до 5 звёзд. Средний рейтинг отображается в вашем профиле и влияет на позицию в выдаче. Мы рекомендуем поддерживать качество работы на высшем уровне.
+          </div>
+        </div>
+      </div>
+
+      <!-- Форма создания тикета -->
+      <div class="ticket-form">
+        <h2 class="section-title">📨 Создать тикет в поддержку</h2>
+        <div class="form-group">
+          <label>Тема обращения *</label>
+          <input type="text" id="ticketSubject" placeholder="Кратко опишите проблему" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label>Категория</label>
+          <select id="ticketCategory">
+            <option value="tech">Техническая проблема</option>
+            <option value="payment">Вопрос по оплате</option>
+            <option value="order">Проблема с заказом</option>
+            <option value="verification">Верификация аккаунта</option>
+            <option value="other">Другое</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Приоритет</label>
+          <select id="ticketPriority">
+            <option value="low">Низкий</option>
+            <option value="medium" selected>Средний</option>
+            <option value="high">Высокий</option>
+            <option value="urgent">Срочный</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Описание проблемы *</label>
+          <textarea id="ticketDesc" placeholder="Подробно опишите вашу проблему..."></textarea>
+        </div>
+        <button class="btn-submit" id="submitTicketBtn">Отправить тикет</button>
+      </div>
+    </div>
+
+    <!-- Правая колонка: контакты и ссылки -->
+    <aside>
+      <div class="sidebar-card">
+        <h3 class="sidebar-title">📞 Контакты поддержки</h3>
+        <div class="contact-item">
+          <div class="contact-icon">📧</div>
+          <div class="contact-info">
+            <div class="contact-label">Email</div>
+            <div class="contact-value">support@rempro.ru</div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">📞</div>
+          <div class="contact-info">
+            <div class="contact-label">Телефон</div>
+            <div class="contact-value">8 (800) 555-35-35</div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">💬</div>
+          <div class="contact-info">
+            <div class="contact-label">Чат-бот</div>
+            <div class="contact-value">Онлайн 24/7 (вкладка “Чат”)</div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">🕐</div>
+          <div class="contact-info">
+            <div class="contact-label">Среднее время ответа</div>
+            <div class="contact-value">до 2 часов</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <h3 class="sidebar-title">📚 Полезные материалы</h3>
+        <div class="contact-item">
+          <div class="contact-icon">📄</div>
+          <div class="contact-info">
+            <div class="contact-value">Пользовательское соглашение</div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">🔒</div>
+          <div class="contact-info">
+            <div class="contact-value">Политика конфиденциальности</div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">📱</div>
+          <div class="contact-info">
+            <div class="contact-value">Мобильное приложение REMPRO</div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">🎓</div>
+          <div class="contact-info">
+            <div class="contact-value">Академия исполнителя</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <h3 class="sidebar-title">📋 Мои тикеты</h3>
+        <div class="contact-item">
+          <div class="contact-icon" style="color: #10b981;">●</div>
+          <div class="contact-info">
+            <div class="contact-label">#TK-445 · Завершён</div>
+            <div class="contact-value">Проблема с оплатой</div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon" style="color: #f59e0b;">●</div>
+          <div class="contact-info">
+            <div class="contact-label">#TK-448 · В работе</div>
+            <div class="contact-value">Ошибка в профиле</div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon" style="color: #6b7280;">○</div>
+          <div class="contact-info">
+            <div class="contact-label">#TK-451 · Ожидает ответа</div>
+            <div class="contact-value">Верификация документов</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<script>
+  (function() {
+    // ----- Бургер меню -----
+    const burger = document.getElementById('burgerBtn');
+    const nav = document.getElementById('mainNav');
+    if (burger && nav) {
+      burger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        nav.classList.toggle('open');
+      });
+      document.addEventListener('click', function(event) {
+        if (nav.classList.contains('open') && !nav.contains(event.target) && !burger.contains(event.target)) {
+          nav.classList.remove('open');
+        }
+      });
+    }
+
+    // ----- Аккордеон FAQ (открытие/закрытие) -----
+    const faqItems = document.querySelectorAll('.faq-item');
+    faqItems.forEach(item => {
+      const questionDiv = item.querySelector('.faq-question');
+      if (questionDiv) {
+        questionDiv.addEventListener('click', (e) => {
+          e.stopPropagation();
+          // закрываем остальные (опционально, но улучшает UX — обычно оставляем множественное открытие, сделаем toggle)
+          item.classList.toggle('open');
+        });
+      }
+    });
+
+    // ----- Навигация (заглушки) -----
+
+
+    // ----- Кнопка "Новый тикет" (скролл к форме) -----
+    const newTicketBtn = document.getElementById('newTicketBtn');
+    if (newTicketBtn) {
+      newTicketBtn.addEventListener('click', () => {
+        const formElement = document.querySelector('.ticket-form');
+        if (formElement) {
+          formElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // лёгкий акцент
+          formElement.style.transition = 'box-shadow 0.2s';
+          formElement.style.boxShadow = '0 0 0 3px rgba(44,125,160,0.3)';
+          setTimeout(() => { formElement.style.boxShadow = ''; }, 1000);
+        }
+      });
+    }
+
+    // ----- Отправка тикета (имитация) -----
+    const submitBtn = document.getElementById('submitTicketBtn');
+    const subjectInput = document.getElementById('ticketSubject');
+    const descTextarea = document.getElementById('ticketDesc');
+    const categorySelect = document.getElementById('ticketCategory');
+    const prioritySelect = document.getElementById('ticketPriority');
+
+    function getCategoryText(value) {
+      const map = {
+        tech: 'Техническая проблема',
+        payment: 'Вопрос по оплате',
+        order: 'Проблема с заказом',
+        verification: 'Верификация аккаунта',
+        other: 'Другое'
+      };
+      return map[value] || 'Другое';
+    }
+
+    function getPriorityText(value) {
+      const mapPriority = {
+        low: 'Низкий',
+        medium: 'Средний',
+        high: 'Высокий',
+        urgent: 'Срочный'
+      };
+      return mapPriority[value] || 'Средний';
+    }
+
+    submitBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const subject = subjectInput.value.trim();
+      const description = descTextarea.value.trim();
+
+      if (!subject) {
+        alert('Пожалуйста, укажите тему обращения.');
+        subjectInput.focus();
+        return;
+      }
+      if (!description) {
+        alert('Опишите вашу проблему подробнее.');
+        descTextarea.focus();
+        return;
+      }
+
+      const category = categorySelect.value;
+      const priority = prioritySelect.value;
+      const categoryName = getCategoryText(category);
+      const priorityName = getPriorityText(priority);
+
+      // Имитация отправки тикета
+      alert(`✅ Ваш тикет успешно создан!\n\n📌 Тема: ${subject}\n📂 Категория: ${categoryName}\n⚡ Приоритет: ${priorityName}\n📝 Описание: ${description.substring(0, 100)}${description.length > 100 ? '…' : ''}\n\nСпециалист поддержки свяжется с вами в ближайшее время.`);
+
+      // Очистка формы после отправки (по желанию)
+      subjectInput.value = '';
+      descTextarea.value = '';
+      // Можно оставить выбранные категории, но сбросим только тему/текст
+      // дополнительно: фокус на subject
+      subjectInput.focus();
+    });
+
+    // ----- Дополнительно: клик по контактам / полезным ссылкам показывает информацию
+    const contactItems = document.querySelectorAll('.sidebar-card .contact-item');
+    contactItems.forEach(item => {
+      item.style.cursor = 'pointer';
+      item.addEventListener('click', () => {
+        const valueElem = item.querySelector('.contact-value');
+        if (valueElem) {
+          const text = valueElem.innerText;
+          alert(`🔍 Подробнее: ${text}\nСлужба поддержки REMPRO готова помочь.`);
+        } else {
+          alert('Информация доступна в личном кабинете.');
+        }
+      });
+    });
+
+    // Для чат-бота имитация: отдельный модальный не требуется.
+    console.log('REMPRO Помощь и поддержка — загружена');
+  })();
+</script>
+</body>
+</html>

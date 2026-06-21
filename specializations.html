@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REMPRO — Специализация и инструменты</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f7fa; color: #1a1a1a; min-height: 100vh;
+  }
+
+  header {
+    display: flex; align-items: center; padding: 12px 24px;
+    background: #fff; border-bottom: 1px solid #e8e8e8; gap: 16px; position: relative;
+  }
+  .header-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 600; font-size: 16px; white-space: nowrap;
+  }
+  .header-logo .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 13px; font-weight: 600;
+    cursor: pointer;
+  }
+  nav {
+    display: flex; align-items: center; gap: 20px; flex: 1; overflow-x: auto;
+  }
+  nav a { text-decoration: none; color: #333; font-size: 14px; white-space: nowrap; }
+  nav a:hover, nav a.active { color: #3b82f6; }
+
+  .header-actions { display: flex; align-items: center; gap: 16px; }
+  .btn-create {
+    background: #3b82f6; border: none; color: #fff;
+    padding: 8px 20px; border-radius: 8px; font-size: 14px;
+    cursor: pointer; white-space: nowrap; font-weight: 500;
+  }
+  .btn-create:hover { background: #2563eb; }
+
+  .dropdown { position: relative; }
+  .dropdown-menu {
+    display: none; position: absolute; top: 100%; right: 0;
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1); min-width: 220px;
+    z-index: 1000; padding: 8px 0; margin-top: 8px;
+  }
+  .dropdown:hover .dropdown-menu { display: block; }
+  .dropdown-menu a {
+    display: block; padding: 10px 16px; font-size: 14px;
+    color: #333; text-decoration: none; white-space: nowrap;
+  }
+  .dropdown-menu a:hover { background: #f5f7fa; color: #3b82f6; }
+
+  .profile-dropdown { position: relative; }
+  .profile-menu {
+    display: none; position: absolute; top: 100%; right: 0;
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1); min-width: 220px;
+    z-index: 1000; padding: 8px 0; margin-top: 8px;
+  }
+  .profile-menu.show { display: block; }
+  .profile-menu a {
+    display: block; padding: 10px 16px; font-size: 14px;
+    color: #333; text-decoration: none;
+  }
+  .profile-menu a:hover { background: #f5f7fa; color: #3b82f6; }
+  .profile-menu .divider { height: 1px; background: #e8e8e8; margin: 8px 0; }
+  .profile-menu .logout { color: #ef4444; }
+  .profile-menu .logout:hover { background: #fee2e2; color: #dc2626; }
+
+  .burger {
+    display: none; background: none; border: none;
+    font-size: 24px; cursor: pointer; color: #333;
+  }
+
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 20px 60px;
+  }
+
+  .breadcrumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: #666; margin-bottom: 16px;
+  }
+  .breadcrumbs a { color: #3b82f6; text-decoration: none; }
+  .breadcrumbs a:hover { text-decoration: underline; }
+  .breadcrumbs .sep { color: #ccc; }
+
+  /* Progress bar */
+  .progress-section {
+    background: #fff; border-radius: 12px; padding: 16px 20px;
+    margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  }
+  .progress-info { flex: 1; min-width: 200px; }
+  .progress-title {
+    font-size: 14px; font-weight: 600; margin-bottom: 4px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .progress-subtitle { font-size: 12px; color: #6b7280; }
+  .progress-bar-wrap {
+    flex: 1; min-width: 200px;
+  }
+  .progress-bar {
+    height: 8px; background: #e5e7eb; border-radius: 4px;
+    overflow: hidden; margin-bottom: 4px;
+  }
+  .progress-fill {
+    height: 100%; background: linear-gradient(90deg, #3b82f6, #1e40af);
+    border-radius: 4px; transition: width 0.5s;
+    width: 0%;
+  }
+  .progress-text {
+    font-size: 12px; color: #6b7280; text-align: right;
+  }
+  .stats-mini {
+    display: flex; gap: 16px; flex-wrap: wrap;
+  }
+  .stat-mini-item {
+    text-align: center; padding: 0 12px;
+    border-left: 1px solid #e5e7eb;
+  }
+  .stat-mini-item:first-child { border-left: none; }
+  .stat-mini-value {
+    font-size: 20px; font-weight: 700; color: #3b82f6;
+  }
+  .stat-mini-label {
+    font-size: 11px; color: #6b7280;
+  }
+
+  .page-title {
+    text-align: center; font-size: 28px; font-weight: 700; margin-bottom: 32px;
+  }
+
+  .blue-box {
+    background: #93c5fd;
+    border-radius: 24px;
+    padding: 24px;
+  }
+  .white-box {
+    background: #fff;
+    border-radius: 16px;
+    padding: 28px 32px;
+    min-height: 120px;
+  }
+
+  .hub-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .hub-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 24px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+    position: relative;
+  }
+  .hub-card:hover {
+    border-color: #3b82f6;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59,130,246,0.15);
+  }
+  .hub-card .hub-icon {
+    font-size: 36px;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .hub-card .hub-label {
+    font-size: 14px; font-weight: 600; color: #1a1a1a;
+    line-height: 1.3;
+  }
+  .hub-card .hub-count {
+    position: absolute; top: 12px; right: 12px;
+    background: #dbeafe; color: #1e40af;
+    padding: 2px 8px; border-radius: 10px;
+    font-size: 11px; font-weight: 700;
+  }
+  .hub-card .hub-count.active {
+    background: #10b981; color: #fff;
+  }
+
+  .tool-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .tool-row:last-child { border-bottom: none; }
+  .tool-name { font-size: 15px; }
+
+  .service-row {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    padding: 20px 0;
+    border-bottom: 1px solid #f0f0f0;
+    gap: 20px;
+  }
+  .service-row:last-child { border-bottom: none; }
+  .service-info { flex: 1; }
+  .service-name { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .service-desc { font-size: 13px; color: #999; line-height: 1.5; }
+
+  .toggle {
+    position: relative;
+    width: 48px; height: 26px;
+    flex-shrink: 0;
+  }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle .slider {
+    position: absolute; cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #ccc; border-radius: 26px;
+    transition: 0.3s;
+  }
+  .toggle .slider::before {
+    content: ""; position: absolute;
+    height: 20px; width: 20px;
+    left: 3px; bottom: 3px;
+    background: #fff; border-radius: 50%;
+    transition: 0.3s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .toggle input:checked + .slider { background: #3b82f6; }
+  .toggle input:checked + .slider::before { transform: translateX(22px); }
+
+  .pagination {
+    display: flex; justify-content: center; align-items: center;
+    gap: 8px; margin-top: 40px;
+  }
+  .pagination button {
+    padding: 8px 14px; border: 1px solid #ddd;
+    background: #fff; border-radius: 8px;
+    font-size: 14px; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .pagination button:hover:not(:disabled) { background: #f5f5f5; }
+  .pagination button:disabled { opacity: 0.4; cursor: default; }
+  .pagination .page-num {
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 8px; font-size: 14px; font-weight: 600;
+    border: 1px solid #ddd; background: #fff; cursor: pointer;
+  }
+  .pagination .page-num.active {
+    background: #1a1a1a; color: #fff; border-color: #1a1a1a;
+  }
+
+  .file-upload-dashed {
+    border: 1.5px dashed #ccc; border-radius: 12px;
+    padding: 20px 16px; text-align: center;
+    color: #999; font-size: 13px; cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 12px;
+    position: relative;
+  }
+  .file-upload-dashed:hover { border-color: #3b82f6; background: #f0f7ff; }
+  .file-upload-dashed.uploaded {
+    border-color: #10b981; background: #f0fdf4; color: #065f46;
+    border-style: solid;
+  }
+  .file-upload-dashed .icon { font-size: 24px; margin-bottom: 6px; }
+  .file-upload-dashed input[type="file"] { display: none; }
+  .file-upload-dashed .filename {
+    font-size: 11px; color: #059669; font-weight: 600;
+    margin-top: 4px; word-break: break-all;
+  }
+
+  .btn-attach {
+    background: #3b82f6; color: #fff; border: none;
+    padding: 10px 24px; border-radius: 10px; font-size: 14px;
+    font-weight: 500; cursor: pointer; width: 100%;
+    transition: all 0.2s;
+  }
+  .btn-attach:hover { background: #2563eb; transform: translateY(-1px); }
+
+  .section-label {
+    font-size: 13px; color: #555; margin-bottom: 8px; font-weight: 500;
+  }
+
+  .cleaning-grid, .it-grid, .plumbing-grid, .hvac-grid, .other-grid {
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .cleaning-card, .it-card, .plumbing-card, .hvac-card, .other-card {
+    background: #fff; border-radius: 14px; padding: 24px 28px;
+  }
+  .cleaning-card .service-row, .it-card .service-row,
+  .plumbing-card .service-row, .hvac-card .service-row,
+  .other-card .service-row { padding: 0; border: none; }
+
+  .heating-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  }
+  .heating-card {
+    background: #fff; border-radius: 14px; padding: 24px;
+  }
+  .heating-card .service-row { padding: 0; border: none; }
+
+  .household-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  }
+  .household-card {
+    background: #fff; border-radius: 14px; padding: 20px;
+  }
+  .household-card .service-row { padding: 0; border: none; flex-direction: column; gap: 8px; }
+  .household-card .service-name { font-size: 14px; }
+  .household-card .service-desc { font-size: 12px; }
+  .household-card .toggle { align-self: flex-end; }
+
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: #3b82f6; font-size: 14px; cursor: pointer;
+    margin-bottom: 20px; background: none; border: none;
+    font-weight: 500;
+  }
+  .back-btn:hover { text-decoration: underline; }
+
+  .view { display: none; }
+  .view.active { display: block; animation: fadeIn 0.3s; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Sticky footer */
+  .sticky-footer {
+    position: sticky; bottom: 20px;
+    background: #fff; border-radius: 16px;
+    padding: 16px 24px; margin-top: 32px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap;
+    border: 1px solid #e5e7eb;
+  }
+  .footer-info {
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  }
+  .footer-stat {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; color: #6b7280;
+  }
+  .footer-stat strong { color: #1a1a1a; font-size: 15px; }
+  .footer-actions { display: flex; gap: 10px; }
+  .btn-save-all {
+    background: #3b82f6; color: #fff; border: none;
+    padding: 12px 28px; border-radius: 10px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-save-all:hover { background: #2563eb; transform: translateY(-1px); }
+  .btn-discard {
+    background: #fff; color: #6b7280; border: 1px solid #d1d5db;
+    padding: 12px 20px; border-radius: 10px;
+    font-size: 14px; cursor: pointer;
+  }
+  .btn-discard:hover { background: #f9fafb; color: #1a1a1a; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 20px; right: 20px;
+    background: #1a1a1a; color: #fff;
+    padding: 14px 20px; border-radius: 10px;
+    font-size: 14px; font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    transform: translateY(100px); opacity: 0;
+    transition: all 0.3s; z-index: 3000;
+    display: flex; align-items: center; gap: 10px;
+    max-width: 360px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { background: #059669; }
+  .toast.info { background: #2563eb; }
+
+  @media (max-width: 768px) {
+    nav { display: none; }
+    nav.open {
+      display: flex; flex-direction: column;
+      position: absolute; top: 56px; left: 0; right: 0;
+      background: #fff; padding: 20px;
+      border-bottom: 1px solid #e8e8e8; z-index: 100; gap: 14px;
+    }
+    .burger { display: block; }
+    .page-title { font-size: 22px; }
+    .blue-box { padding: 16px; border-radius: 18px; }
+    .white-box { padding: 20px 16px; }
+    .service-row { flex-direction: column; gap: 10px; }
+    .hub-grid { grid-template-columns: repeat(2, 1fr); }
+    .household-grid { grid-template-columns: 1fr; }
+    .heating-grid { grid-template-columns: 1fr; }
+    .dropdown-menu, .profile-menu {
+      position: fixed; top: 70px; right: 20px;
+    }
+    .progress-section { flex-direction: column; align-items: stretch; }
+    .sticky-footer { flex-direction: column; align-items: stretch; }
+    .footer-actions { flex-direction: column; }
+  }
+  @media (max-width: 480px) {
+    .hub-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="burger" onclick="document.querySelector('nav').classList.toggle('open')">☰</button>
+  <div class="header-logo">
+    <div class="avatar" onclick="document.querySelector('.profile-menu').classList.toggle('show')">МГ</div>
+    <span>Максим Гусев</span>
+  </div>
+  <nav>
+    <a href="dashboard.html">Рабочий стол</a>
+    <a href="projects.html">Проекты</a>
+    <a href="search.html">Поиск</a>
+    <a href="messages.html">Сообщения</a>
+    <a href="notifications.html">Уведомления</a>
+    <a href="finance.html">Финансы</a>
+    <div class="dropdown">
+      <a href="#" class="dropdown-toggle">Ещё ▾</a>
+      <div class="dropdown-menu">
+        <a href="calendar.html">📅 Календарь</a>
+        <a href="documents.html">📄 Документы</a>
+        <a href="reviews.html">⭐ Отзывы</a>
+        <a href="portfolio.html">🖼️ Портфолио</a>
+        <a href="workers.html">👷 Рабочие</a>
+        <a href="panels.html">📊 Панели</a>
+        <a href="reports.html">📈 Отчёты</a>
+        <a href="specializations.html" class="active" style="background:#eff6ff; color:#3b82f6;">🔧 Специализация</a>
+        <a href="admin.html">⚙️ Администратор</a>
+        <a href="manager.html">👔 Менеджер</a>
+      </div>
+    </div>
+  </nav>
+  <div class="header-actions">
+    <button class="btn-create" onclick="location.href='request-form.html'">+ Создать</button>
+    <div class="profile-dropdown">
+      <div class="avatar" onclick="document.querySelector('.profile-menu').classList.toggle('show')">МГ</div>
+      <div class="profile-menu">
+        <a href="profile.html">👤 Мой профиль</a>
+        <a href="personal-data.html">📋 Персональные данные</a>
+        <a href="settings.html">⚙️ Настройки</a>
+        <a href="help.html">❓ Помощь</a>
+        <div class="divider"></div>
+        <a href="login.html" class="logout">🚪 Выйти</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="breadcrumbs">
+    <a href="dashboard.html">Рабочий стол</a>
+    <span class="sep">›</span>
+    <a href="profile.html">Профиль</a>
+    <span class="sep">›</span>
+    <span>Специализация</span>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-section">
+    <div class="progress-info">
+      <div class="progress-title">
+        📊 Заполнение профиля
+        <span id="progress-percent" style="color:#3b82f6;">0%</span>
+      </div>
+      <div class="progress-subtitle">Выберите специализации и инструменты, чтобы клиенты вас находили</div>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <div class="progress-text" id="progress-text">Выбрано 0 из 0</div>
+    </div>
+    <div class="stats-mini">
+      <div class="stat-mini-item">
+        <div class="stat-mini-value" id="total-services">0</div>
+        <div class="stat-mini-label">Услуг</div>
+      </div>
+      <div class="stat-mini-item">
+        <div class="stat-mini-value" id="total-tools">0</div>
+        <div class="stat-mini-label">Инструментов</div>
+      </div>
+      <div class="stat-mini-item">
+        <div class="stat-mini-value" id="total-categories">13</div>
+        <div class="stat-mini-label">Категорий</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HUB -->
+  <div class="view active" id="view-hub">
+    <h1 class="page-title">🔧 Специализация и инструменты</h1>
+    <div class="blue-box">
+      <div class="hub-grid" id="hub-grid">
+        <div class="hub-card" onclick="showView('view-household')">
+          <span class="hub-count" data-cat="household">0</span>
+          <span class="hub-icon">🧹</span>
+          <div class="hub-label">Хозяйственные работы</div>
+        </div>
+        <div class="hub-card" onclick="showView('view-electric')">
+          <span class="hub-count" data-cat="electric">0</span>
+          <span class="hub-icon">⚡</span>
+          <div class="hub-label">Электрика</div>
+        </div>
+        <div class="hub-card" onclick="showView('view-tools')">
+          <span class="hub-count" data-cat="tools">0</span>
+          <span class="hub-icon">🔧</span>
+          <div class="hub-label">Инструменты</div>
+        </div>
+        <div class="hub-card" onclick="showView('view-it')">
+          <span class="hub-count" data-cat="it">0</span>
+          <span class="hub-icon">💻</span>
+          <div class="hub-label">ИТ-услуги</div>
+        </div>
+        <div class="hub-card" onclick="showView('view-kkm')">
+          <span class="hub-count" data-cat="kkm">0</span>
+          <span class="hub-icon">🧾</span>
+          <div class="hub-label">Кассы ККМ</div>
+        </div>
+        <div class="hub-card" onclick="showView('view-plumbing')">
+          <span class="hub-count" data-cat="plumbing">0</span>
+          <span class="hub-icon">🚿</span>
+          <div class="hub-label">Сантехника</div>
+        </div>
+        <div class="hub-card" onclick="showView('view-other')">
+          <span class="hub-count" data-cat="other">0</span>
+          <span class="hub-icon">📦</span>
+          <div class="hub-label">Прочие услуги</div>
+        </div>
+        <div class="hub-card" onclick="showView('view-hvac')">
+          <span class="hub-count" data-cat="hvac">0</span>
+          <span class="hub-icon">❄️</span>
+          <div class="hub-label">Вентиляция и кондиционирование (ОВиК)</div>
+        </div>
+        <div class="hub-card" onclick="showView('view-video')">
+          <span class="hub-count" data-cat="video">0</span>
+          <span class="hub-icon">📹</span>
+          <div class="hub-label">Видеонаблюдение и охранные системы</div>
+        </div>
+        <div class="hub-card" onclick="showView('view-cleaning')">
+          <span class="hub-count" data-cat="cleaning">0</span>
+          <span class="hub-icon">🧴</span>
+          <div class="hub-label">Клининг</div>
+        </div>
+        <div class="hub-card" onclick="showView('view-doors')">
+          <span class="hub-count" data-cat="doors">0</span>
+          <span class="hub-icon">🚪</span>
+          <div class="hub-label">Двери</div>
+        </div>
+        <div class="hub-card" onclick="showView('view-heating')">
+          <span class="hub-count" data-cat="heating">0</span>
+          <span class="hub-icon">🔥</span>
+          <div class="hub-label">Системы отопления</div>
+        </div>
+        <div class="hub-card" onclick="showView('view-windows')">
+          <span class="hub-count" data-cat="windows">0</span>
+          <span class="hub-icon">🪟</span>
+          <div class="hub-label">Окна</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Household -->
+  <div class="view" id="view-household">
+    <button class="back-btn" onclick="showView('view-hub')">← Назад к категориям</button>
+    <h1 class="page-title">🧹 Хозяйственные работы</h1>
+    <div class="blue-box">
+      <div class="household-grid">
+        <div class="household-card"><div class="service-row"><div class="service-info"><div class="service-name">Сантехник и отопление</div><div class="service-desc">Сантехнические приборы, приборы отопления и водоснабжения, установка, ГВС, трубы, фитинги и прочее, устранение засора</div></div><label class="toggle"><input type="checkbox" data-cat="household" onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="household-card"><div class="service-row"><div class="service-info"><div class="service-name">Сборка металла</div><div class="service-desc">Сборка и монтаж конструкций из металла</div></div><label class="toggle"><input type="checkbox" data-cat="household" onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="household-card"><div class="service-row"><div class="service-info"><div class="service-name">Наружная реклама</div><div class="service-desc">Монтаж, демонтаж, ремонт и изготовление рекламных конструкций</div></div><label class="toggle"><input type="checkbox" data-cat="household" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="household-card"><div class="service-row"><div class="service-info"><div class="service-name">Мелкие хозяйственные работы</div><div class="service-desc">Снятие и остекление, сборка мебели, столярное дело, обустройство потолков и полов</div></div><label class="toggle"><input type="checkbox" data-cat="household" onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="household-card"><div class="service-row"><div class="service-info"><div class="service-name">Ремонт кровли</div><div class="service-desc">Обследование, обслуживание и ремонт кровли</div></div><label class="toggle"><input type="checkbox" data-cat="household" onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="household-card"><div class="service-row"><div class="service-info"><div class="service-name">Сборка мебели</div><div class="service-desc">Сборка мягкой мебели, стеллажей, кроватей и других предметов мебели</div></div><label class="toggle"><input type="checkbox" data-cat="household" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="household-card"><div class="service-row"><div class="service-info"><div class="service-name">Ремонт витрин</div><div class="service-desc">Ремонт стеклянных витрин и замена стекла с последующей ультрафиолетовой склейкой, ремонт и обслуживание торговых витрин</div></div><label class="toggle"><input type="checkbox" data-cat="household" onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="household-card"><div class="service-row"><div class="service-info"><div class="service-name">Малярные и штукатурные работы</div><div class="service-desc">Штукатурка, шпаклёвка, покраска стен и потолков</div></div><label class="toggle"><input type="checkbox" data-cat="household" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="household-card"><div class="service-row"><div class="service-info"><div class="service-name">Ремонт рольставен</div><div class="service-desc">Ремонт и обслуживание, замена, установка, демонтаж рольставен</div></div><label class="toggle"><input type="checkbox" data-cat="household" onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="household-card"><div class="service-row"><div class="service-info"><div class="service-name">Промышленный альпинист</div><div class="service-desc">Мойка, чистка и покраска фасадов зданий, монтаж и демонтаж рекламных конструкций, освещения, сварка металлических конструкций, уборка снега и др.</div></div><label class="toggle"><input type="checkbox" data-cat="household" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="household-card"><div class="service-row"><div class="service-info"><div class="service-name">Укладка плитки</div><div class="service-desc">Укладка плитки и плиточные работы (ремонт, восстановление)</div></div><label class="toggle"><input type="checkbox" data-cat="household" onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IT -->
+  <div class="view" id="view-it">
+    <button class="back-btn" onclick="showView('view-hub')">← Назад к категориям</button>
+    <h1 class="page-title">💻 ИТ-услуги</h1>
+    <div class="blue-box">
+      <div class="it-grid">
+        <div class="it-card"><div class="service-row"><div class="service-info"><div class="service-name">Компьютерный мастер</div><div class="service-desc">Ремонт компьютеров, настройка ОС и ПО, роутеров, планшетов</div></div><label class="toggle"><input type="checkbox" data-cat="it" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="it-card"><div class="service-row"><div class="service-info"><div class="service-name">Слаботочка</div><div class="service-desc">Телефония, телевидение, домофоны, сигнализация, антенны</div></div><label class="toggle"><input type="checkbox" data-cat="it" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="it-card"><div class="service-row"><div class="service-info"><div class="service-name">Ремонт и обслуживание принтеров</div><div class="service-desc">Прокладка сетей (СКС)</div></div><label class="toggle"><input type="checkbox" data-cat="it" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tools -->
+  <div class="view" id="view-tools">
+    <button class="back-btn" onclick="showView('view-hub')">← Назад к категориям</button>
+    <h1 class="page-title">🔧 Инструменты</h1>
+    <div class="blue-box">
+      <div class="white-box" id="tools-page-1">
+        <div class="tool-row"><span class="tool-name">Мультиметр</span><label class="toggle"><input type="checkbox" data-cat="tools" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div>
+        <div class="tool-row"><span class="tool-name">Личный автомобиль</span><label class="toggle"><input type="checkbox" data-cat="tools" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div>
+        <div class="tool-row"><span class="tool-name">LAN-тестер</span><label class="toggle"><input type="checkbox" data-cat="tools" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div>
+      </div>
+      <div class="white-box" id="tools-page-2" style="display:none;">
+        <div class="tool-row"><span class="tool-name">Паяльник для труб</span><label class="toggle"><input type="checkbox" data-cat="tools" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div>
+        <div class="tool-row"><span class="tool-name">Компания</span><label class="toggle"><input type="checkbox" data-cat="tools" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div>
+        <div class="tool-row"><span class="tool-name">Стремянка (от 3-х метров)</span><label class="toggle"><input type="checkbox" data-cat="tools" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div>
+        <div class="tool-row"><span class="tool-name">Бригада (от 3-х человек)</span><label class="toggle"><input type="checkbox" data-cat="tools" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div>
+        <div class="tool-row"><span class="tool-name">Тепловизор</span><label class="toggle"><input type="checkbox" data-cat="tools" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div>
+        <div class="tool-row"><span class="tool-name">Фрезер</span><label class="toggle"><input type="checkbox" data-cat="tools" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div>
+        <div class="tool-row"><span class="tool-name">Сантехнический трос</span><label class="toggle"><input type="checkbox" data-cat="tools" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div>
+        <div class="tool-row"><span class="tool-name">Пирометр</span><label class="toggle"><input type="checkbox" data-cat="tools" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div>
+        <div class="tool-row"><span class="tool-name">Перфоратор</span><label class="toggle"><input type="checkbox" data-cat="tools" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div>
+        <div class="tool-row"><span class="tool-name">Грузовой автомобиль</span><label class="toggle"><input type="checkbox" data-cat="tools" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div>
+        <div class="tool-row"><span class="tool-name">Токоизмерительные клещи</span><label class="toggle"><input type="checkbox" data-cat="tools" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div>
+        <div class="tool-row"><span class="tool-name">Болгарка</span><label class="toggle"><input type="checkbox" data-cat="tools" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div>
+        <div class="tool-row"><span class="tool-name">Сварочный аппарат</span><label class="toggle"><input type="checkbox" data-cat="tools" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div>
+        <div class="tool-row"><span class="tool-name">Ультрафиолетовая лампа</span><label class="toggle"><input type="checkbox" data-cat="tools" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div>
+        <div class="tool-row"><span class="tool-name">Торцовочная пила</span><label class="toggle"><input type="checkbox" data-cat="tools" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div>
+        <div class="tool-row"><span class="tool-name">Строительные леса</span><label class="toggle"><input type="checkbox" data-cat="tools" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div>
+        <div class="tool-row"><span class="tool-name">Анемометр</span><label class="toggle"><input type="checkbox" data-cat="tools" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div>
+        <div class="tool-row"><span class="tool-name">Метчик для нарезки резьбы</span><label class="toggle"><input type="checkbox" data-cat="tools" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div>
+        <div class="tool-row"><span class="tool-name">Инструмент для резьбы</span><label class="toggle"><input type="checkbox" data-cat="tools" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div>
+      </div>
+    </div>
+    <div class="pagination">
+      <button id="prev-btn" onclick="changePage(-1)" disabled>← Previous</button>
+      <div class="page-num active" data-page="1" onclick="goToPage(1)">1</div>
+      <div class="page-num" data-page="2" onclick="goToPage(2)">2</div>
+      <button id="next-btn" onclick="changePage(1)">Next →</button>
+    </div>
+  </div>
+
+  <!-- Electric -->
+  <div class="view" id="view-electric">
+    <button class="back-btn" onclick="showView('view-hub')">← Назад к категориям</button>
+    <h1 class="page-title">⚡ Электрика</h1>
+    <div class="blue-box">
+      <div class="white-box">
+        <div class="service-row" style="border:none; padding-bottom:8px;">
+          <div class="service-info">
+            <div class="service-name">Электрика</div>
+            <div class="service-desc">Проводка, защита и электробезопасность, электрическое освещение, электроустановочные изделия, защита автоматика, реклама и вывеска</div>
+          </div>
+          <label class="toggle"><input type="checkbox" data-cat="electric" checked onchange="onToggleChange(this)"><span class="slider"></span></label>
+        </div>
+        <label class="file-upload-dashed" id="upload-e1" for="file-e1">
+          <div class="icon">🖼️</div>
+          <div>Прикрепить фото удостоверения (лицевая сторона)</div>
+          <div class="filename"></div>
+          <input type="file" id="file-e1" accept="image/*" onchange="handleFileUpload(this, 'upload-e1')">
+        </label>
+        <label class="file-upload-dashed" id="upload-e2" for="file-e2">
+          <div class="icon">🖼️</div>
+          <div>Прикрепить фото удостоверения (оборотная сторона)</div>
+          <div class="filename"></div>
+          <input type="file" id="file-e2" accept="image/*" onchange="handleFileUpload(this, 'upload-e2')">
+        </label>
+        <div class="section-label" style="margin-top:16px;">Скан допуска к работам</div>
+        <button class="btn-attach" onclick="location.href='404.html'">📎 Прикрепить документ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Windows -->
+  <div class="view" id="view-windows">
+    <button class="back-btn" onclick="showView('view-hub')">← Назад к категориям</button>
+    <h1 class="page-title">🪟 Окна</h1>
+    <div class="blue-box">
+      <div class="white-box">
+        <div class="service-row"><div class="service-info"><div class="service-name">Монтаж пластиковых/деревянных окон</div><div class="service-desc">Монтаж окон, установка рам, герметизация швов и отделка откосов.</div></div><label class="toggle"><input type="checkbox" data-cat="windows" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div>
+        <div class="service-row"><div class="service-info"><div class="service-name">Ремонт пластиковых окон/дверей</div><div class="service-desc">Замена стеклопакетов, регулировка фурнитуры, устранение проблем с герметичностью и ремонт откосов.</div></div><label class="toggle"><input type="checkbox" data-cat="windows" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cleaning -->
+  <div class="view" id="view-cleaning">
+    <button class="back-btn" onclick="showView('view-hub')">← Назад к категориям</button>
+    <h1 class="page-title">🧴 Клининг</h1>
+    <div class="blue-box">
+      <div class="cleaning-grid">
+        <div class="cleaning-card"><div class="service-row"><div class="service-info"><div class="service-name">Генеральная уборка</div><div class="service-desc">Комплексная уборка помещения, мойка фасадов и остекления</div></div><label class="toggle"><input type="checkbox" data-cat="cleaning" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="cleaning-card"><div class="service-row"><div class="service-info"><div class="service-name">Ежедневная уборка</div><div class="service-desc">Уборка на ежедневной основе, влажная уборка, мытьё полов, вынос мусора</div></div><label class="toggle"><input type="checkbox" data-cat="cleaning" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="cleaning-card"><div class="service-row"><div class="service-info"><div class="service-name">Специализированная уборка</div><div class="service-desc">Удаление сложных загрязнений, уборка с применением специализированных навыков и оборудования</div></div><label class="toggle"><input type="checkbox" data-cat="cleaning" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Doors -->
+  <div class="view" id="view-doors">
+    <button class="back-btn" onclick="showView('view-hub')">← Назад к категориям</button>
+    <h1 class="page-title">🚪 Двери</h1>
+    <div class="blue-box">
+      <div class="white-box">
+        <div class="service-row"><div class="service-info"><div class="service-name">Монтаж межкомнатных дверей</div><div class="service-desc">Монтаж межкомнатных дверей, установка доборов, петель, ручек и регулировка замка</div></div><label class="toggle"><input type="checkbox" data-cat="doors" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div>
+        <div class="service-row"><div class="service-info"><div class="service-name">Монтаж водных дверей</div></div><label class="toggle"><input type="checkbox" data-cat="doors" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Heating -->
+  <div class="view" id="view-heating">
+    <button class="back-btn" onclick="showView('view-hub')">← Назад к категориям</button>
+    <h1 class="page-title">🔥 Системы отопления</h1>
+    <div class="blue-box">
+      <div class="heating-grid">
+        <div class="heating-card"><div class="service-row"><div class="service-info"><div class="service-name">Монтаж радиатора на полипропилен/металлопласт</div><div class="service-desc">Установка смесителей, унитазов, сифонов, приборов учёта, ремонт труб и устранение протечек</div></div><label class="toggle"><input type="checkbox" data-cat="heating" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="heating-card"><div class="service-row"><div class="service-info"><div class="service-name">Монтаж радиатора на сварку</div><div class="service-desc">Монтаж радиаторов, сварку металлических труб и подключение к системе отопления</div></div><label class="toggle"><input type="checkbox" data-cat="heating" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="heating-card"><div class="service-row"><div class="service-info"><div class="service-name">Монтаж радиатора на сталь</div><div class="service-desc">Монтаж радиаторов, нарезка резьбы на трубах и подключение к системе отопления</div></div><label class="toggle"><input type="checkbox" data-cat="heating" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="heating-card"><div class="service-row"><div class="service-info"><div class="service-name">Монтаж полотенцесушителя</div><div class="service-desc">Монтаж полотенцесушителя на резьбе и подключение к системе отопления</div></div><label class="toggle"><input type="checkbox" data-cat="heating" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="heating-card"><div class="service-row"><div class="service-info"><div class="service-name">Монтаж радиатора на сшитый полиэтилен</div><div class="service-desc">Сборка и монтаж кабины или уголка, подключение к водопроводу и канализации, герметизация швов</div></div><label class="toggle"><input type="checkbox" data-cat="heating" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="heating-card"><div class="service-row"><div class="service-info"><div class="service-name">Монтаж водяных тёплых полов</div><div class="service-desc">Проектирование системы, укладка трубопроводов, подключение к котлу и заполнение системы теплоносителя</div></div><label class="toggle"><input type="checkbox" data-cat="heating" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Video -->
+  <div class="view" id="view-video">
+    <button class="back-btn" onclick="showView('view-hub')">← Назад к категориям</button>
+    <h1 class="page-title">📹 Видеонаблюдение и охранные системы</h1>
+    <div class="blue-box">
+      <div class="white-box">
+        <div class="service-row">
+          <div class="service-info">
+            <div class="service-name">Монтаж и настройка видеонаблюдения</div>
+            <div class="service-desc">Монтаж, настройка, замена и демонтаж камер видеонаблюдения.</div>
+          </div>
+          <label class="toggle"><input type="checkbox" data-cat="video" checked onchange="onToggleChange(this)"><span class="slider"></span></label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KKM -->
+  <div class="view" id="view-kkm">
+    <button class="back-btn" onclick="showView('view-hub')">← Назад к категориям</button>
+    <h1 class="page-title">🧾 Кассы ККМ</h1>
+    <div class="blue-box">
+      <div class="white-box">
+        <div class="service-row">
+          <div class="service-info">
+            <div class="service-name">Обслуживание ККМ</div>
+            <div class="service-desc">Регистрация, ремонт, модернизация и программирование контрольно-кассовых машин.</div>
+          </div>
+          <label class="toggle"><input type="checkbox" data-cat="kkm" checked onchange="onToggleChange(this)"><span class="slider"></span></label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Plumbing -->
+  <div class="view" id="view-plumbing">
+    <button class="back-btn" onclick="showView('view-hub')">← Назад к категориям</button>
+    <h1 class="page-title">🚿 Сантехника</h1>
+    <div class="blue-box">
+      <div class="plumbing-grid">
+        <div class="plumbing-card"><div class="service-row"><div class="service-info"><div class="service-name">Установка смесителей</div><div class="service-desc">Монтаж и замена смесителей на кухне и в ванной, подключение к водопроводу</div></div><label class="toggle"><input type="checkbox" data-cat="plumbing" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="plumbing-card"><div class="service-row"><div class="service-info"><div class="service-name">Монтаж унитазов</div><div class="service-desc">Установка, замена и ремонт унитазов, подключение к канализации</div></div><label class="toggle"><input type="checkbox" data-cat="plumbing" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="plumbing-card"><div class="service-row"><div class="service-info"><div class="service-name">Замена труб</div><div class="service-desc">Замена водопроводных и канализационных труб, устранение протечек</div></div><label class="toggle"><input type="checkbox" data-cat="plumbing" onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="plumbing-card"><div class="service-row"><div class="service-info"><div class="service-name">Установка раковин</div><div class="service-desc">Монтаж раковин, умывальников, подключение сифона и водопровода</div></div><label class="toggle"><input type="checkbox" data-cat="plumbing" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="plumbing-card"><div class="service-row"><div class="service-info"><div class="service-name">Прочистка канализации</div><div class="service-desc">Устранение засоров, прочистка труб механическим и химическим способом</div></div><label class="toggle"><input type="checkbox" data-cat="plumbing" onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="plumbing-card"><div class="service-row"><div class="service-info"><div class="service-name">Установка водонагревателей</div><div class="service-desc">Монтаж бойлеров и проточных водонагревателей, подключение к электросети и водопроводу</div></div><label class="toggle"><input type="checkbox" data-cat="plumbing" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="plumbing-card"><div class="service-row"><div class="service-info"><div class="service-name">Монтаж стиральных машин</div><div class="service-desc">Подключение стиральных и посудомоечных машин к водопроводу и канализации</div></div><label class="toggle"><input type="checkbox" data-cat="plumbing" onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HVAC -->
+  <div class="view" id="view-hvac">
+    <button class="back-btn" onclick="showView('view-hub')">← Назад к категориям</button>
+    <h1 class="page-title">❄️ Вентиляция и кондиционирование (ОВиК)</h1>
+    <div class="blue-box">
+      <div class="hvac-grid">
+        <div class="hvac-card"><div class="service-row"><div class="service-info"><div class="service-name">Монтаж вентиляции</div><div class="service-desc">Проектирование и установка приточно-вытяжных систем вентиляции</div></div><label class="toggle"><input type="checkbox" data-cat="hvac" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="hvac-card"><div class="service-row"><div class="service-info"><div class="service-name">Установка кондиционеров</div><div class="service-desc">Монтаж сплит-систем, мульти-сплит систем, подключение и пусконаладка</div></div><label class="toggle"><input type="checkbox" data-cat="hvac" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="hvac-card"><div class="service-row"><div class="service-info"><div class="service-name">Обслуживание систем вентиляции</div><div class="service-desc">Плановое ТО, замена фильтров, проверка производительности</div></div><label class="toggle"><input type="checkbox" data-cat="hvac" onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="hvac-card"><div class="service-row"><div class="service-info"><div class="service-name">Чистка воздуховодов</div><div class="service-desc">Механическая и химическая очистка вентиляционных каналов</div></div><label class="toggle"><input type="checkbox" data-cat="hvac" onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="hvac-card"><div class="service-row"><div class="service-info"><div class="service-name">Монтаж вытяжек</div><div class="service-desc">Установка кухонных и промышленных вытяжных систем</div></div><label class="toggle"><input type="checkbox" data-cat="hvac" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Other -->
+  <div class="view" id="view-other">
+    <button class="back-btn" onclick="showView('view-hub')">← Назад к категориям</button>
+    <h1 class="page-title">📦 Прочие услуги</h1>
+    <div class="blue-box">
+      <div class="other-grid">
+        <div class="other-card"><div class="service-row"><div class="service-info"><div class="service-name">Грузоперевозки</div><div class="service-desc">Перевозка грузов, мебели, стройматериалов. Газели и грузовики</div></div><label class="toggle"><input type="checkbox" data-cat="other" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="other-card"><div class="service-row"><div class="service-info"><div class="service-name">Разнорабочий</div><div class="service-desc">Помощь на стройке, погрузочно-разгрузочные работы, подсобные работы</div></div><label class="toggle"><input type="checkbox" data-cat="other" onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="other-card"><div class="service-row"><div class="service-info"><div class="service-name">Курьерские услуги</div><div class="service-desc">Доставка документов, посылок, мелких грузов по городу</div></div><label class="toggle"><input type="checkbox" data-cat="other" onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="other-card"><div class="service-row"><div class="service-info"><div class="service-name">Уборка территории</div><div class="service-desc">Уборка снега, листвы, мусора на придомовой территории</div></div><label class="toggle"><input type="checkbox" data-cat="other" checked onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+        <div class="other-card"><div class="service-row"><div class="service-info"><div class="service-name">Охрана объектов</div><div class="service-desc">Физическая охрана строительных площадок и объектов</div></div><label class="toggle"><input type="checkbox" data-cat="other" onchange="onToggleChange(this)"><span class="slider"></span></label></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sticky footer -->
+  <div class="sticky-footer">
+    <div class="footer-info">
+      <div class="footer-stat">
+        📊 Выбрано: <strong id="footer-selected">0</strong>
+      </div>
+      <div class="footer-stat">
+        📁 Категорий: <strong id="footer-categories">0</strong>
+      </div>
+    </div>
+    <div class="footer-actions">
+      <button class="btn-discard" onclick="discardChanges()">Отменить изменения</button>
+      <button class="btn-save-all" onclick="saveAll()">💾 Сохранить все изменения</button>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // Burger
+  document.querySelector('.burger').addEventListener('click', function() {
+    document.querySelector('nav').classList.toggle('open');
+  });
+
+  // Закрытие меню профиля
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.profile-dropdown') && !e.target.closest('.header-logo .avatar')) {
+      document.querySelectorAll('.profile-menu').forEach(m => m.classList.remove('show'));
+    }
+  });
+
+  // Toast
+  function showToast(msg, type = '') {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.className = 'toast ' + type + ' show';
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  // Переключение view
+  function showView(id) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Пагинация
+  let currentPage = 1;
+  function goToPage(n) {
+    currentPage = n;
+    document.getElementById('tools-page-1').style.display = n === 1 ? 'block' : 'none';
+    document.getElementById('tools-page-2').style.display = n === 2 ? 'block' : 'none';
+    document.querySelectorAll('.page-num').forEach(el => {
+      el.classList.toggle('active', parseInt(el.dataset.page) === n);
+    });
+    document.getElementById('prev-btn').disabled = n === 1;
+    document.getElementById('next-btn').disabled = n === 2;
+  }
+  function changePage(delta) {
+    const next = currentPage + delta;
+    if (next >= 1 && next <= 2) goToPage(next);
+  }
+
+  // Загрузка файлов
+  function handleFileUpload(input, uploadId) {
+    const label = document.getElementById(uploadId);
+    if (input.files.length > 0) {
+      const file = input.files[0];
+      if (file.size > 10 * 1024 * 1024) {
+        showToast('⚠ Файл слишком большой (макс. 10 МБ)', '');
+        input.value = '';
+        return;
+      }
+      label.classList.add('uploaded');
+      label.querySelector('.icon').textContent = '✅';
+      label.querySelector('.filename').textContent = file.name;
+      showToast('📎 Файл прикреплён: ' + file.name, 'success');
+    }
+  }
+
+  // Обработка переключения toggle
+  function onToggleChange(checkbox) {
+    const cat = checkbox.dataset.cat;
+    const name = checkbox.closest('.service-row, .tool-row').querySelector('.service-name, .tool-name').textContent;
+    
+    if (checkbox.checked) {
+      showToast('✓ Добавлено: ' + name, 'success');
+    } else {
+      showToast('✗ Удалено: ' + name, 'info');
+    }
+    
+    updateStats();
+  }
+
+  // Обновление статистики
+  function updateStats() {
+    const allCheckboxes = document.querySelectorAll('input[type="checkbox"][data-cat]');
+    const checkedCheckboxes = document.querySelectorAll('input[type="checkbox"][data-cat]:checked');
+    
+    const total = allCheckboxes.length;
+    const checked = checkedCheckboxes.length;
+    const percent = total > 0 ? Math.round((checked / total) * 100) : 0;
+    
+    // Подсчёт по категориям
+    const catCounts = {};
+    const catChecked = {};
+    allCheckboxes.forEach(cb => {
+      const cat = cb.dataset.cat;
+      catCounts[cat] = (catCounts[cat] || 0) + 1;
+      if (cb.checked) catChecked[cat] = (catChecked[cat] || 0) + 1;
+    });
+    
+    // Обновляем бейджи на hub-карточках
+    document.querySelectorAll('.hub-count').forEach(badge => {
+      const cat = badge.dataset.cat;
+      const count = catChecked[cat] || 0;
+      const total = catCounts[cat] || 0;
+      badge.textContent = count + '/' + total;
+      badge.classList.toggle('active', count > 0);
+    });
+    
+    // Прогресс-бар
+    document.getElementById('progress-fill').style.width = percent + '%';
+    document.getElementById('progress-percent').textContent = percent + '%';
+    document.getElementById('progress-text').textContent = 'Выбрано ' + checked + ' из ' + total;
+    
+    // Статистика
+    const toolsCount = document.querySelectorAll('input[data-cat="tools"]').length;
+    const servicesCount = total - toolsCount;
+    document.getElementById('total-services').textContent = servicesCount;
+    document.getElementById('total-tools').textContent = toolsCount;
+    
+    // Футер
+    document.getElementById('footer-selected').textContent = checked;
+    const activeCats = Object.keys(catChecked).length;
+    document.getElementById('footer-categories').textContent = activeCats;
+  }
+
+  // Сохранение
+  function saveAll() {
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Сохранение...';
+    
+    setTimeout(() => {
+      btn.innerHTML = '✓ Сохранено';
+      btn.style.background = '#10b981';
+      const checked = document.querySelectorAll('input[type="checkbox"][data-cat]:checked').length;
+      showToast('✅ Настройки сохранены! Выбрано ' + checked + ' специализаций', 'success');
+      
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+        btn.style.background = '';
+      }, 1500);
+    }, 800);
+  }
+
+  // Отмена изменений
+  function discardChanges() {
+    if (confirm('Отменить все несохранённые изменения?\n\nВсе переключатели вернутся к исходному состоянию.')) {
+      location.reload();
+    }
+  }
+
+  // Инициализация
+  updateStats();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REMPRO — Сообщения</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f7fa; color: #1a1a1a; min-height: 100vh;
+  }
+
+  header {
+    display: flex; align-items: center; padding: 12px 24px;
+    background: #fff; border-bottom: 1px solid #e8e8e8; gap: 16px; position: relative;
+  }
+  .header-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 600; font-size: 16px; white-space: nowrap;
+  }
+  .header-logo .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 13px; font-weight: 600;
+  }
+  /* Исправлен nav - убран overflow-x: auto; */
+  nav {
+    display: flex; align-items: center; gap: 20px; flex: 1;
+  }
+  nav a { text-decoration: none; color: #333; font-size: 14px; white-space: nowrap; }
+  nav a:hover, nav a.active { color: #3b82f6; }
+
+  .header-actions { display: flex; align-items: center; gap: 16px; }
+  .btn-create {
+    background: #3b82f6; border: none; color: #fff;
+    padding: 8px 20px; border-radius: 8px; font-size: 14px;
+    cursor: pointer; white-space: nowrap; font-weight: 500;
+  }
+  .btn-create:hover { background: #2563eb; }
+
+  .dropdown { position: relative; }
+  .dropdown-toggle { cursor: pointer; }
+  .dropdown-menu {
+    display: none; position: absolute; top: 100%; right: 0;
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1); min-width: 220px;
+    z-index: 1000; padding: 8px 0; margin-top: 8px;
+  }
+  .dropdown:hover .dropdown-menu { display: block; }
+  .dropdown-menu a {
+    display: block; padding: 10px 16px; font-size: 14px;
+    color: #333; text-decoration: none; white-space: nowrap;
+  }
+  .dropdown-menu a:hover { background: #f5f7fa; color: #3b82f6; }
+
+  .profile-dropdown { position: relative; }
+  .profile-menu {
+    display: none; position: absolute; top: 100%; right: 0;
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1); min-width: 200px;
+    z-index: 1000; padding: 8px 0; margin-top: 8px;
+  }
+  .profile-menu.show { display: block; }
+  .profile-menu a {
+    display: block; padding: 10px 16px; font-size: 14px;
+    color: #333; text-decoration: none;
+  }
+  .profile-menu a:hover { background: #f5f7fa; color: #3b82f6; }
+  .profile-menu .divider { height: 1px; background: #e8e8e8; margin: 8px 0; }
+  .profile-menu .logout { color: #ef4444; }
+  .profile-menu .logout:hover { background: #fee2e2; color: #dc2626; }
+
+  .burger {
+    display: none; background: none; border: none;
+    font-size: 24px; cursor: pointer; color: #333;
+  }
+
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+  }
+
+  .chat-layout {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 20px;
+    margin-top: 20px;
+    height: calc(100vh - 130px);
+    min-height: 600px;
+  }
+
+  /* Стили чатов (список) */
+  .conversations-panel {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .conversations-header {
+    padding: 20px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .search-conversations {
+    width: 100%;
+    padding: 10px 16px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 14px;
+    outline: none;
+  }
+  .search-conversations:focus { border-color: #3b82f6; }
+
+  .conversations-list { flex: 1; overflow-y: auto; }
+  .conversation-item {
+    padding: 16px 20px; border-bottom: 1px solid #f0f0f0;
+    cursor: pointer; transition: background 0.2s;
+    display: flex; gap: 12px; align-items: center;
+  }
+  .conversation-item:hover { background: #f9fafb; }
+  .conversation-item.active { background: #eff6ff; border-left: 3px solid #3b82f6; }
+  .conversation-item.unread { background: #f0f9ff; }
+  .conversation-item.hidden { display: none; }
+
+  .conv-avatar {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 16px; font-weight: 600; flex-shrink: 0;
+  }
+  .conv-info { flex: 1; min-width: 0; }
+  .conv-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .conv-last-message {
+    font-size: 13px; color: #666; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+  }
+  .conv-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
+  .conv-time { font-size: 11px; color: #999; }
+  .conv-unread {
+    background: #3b82f6; color: #fff; font-size: 11px;
+    padding: 2px 6px; border-radius: 10px; font-weight: 600;
+  }
+
+  .no-conversations {
+    text-align: center; padding: 40px 20px; color: #999; font-size: 14px; display: none;
+  }
+  .no-conversations.show { display: block; }
+  .no-conversations .icon { font-size: 32px; margin-bottom: 8px; }
+
+  /* Окно чата */
+  .chat-panel {
+    background: #fff; border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .chat-header {
+    padding: 20px; border-bottom: 1px solid #e5e7eb;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .chat-user-info { flex: 1; }
+  .chat-user-name {
+    font-size: 18px; font-weight: 600; cursor: pointer; transition: color 0.2s;
+  }
+  .chat-user-name:hover { color: #3b82f6; }
+  .chat-user-status { font-size: 13px; color: #10b981; }
+  .chat-user-status.offline { color: #9ca3af; }
+
+  .chat-header-actions { display: flex; gap: 8px; }
+  .btn-chat-action {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: #f3f4f6; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; transition: all 0.2s;
+  }
+  .btn-chat-action:hover { background: #e5e7eb; }
+
+  .chat-messages {
+    flex: 1; padding: 20px; overflow-y: auto; background: #f9fafb;
+  }
+  .message {
+    margin-bottom: 16px; display: flex; gap: 12px; animation: fadeIn 0.3s;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .message.incoming { flex-direction: row; }
+  .message.outgoing { flex-direction: row-reverse; }
+  .message-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 14px; font-weight: 600; flex-shrink: 0;
+  }
+  .message-content { max-width: 70%; }
+  .message-bubble {
+    background: #fff; padding: 12px 16px; border-radius: 12px;
+    font-size: 14px; line-height: 1.5; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    word-wrap: break-word;
+  }
+  .message.outgoing .message-bubble { background: #3b82f6; color: #fff; }
+  .message-time { font-size: 11px; color: #999; margin-top: 4px; }
+  .message.outgoing .message-time { text-align: right; }
+
+  .typing-indicator {
+    display: none; padding: 8px 12px; font-size: 12px; color: #6b7280; font-style: italic;
+  }
+  .typing-indicator.show { display: block; }
+
+  .chat-input {
+    padding: 20px; border-top: 1px solid #e5e7eb;
+    display: flex; gap: 12px; align-items: center;
+  }
+  .chat-input-actions { display: flex; gap: 6px; }
+  .btn-input-action {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: #f3f4f6; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+  }
+  .btn-input-action:hover { background: #e5e7eb; }
+
+  .chat-input input {
+    flex: 1; padding: 12px 16px; border: 1px solid #ddd;
+    border-radius: 24px; font-size: 14px; outline: none;
+  }
+  .chat-input input:focus { border-color: #3b82f6; }
+  .btn-send {
+    background: #3b82f6; color: #fff; border: none;
+    width: 44px; height: 44px; border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; transition: all 0.2s;
+  }
+  .btn-send:hover:not(:disabled) { background: #2563eb; transform: scale(1.05); }
+
+  /* Toast-уведомления */
+  .toast {
+    position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
+    background: #333; color: #fff; padding: 12px 24px; border-radius: 8px;
+    font-size: 14px; font-weight: 500; transition: bottom 0.3s ease; z-index: 9999;
+  }
+  .toast.show { bottom: 30px; }
+
+  @media (max-width: 768px) {
+    nav { display: none; }
+    nav.open {
+      display: flex; flex-direction: column; position: absolute; top: 56px; left: 0; right: 0;
+      background: #fff; padding: 20px; border-bottom: 1px solid #e8e8e8; z-index: 100; gap: 14px;
+    }
+    .burger { display: block; }
+    .chat-layout { grid-template-columns: 1fr; height: calc(100vh - 150px); }
+    .conversations-panel { display: none; }
+    .conversations-panel.mobile-show { display: flex; }
+    .chat-panel.mobile-hide { display: none; }
+    .dropdown-menu, .profile-menu { position: fixed; top: 70px; right: 20px; }
+    .btn-back-chat { display: inline-flex !important; }
+  }
+  .btn-back-chat {
+    display: none; background: #f3f4f6; border: none; padding: 8px 14px;
+    border-radius: 8px; font-size: 13px; cursor: pointer; margin-right: 12px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="burger" onclick="document.querySelector('nav').classList.toggle('open')">☰</button>
+  <div class="header-logo">
+    <div class="avatar">МГ</div>
+    <span>Максим Гусев</span>
+  </div>
+  <nav>
+    <a href="dashboard.html">Рабочий стол</a>
+    <a href="projects.html">Проекты</a>
+    <a href="search.html">Поиск</a>
+    <a href="messages.html" class="active">Сообщения</a>
+    <a href="notifications.html">Уведомления</a>
+    <a href="finance.html">Финансы</a>
+    <div class="dropdown">
+      <a href="#" class="dropdown-toggle">Ещё ▾</a>
+      <div class="dropdown-menu">
+        <a href="calendar.html">📅 Календарь</a>
+        <a href="documents.html">📄 Документы</a>
+        <a href="reviews.html">⭐ Отзывы</a>
+        <a href="portfolio.html">🖼️ Портфолио</a>
+        <a href="workers.html">👷 Рабочие</a>
+        <a href="panels.html">📊 Панели</a>
+        <a href="reports.html">📈 Отчёты</a>
+        <a href="specializations.html">🔧 Специализация</a>
+        <a href="admin.html">⚙️ Администратор</a>
+        <a href="manager.html">👔 Менеджер</a>
+      </div>
+    </div>
+  </nav>
+  <div class="header-actions">
+    <!-- Заменено 404 на Toast уведомление -->
+    <button class="btn-create" onclick="showToast('📋 Выбор контакта для сообщения...')">+ Создать</button>
+    <div class="profile-dropdown">
+      <div class="avatar" onclick="document.querySelector('.profile-menu').classList.toggle('show')">МГ</div>
+      <div class="profile-menu">
+        <a href="profile.html">👤 Мой профиль</a>
+        <a href="personal-data.html">🛡️ Персональные данные</a>
+        <a href="settings.html">⚙️ Настройки</a>
+        <a href="help.html">❓ Помощь</a>
+        <div class="divider"></div>
+        <a href="login.html" class="logout">🚪 Выйти</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="chat-layout">
+    <!-- Conversations -->
+    <div class="conversations-panel" id="conv-panel">
+      <div class="conversations-header">
+        <input type="text" class="search-conversations" id="search-conv" placeholder="Поиск сообщений...">
+      </div>
+      <div class="conversations-list" id="conv-list">
+        <div class="conversation-item active unread" data-id="1" data-name="иван сидоров" onclick="selectChat(this, 1)">
+          <div class="conv-avatar">ИС</div>
+          <div class="conv-info">
+            <div class="conv-name">Иван Сидоров</div>
+            <div class="conv-meta">
+              <div class="conv-last-message">Хорошо, договорились. Буду в 10:00</div>
+              <div>
+                <span class="conv-time">14:32</span>
+                <span class="conv-unread">2</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="conversation-item" data-id="2" data-name="алексей петров" onclick="selectChat(this, 2)">
+          <div class="conv-avatar">АП</div>
+          <div class="conv-info">
+            <div class="conv-name">Алексей Петров</div>
+            <div class="conv-meta">
+              <div class="conv-last-message">Отправил фото щита, посмотрите</div>
+              <span class="conv-time">Вчера</span>
+            </div>
+          </div>
+        </div>
+        <div class="conversation-item" data-id="3" data-name="мария козлова" onclick="selectChat(this, 3)">
+          <div class="conv-avatar">МК</div>
+          <div class="conv-info">
+            <div class="conv-name">Мария Козлова</div>
+            <div class="conv-meta">
+              <div class="conv-last-message">Спасибо за заказ!</div>
+              <span class="conv-time">07.06</span>
+            </div>
+          </div>
+        </div>
+        <div class="conversation-item" data-id="4" data-name="дмитрий волков" onclick="selectChat(this, 4)">
+          <div class="conv-avatar">ДВ</div>
+          <div class="conv-info">
+            <div class="conv-name">Дмитрий Волков</div>
+            <div class="conv-meta">
+              <div class="conv-last-message">Когда можно начать работу?</div>
+              <span class="conv-time">05.06</span>
+            </div>
+          </div>
+        </div>
+        <div class="conversation-item" data-id="5" data-name="ооо стройка" onclick="selectChat(this, 5)">
+          <div class="conv-avatar">ОС</div>
+          <div class="conv-info">
+            <div class="conv-name">ООО «Стройка»</div>
+            <div class="conv-meta">
+              <div class="conv-last-message">Документы подписаны, спасибо!</div>
+              <span class="conv-time">03.06</span>
+            </div>
+          </div>
+        </div>
+        <div class="conversation-item" data-id="6" data-name="елена новикова" onclick="selectChat(this, 6)">
+          <div class="conv-avatar">ЕН</div>
+          <div class="conv-info">
+            <div class="conv-name">Елена Новикова</div>
+            <div class="conv-meta">
+              <div class="conv-last-message">Можно перенести встречу?</div>
+              <span class="conv-time">01.06</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="no-conversations" id="no-conv">
+        <div class="icon">🔍</div>
+        Ничего не найдено
+      </div>
+    </div>
+
+    <!-- Chat -->
+    <div class="chat-panel" id="chat-panel">
+      <div class="chat-header">
+        <button class="btn-back-chat" onclick="backToList()">← Назад</button>
+        <div class="conv-avatar" id="chat-avatar">ИС</div>
+        <div class="chat-user-info">
+          <!-- Заменено 404 на профиль клиента -->
+          <div class="chat-user-name" id="chat-name" onclick="location.href='worker-detail.html'">Иван Сидоров</div>
+          <div class="chat-user-status" id="chat-status">● Онлайн</div>
+        </div>
+        <!-- Заменены alert и 404 на Toast / реальную ссылку -->
+        <div class="chat-header-actions">
+          <button class="btn-chat-action" onclick="showToast('📞 Выполняется аудиовызов...')" title="Позвонить">📞</button>
+          <button class="btn-chat-action" onclick="showToast('📹 Выполняется видеозвонок...')" title="Видеозвонок">📹</button>
+          <button class="btn-chat-action" onclick="location.href='worker-detail.html'" title="Профиль">ℹ️</button>
+        </div>
+      </div>
+
+      <div class="chat-messages" id="chat-messages">
+        <!-- Сообщения подставляются через JS -->
+      </div>
+
+      <div class="typing-indicator" id="typing">💭 собеседник печатает...</div>
+
+      <div class="chat-input">
+        <div class="chat-input-actions">
+          <button class="btn-input-action" onclick="showToast('📎 Открыто окно выбора файла')" title="Прикрепить">📎</button>
+          <button class="btn-input-action" onclick="showToast('😊 Подбор эмодзи')" title="Эмодзи">😊</button>
+        </div>
+        <input type="text" id="msg-input" placeholder="Напишите сообщение..." onkeypress="handleEnter(event)">
+        <button class="btn-send" id="btn-send" onclick="sendMessage()">➤</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // Функция Toast
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => { toast.classList.remove('show'); }, 2000);
+  }
+
+  // Данные чатов
+  const chats = {
+    1: {
+      name: 'Иван Сидоров', avatar: 'ИС', status: '● Онлайн', statusClass: '',
+      messages: [
+        { type: 'incoming', text: 'Здравствуйте! Подскажите, когда можно подъехать для выполнения заказа?', time: '14:28' },
+        { type: 'outgoing', text: 'Добрый день! Можете завтра в 10:00?', time: '14:30' },
+        { type: 'incoming', text: 'Да, отлично! Буду завтра в 10:00 по адресу ул. Гагарина, 8', time: '14:31' },
+        { type: 'incoming', text: 'Хорошо, договорились. Буду в 10:00', time: '14:32' },
+      ]
+    },
+    2: {
+      name: 'Алексей Петров', avatar: 'АП', status: '● Был 10 минут назад', statusClass: 'offline',
+      messages: [
+        { type: 'incoming', text: 'Доброе утро! Я закончил монтаж щита на объекте.', time: '12:15' },
+        { type: 'outgoing', text: 'Отлично! Пришлите фото результата.', time: '12:20' },
+        { type: 'incoming', text: 'Отправил фото щита, посмотрите', time: '12:22' },
+      ]
+    },
+    3: {
+      name: 'Мария Козлова', avatar: 'МК', status: '● Онлайн', statusClass: '',
+      messages: [
+        { type: 'outgoing', text: 'Мария, добрый день! Как прошла уборка?', time: '09:30' },
+        { type: 'incoming', text: 'Всё отлично! Заказчик доволен.', time: '15:45' },
+        { type: 'incoming', text: 'Спасибо за заказ!', time: '15:45' },
+      ]
+    },
+    4: {
+      name: 'Дмитрий Волков', avatar: 'ДВ', status: '● Был вчера', statusClass: 'offline',
+      messages: [
+        { type: 'incoming', text: 'Когда можно начать работу?', time: '05.06' },
+        { type: 'outgoing', text: 'Планируем на следующую неделю, сообщу точно.', time: '05.06' },
+      ]
+    },
+    5: {
+      name: 'ООО «Стройка»', avatar: 'ОС', status: '● Компания', statusClass: '',
+      messages: [
+        { type: 'outgoing', text: 'Добрый день! Высылаю подписанные документы.', time: '10:15' },
+        { type: 'incoming', text: 'Получили, проверяем.', time: '11:30' },
+        { type: 'incoming', text: 'Документы подписаны, спасибо!', time: '14:20' },
+      ]
+    },
+    6: {
+      name: 'Елена Новикова', avatar: 'ЕН', status: '● Не в сети', statusClass: 'offline',
+      messages: [
+        { type: 'incoming', text: 'Можно перенести встречу?', time: '01.06' },
+        { type: 'outgoing', text: 'Да, конечно. Когда удобно?', time: '01.06' },
+      ]
+    }
+  };
+
+  let currentChat = 1;
+
+  function selectChat(el, id) {
+    document.querySelectorAll('.conversation-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    el.classList.remove('unread');
+    const unreadBadge = el.querySelector('.conv-unread');
+    if (unreadBadge) unreadBadge.remove();
+    
+    currentChat = id;
+    renderChat(id);
+    
+    if (window.innerWidth <= 768) {
+      document.getElementById('conv-panel').classList.remove('mobile-show');
+      document.getElementById('conv-panel').style.display = 'none';
+      document.getElementById('chat-panel').classList.remove('mobile-hide');
+    }
+  }
+
+  function backToList() {
+    document.getElementById('conv-panel').style.display = 'flex';
+    document.getElementById('conv-panel').classList.add('mobile-show');
+    document.getElementById('chat-panel').classList.add('mobile-hide');
+  }
+
+  function renderChat(id) {
+    const chat = chats[id];
+    document.getElementById('chat-avatar').textContent = chat.avatar;
+    document.getElementById('chat-name').textContent = chat.name;
+    const statusEl = document.getElementById('chat-status');
+    statusEl.textContent = chat.status;
+    statusEl.className = 'chat-user-status ' + chat.statusClass;
+
+    const msgContainer = document.getElementById('chat-messages');
+    msgContainer.innerHTML = '';
+    chat.messages.forEach(m => {
+      const msg = document.createElement('div');
+      msg.className = 'message ' + m.type;
+      const avatar = m.type === 'incoming' ? chat.avatar : 'МГ';
+      msg.innerHTML = `
+        <div class="message-avatar">${avatar}</div>
+        <div class="message-content">
+          <div class="message-bubble">${escapeHtml(m.text)}</div>
+          <div class="message-time">${m.time}</div>
+        </div>
+      `;
+      msgContainer.appendChild(msg);
+    });
+    msgContainer.scrollTop = msgContainer.scrollHeight;
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function getCurrentTime() {
+    const now = new Date();
+    return String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+  }
+
+  function sendMessage() {
+    const input = document.getElementById('msg-input');
+    const text = input.value.trim();
+    if (!text) return;
+
+    chats[currentChat].messages.push({
+      type: 'outgoing', text: text, time: getCurrentTime()
+    });
+    input.value = '';
+    renderChat(currentChat);
+
+    const activeConv = document.querySelector('.conversation-item.active .conv-last-message');
+    if (activeConv) activeConv.textContent = text.substring(0, 40) + (text.length > 40 ? '...' : '');
+    const timeEl = document.querySelector('.conversation-item.active .conv-time');
+    if (timeEl) timeEl.textContent = getCurrentTime();
+
+    const typingEl = document.getElementById('typing');
+    typingEl.classList.add('show');
+    setTimeout(() => {
+      typingEl.classList.remove('show');
+      const replies = ['Понял, спасибо!', 'Хорошо, договорились.', 'Отлично!', 'Принято, буду иметь в виду.', 'Ок, сделаю.'];
+      const reply = replies[Math.floor(Math.random() * replies.length)];
+      chats[currentChat].messages.push({ type: 'incoming', text: reply, time: getCurrentTime() });
+      renderChat(currentChat);
+    }, 2000);
+  }
+
+  function handleEnter(e) { if (e.key === 'Enter') sendMessage(); }
+
+  document.getElementById('search-conv').addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    const items = document.querySelectorAll('.conversation-item');
+    let visible = 0;
+    items.forEach(item => {
+      if (item.dataset.name.includes(q)) {
+        item.classList.remove('hidden'); visible++;
+      } else {
+        item.classList.add('hidden');
+      }
+    });
+    document.getElementById('no-conv').classList.toggle('show', visible === 0);
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.profile-dropdown')) {
+      document.querySelectorAll('.profile-menu').forEach(m => m.classList.remove('show'));
+    }
+  });
+
+  document.querySelector('.burger').addEventListener('click', function() {
+    document.querySelector('nav').classList.toggle('open');
+  });
+
+  renderChat(1);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REMPRO — Отчёты</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f7fa; color: #1a1a1a; min-height: 100vh;
+  }
+
+  header {
+    display: flex; align-items: center; padding: 12px 24px;
+    background: #fff; border-bottom: 1px solid #e8e8e8; gap: 16px; position: relative;
+  }
+  .header-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 600; font-size: 16px; white-space: nowrap;
+  }
+  .header-logo .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 13px; font-weight: 600;
+    cursor: pointer;
+  }
+  nav {
+    display: flex; align-items: center; gap: 20px; flex: 1; overflow-x: auto;
+  }
+  nav a { text-decoration: none; color: #333; font-size: 14px; white-space: nowrap; }
+  nav a:hover, nav a.active { color: #3b82f6; }
+
+  .header-actions { display: flex; align-items: center; gap: 16px; }
+  .btn-create {
+    background: #3b82f6; border: none; color: #fff;
+    padding: 8px 20px; border-radius: 8px; font-size: 14px;
+    cursor: pointer; white-space: nowrap; font-weight: 500;
+  }
+  .btn-create:hover { background: #2563eb; }
+
+  .dropdown { position: relative; }
+  .dropdown-toggle { cursor: pointer; }
+  .dropdown-menu {
+    display: none; position: absolute; top: 100%; right: 0;
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1); min-width: 220px;
+    z-index: 1000; padding: 8px 0; margin-top: 8px;
+  }
+  .dropdown:hover .dropdown-menu { display: block; }
+  .dropdown-menu a, .dropdown-menu button {
+    display: block; padding: 10px 16px; font-size: 14px;
+    color: #333; text-decoration: none; white-space: nowrap;
+    width: 100%; background: none; border: none; text-align: left;
+    cursor: pointer; font-family: inherit;
+  }
+  .dropdown-menu a:hover, .dropdown-menu button:hover { background: #f5f7fa; color: #3b82f6; }
+
+  .profile-dropdown { position: relative; }
+  .profile-menu {
+    display: none; position: absolute; top: 100%; right: 0;
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1); min-width: 220px;
+    z-index: 1000; padding: 8px 0; margin-top: 8px;
+  }
+  .profile-menu.show { display: block; }
+  .profile-menu a {
+    display: block; padding: 10px 16px; font-size: 14px;
+    color: #333; text-decoration: none;
+  }
+  .profile-menu a:hover { background: #f5f7fa; color: #3b82f6; }
+  .profile-menu .divider { height: 1px; background: #e8e8e8; margin: 8px 0; }
+  .profile-menu .logout { color: #ef4444; }
+  .profile-menu .logout:hover { background: #fee2e2; color: #dc2626; }
+
+  .burger {
+    display: none; background: none; border: none;
+    font-size: 24px; cursor: pointer; color: #333;
+  }
+
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 20px 60px;
+  }
+
+  .breadcrumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: #666; margin-bottom: 16px;
+  }
+  .breadcrumbs a { color: #3b82f6; text-decoration: none; }
+  .breadcrumbs a:hover { text-decoration: underline; }
+  .breadcrumbs .sep { color: #ccc; }
+
+  .page-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 24px; flex-wrap: wrap; gap: 16px;
+  }
+  .page-title { font-size: 28px; font-weight: 700; }
+  .report-counter {
+    background: #eff6ff; color: #3b82f6;
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 13px; font-weight: 600;
+  }
+
+  .reports-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+  }
+
+  .reports-sidebar {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+  }
+  .sidebar-title {
+    font-size: 12px; color: #6b7280; text-transform: uppercase;
+    letter-spacing: 0.5px; margin-bottom: 12px; font-weight: 600;
+  }
+  .report-type {
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #374151;
+    text-decoration: none;
+    border: none; background: none; width: 100%; text-align: left;
+    font-family: inherit;
+  }
+  .report-type:hover { background: #f5f7fa; color: #3b82f6; }
+  .report-type.active {
+    background: #3b82f6;
+    color: #fff;
+  }
+  .report-type .rt-arrow {
+    margin-left: auto; opacity: 0.5; font-size: 12px;
+  }
+  .report-type.active .rt-arrow { opacity: 1; }
+
+  .sidebar-footer {
+    margin-top: 16px; padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+  }
+  .sidebar-footer .report-type {
+    color: #6b7280;
+    font-size: 13px;
+  }
+
+  .reports-content {
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+
+  .report-view { display: none; }
+  .report-view.active { display: block; animation: fadeIn 0.3s; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .report-header {
+    margin-bottom: 32px;
+    display: flex; justify-content: space-between; align-items: flex-start;
+    flex-wrap: wrap; gap: 16px;
+  }
+  .report-title {
+    font-size: 24px; font-weight: 700; margin-bottom: 8px;
+  }
+  .report-period {
+    font-size: 14px; color: #666;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .period-edit {
+    background: #f3f4f6; border: none;
+    padding: 4px 10px; border-radius: 6px;
+    font-size: 12px; color: #3b82f6;
+    cursor: pointer; font-weight: 500;
+  }
+  .period-edit:hover { background: #e5e7eb; }
+
+  .report-filters {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 16px; background: #f9fafb;
+    border-radius: 12px; border: 1px solid #e5e7eb;
+  }
+  .filter-select {
+    padding: 10px 14px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 14px;
+    outline: none;
+    background: #fff;
+    cursor: pointer;
+  }
+  .filter-select:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+  .filter-reset {
+    background: none; border: none; color: #6b7280;
+    font-size: 13px; cursor: pointer; padding: 10px 14px;
+    border-radius: 10px;
+  }
+  .filter-reset:hover { background: #e5e7eb; color: #1a1a1a; }
+
+  .report-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .summary-card {
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    color: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .summary-card::before {
+    content: "→"; position: absolute;
+    top: 16px; right: 16px;
+    opacity: 0; transition: opacity 0.2s;
+    font-size: 18px;
+  }
+  .summary-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(59,130,246,0.3);
+  }
+  .summary-card:hover::before { opacity: 1; }
+  .summary-card.secondary { background: linear-gradient(135deg, #10b981, #059669); }
+  .summary-card.secondary:hover { box-shadow: 0 8px 24px rgba(16,185,129,0.3); }
+  .summary-card.warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
+  .summary-card.warning:hover { box-shadow: 0 8px 24px rgba(245,158,11,0.3); }
+  .summary-card.danger { background: linear-gradient(135deg, #ef4444, #dc2626); }
+  .summary-card.danger:hover { box-shadow: 0 8px 24px rgba(239,68,68,0.3); }
+  .summary-label {
+    font-size: 13px; opacity: 0.9; margin-bottom: 8px;
+  }
+  .summary-value {
+    font-size: 32px; font-weight: 700;
+  }
+  .summary-delta {
+    font-size: 12px; opacity: 0.8; margin-top: 4px;
+    display: flex; align-items: center; gap: 4px;
+  }
+
+  .report-section {
+    margin-bottom: 32px;
+  }
+  .section-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 16px; flex-wrap: wrap; gap: 12px;
+  }
+  .section-title {
+    font-size: 18px; font-weight: 600;
+  }
+  .section-link {
+    font-size: 13px; color: #3b82f6; text-decoration: none;
+    font-weight: 500;
+  }
+  .section-link:hover { text-decoration: underline; }
+
+  .report-table-wrap { overflow-x: auto; }
+  .report-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+  }
+  .report-table th {
+    text-align: left;
+    padding: 12px;
+    font-size: 13px;
+    color: #666;
+    font-weight: 600;
+    border-bottom: 2px solid #e5e7eb;
+    white-space: nowrap;
+  }
+  .report-table td {
+    padding: 14px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+  }
+  .report-table tbody tr {
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .report-table tbody tr:hover td { background: #f9fafb; }
+  .report-table tbody tr.hidden { display: none; }
+
+  .exec-cell {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .exec-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    color: #fff; font-size: 11px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .status-pill {
+    padding: 3px 10px; border-radius: 20px;
+    font-size: 12px; font-weight: 600;
+    white-space: nowrap;
+  }
+  .status-pill.completed { background: #d1fae5; color: #065f46; }
+  .status-pill.active { background: #dbeafe; color: #1e40af; }
+  .status-pill.pending { background: #fef3c7; color: #92400e; }
+
+  .empty-state {
+    text-align: center; padding: 60px 20px;
+    display: none;
+  }
+  .empty-state.show { display: block; }
+  .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-state h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+  .empty-state p { font-size: 14px; color: #666; }
+
+  .report-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #e5e7eb;
+    flex-wrap: wrap;
+  }
+  .btn-report {
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+  }
+  .btn-report:hover { transform: translateY(-1px); }
+  .btn-report-primary {
+    background: #3b82f6; color: #fff;
+  }
+  .btn-report-primary:hover { background: #2563eb; }
+  .btn-report-secondary {
+    background: #fff; color: #3b82f6;
+    border: 1px solid #3b82f6;
+  }
+  .btn-report-secondary:hover { background: #eff6ff; }
+  .btn-report-success {
+    background: #10b981; color: #fff;
+  }
+  .btn-report-success:hover { background: #059669; }
+
+  /* График-заглушка */
+  .chart-placeholder {
+    background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%);
+    border-radius: 12px; padding: 24px;
+    height: 240px;
+    display: flex; align-items: flex-end; justify-content: space-around;
+    margin-bottom: 24px;
+  }
+  .chart-bar {
+    width: 40px;
+    background: linear-gradient(180deg, #3b82f6, #1e40af);
+    border-radius: 6px 6px 0 0;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .chart-bar:hover {
+    background: linear-gradient(180deg, #60a5fa, #2563eb);
+    transform: scaleY(1.05);
+  }
+  .chart-bar::after {
+    content: attr(data-label);
+    position: absolute; bottom: -24px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px; color: #666;
+  }
+  .chart-bar::before {
+    content: attr(data-value);
+    position: absolute; top: -22px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px; color: #1a1a1a;
+    font-weight: 600; opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .chart-bar:hover::before { opacity: 1; }
+
+  /* Рейтинг звёзды */
+  .rating-stars { color: #fbbf24; font-size: 14px; letter-spacing: 2px; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 20px; right: 20px;
+    background: #1a1a1a; color: #fff;
+    padding: 14px 20px; border-radius: 10px;
+    font-size: 14px; font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    transform: translateY(100px); opacity: 0;
+    transition: all 0.3s; z-index: 2000;
+    display: flex; align-items: center; gap: 10px;
+    max-width: 360px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { background: #059669; }
+  .toast.info { background: #2563eb; }
+
+  @media print {
+    header, .breadcrumbs, .report-filters, .report-actions,
+    .reports-sidebar, .toast { display: none !important; }
+    .reports-layout { grid-template-columns: 1fr; }
+    .reports-content { box-shadow: none; padding: 0; }
+  }
+
+  @media (max-width: 768px) {
+    nav { display: none; }
+    nav.open {
+      display: flex; flex-direction: column;
+      position: absolute; top: 56px; left: 0; right: 0;
+      background: #fff; padding: 20px;
+      border-bottom: 1px solid #e8e8e8; z-index: 100; gap: 14px;
+    }
+    .burger { display: block; }
+    .reports-layout { grid-template-columns: 1fr; }
+    .reports-sidebar { position: static; }
+    .report-summary { grid-template-columns: repeat(2, 1fr); }
+    .dropdown-menu, .profile-menu {
+      position: fixed; top: 70px; right: 20px;
+    }
+    .page-title { font-size: 22px; }
+    .summary-value { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="burger" onclick="document.querySelector('nav').classList.toggle('open')">☰</button>
+  <div class="header-logo">
+    <div class="avatar" onclick="document.querySelector('.profile-menu').classList.toggle('show')">МГ</div>
+    <span>Максим Гусев</span>
+  </div>
+  <nav>
+    <a href="dashboard.html">Рабочий стол</a>
+    <a href="projects.html">Проекты</a>
+    <a href="search.html">Поиск</a>
+    <a href="messages.html">Сообщения</a>
+    <a href="notifications.html">Уведомления</a>
+    <a href="finance.html">Финансы</a>
+    <div class="dropdown">
+      <a href="#" class="dropdown-toggle">Ещё ▾</a>
+      <div class="dropdown-menu">
+        <a href="calendar.html">📅 Календарь</a>
+        <a href="documents.html">📄 Документы</a>
+        <a href="reviews.html">⭐ Отзывы</a>
+        <a href="portfolio.html">🖼️ Портфолио</a>
+        <a href="workers.html">👷 Рабочие</a>
+        <a href="panels.html">📊 Панели</a>
+        <a href="reports.html" class="active" style="background:#eff6ff; color:#3b82f6;">📈 Отчёты</a>
+        <a href="specializations.html">🔧 Специализация</a>
+        <a href="admin.html">⚙️ Администратор</a>
+        <a href="manager.html">👔 Менеджер</a>
+      </div>
+    </div>
+  </nav>
+  <div class="header-actions">
+    <div class="dropdown">
+      <button class="btn-create">📥 Экспорт ▾</button>
+      <div class="dropdown-menu" style="right:0;">
+        <button onclick="exportReport('pdf')">📄 Скачать PDF</button>
+        <button onclick="exportReport('xlsx')">📊 Скачать Excel</button>
+        <button onclick="exportReport('csv')">📋 Скачать CSV</button>
+        <button onclick="window.print()">🖨️ Печать</button>
+        <button onclick="sendByEmail()">📧 Отправить на email</button>
+      </div>
+    </div>
+    <div class="profile-dropdown">
+      <div class="avatar" onclick="document.querySelector('.profile-menu').classList.toggle('show')">МГ</div>
+      <div class="profile-menu">
+        <a href="profile.html">👤 Мой профиль</a>
+        <a href="personal-data.html">📋 Персональные данные</a>
+        <a href="settings.html">⚙️ Настройки</a>
+        <a href="help.html">❓ Помощь</a>
+        <div class="divider"></div>
+        <a href="login.html" class="logout">🚪 Выйти</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="breadcrumbs">
+    <a href="dashboard.html">Рабочий стол</a>
+    <span class="sep">›</span>
+    <span>Отчёты</span>
+  </div>
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Отчёты</h1>
+    </div>
+    <span class="report-counter" id="report-counter">7 отчётов доступно</span>
+  </div>
+
+  <div class="reports-layout">
+    <aside class="reports-sidebar">
+      <div class="sidebar-title">Типы отчётов</div>
+      <button class="report-type active" onclick="switchReport('finance', this)">
+        📊 Финансовый отчёт
+        <span class="rt-arrow">→</span>
+      </button>
+      <button class="report-type" onclick="switchReport('workers', this)">
+        👷 По работникам
+        <span class="rt-arrow">→</span>
+      </button>
+      <button class="report-type" onclick="switchReport('projects', this)">
+        📁 По проектам
+        <span class="rt-arrow">→</span>
+      </button>
+      <button class="report-type" onclick="switchReport('periods', this)">
+        📅 По периодам
+        <span class="rt-arrow">→</span>
+      </button>
+      <button class="report-type" onclick="location.href='reviews.html'">
+        ⭐ По рейтингам
+        <span class="rt-arrow">→</span>
+      </button>
+      <button class="report-type" onclick="location.href='panels.html'">
+        📈 Производительность
+        <span class="rt-arrow">→</span>
+      </button>
+      <button class="report-type" onclick="location.href='panels.html'">
+        🎯 Выполнение сроков
+        <span class="rt-arrow">→</span>
+      </button>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-title">Действия</div>
+        <button class="report-type" onclick="location.href='project-detail.html'">
+          ➕ Создать отчёт
+        </button>
+        <button class="report-type" onclick="location.href='project-detail.html'">
+          📅 Запланировать
+        </button>
+        <button class="report-type" onclick="location.href='settings.html'">
+          ⚙️ Настройки
+        </button>
+      </div>
+    </aside>
+
+    <div class="reports-content">
+      <!-- VIEW: FINANCE -->
+      <div class="report-view active" id="view-finance">
+        <div class="report-header">
+          <div>
+            <h2 class="report-title">💰 Финансовый отчёт</h2>
+            <div class="report-period">
+              📅 Период: 01.06.2026 — 08.06.2026
+              <button class="period-edit" onclick="location.href='project-detail.html'">Изменить</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="report-filters">
+          <select class="filter-select" id="f-category" onchange="applyFilters()">
+            <option value="">Все категории</option>
+            <option value="video">Видеонаблюдение</option>
+            <option value="repair">Ремонт</option>
+            <option value="heating">Отопление</option>
+            <option value="furniture">Хозяйственные</option>
+            <option value="hvac">ОВиК</option>
+          </select>
+          <select class="filter-select" id="f-status" onchange="applyFilters()">
+            <option value="">Все статусы</option>
+            <option value="completed">Завершённые</option>
+            <option value="active">В работе</option>
+            <option value="pending">Ожидают</option>
+          </select>
+          <select class="filter-select" id="f-worker" onchange="applyFilters()">
+            <option value="">Все работники</option>
+            <option value="dw">Дмитрий Волков</option>
+            <option value="is">Иван Сидоров</option>
+            <option value="ap">Алексей Петров</option>
+            <option value="mk">Мария Козлова</option>
+          </select>
+          <button class="filter-reset" onclick="resetFilters()">🔄 Сбросить</button>
+        </div>
+
+        <div class="report-summary">
+          <div class="summary-card" onclick="location.href='finance.html'">
+            <div class="summary-label">💵 Общий доход</div>
+            <div class="summary-value">285K ₽</div>
+            <div class="summary-delta">↑ +18% к прошлому</div>
+          </div>
+          <div class="summary-card secondary" onclick="location.href='projects.html'">
+            <div class="summary-label">✅ Завершено проектов</div>
+            <div class="summary-value">147</div>
+            <div class="summary-delta">↑ +12 за неделю</div>
+          </div>
+          <div class="summary-card warning" onclick="location.href='projects.html'">
+            <div class="summary-label">⏳ В работе</div>
+            <div class="summary-value">12</div>
+            <div class="summary-delta">3 просрочены</div>
+          </div>
+          <div class="summary-card danger" onclick="location.href='finance.html'">
+            <div class="summary-label">📊 Средний чек</div>
+            <div class="summary-value">18.5K ₽</div>
+            <div class="summary-delta">↑ +2.1K ₽</div>
+          </div>
+        </div>
+
+        <div class="report-section">
+          <div class="section-header">
+            <h3 class="section-title">📈 Доход по месяцам</h3>
+            <a href="panels.html" class="section-link">Открыть панель →</a>
+          </div>
+          <div class="chart-placeholder">
+            <div class="chart-bar" style="height: 45%;" data-label="Янв" data-value="28K"></div>
+            <div class="chart-bar" style="height: 62%;" data-label="Фев" data-value="38K"></div>
+            <div class="chart-bar" style="height: 58%;" data-label="Мар" data-value="35K"></div>
+            <div class="chart-bar" style="height: 71%;" data-label="Апр" data-value="43K"></div>
+            <div class="chart-bar" style="height: 68%;" data-label="Май" data-value="41K"></div>
+            <div class="chart-bar" style="height: 85%;" data-label="Июн" data-value="52K"></div>
+          </div>
+        </div>
+
+        <div class="report-section">
+          <div class="section-header">
+            <h3 class="section-title">🏆 Топ проектов по доходу</h3>
+            <a href="projects.html" class="section-link">Все проекты →</a>
+          </div>
+          <div class="report-table-wrap">
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>Проект</th>
+                  <th>Категория</th>
+                  <th>Исполнитель</th>
+                  <th>Дата</th>
+                  <th>Сумма</th>
+                  <th>Статус</th>
+                </tr>
+              </thead>
+              <tbody id="finance-tbody">
+                <tr data-category="video" data-status="completed" data-worker="dw" onclick="location.href='project-detail.html'">
+                  <td><strong>Монтаж системы видеонаблюдения</strong></td>
+                  <td>Видеонаблюдение</td>
+                  <td>
+                    <div class="exec-cell" onclick="event.stopPropagation(); location.href='workers.html'">
+                      <div class="exec-avatar">ДВ</div>
+                      <span>Дмитрий Волков</span>
+                    </div>
+                  </td>
+                  <td>05.06.2026</td>
+                  <td><strong>65 000 ₽</strong></td>
+                  <td><span class="status-pill completed">✓ Завершён</span></td>
+                </tr>
+                <tr data-category="repair" data-status="completed" data-worker="is" onclick="location.href='project-detail.html'">
+                  <td><strong>Укладка плитки в ванной</strong></td>
+                  <td>Ремонт</td>
+                  <td>
+                    <div class="exec-cell" onclick="event.stopPropagation(); location.href='workers.html'">
+                      <div class="exec-avatar">ИС</div>
+                      <span>Иван Сидоров</span>
+                    </div>
+                  </td>
+                  <td>03.06.2026</td>
+                  <td><strong>38 000 ₽</strong></td>
+                  <td><span class="status-pill completed">✓ Завершён</span></td>
+                </tr>
+                <tr data-category="heating" data-status="completed" data-worker="ap" onclick="location.href='project-detail.html'">
+                  <td><strong>Замена радиаторов отопления</strong></td>
+                  <td>Отопление</td>
+                  <td>
+                    <div class="exec-cell" onclick="event.stopPropagation(); location.href='workers.html'">
+                      <div class="exec-avatar">АП</div>
+                      <span>Алексей Петров</span>
+                    </div>
+                  </td>
+                  <td>02.06.2026</td>
+                  <td><strong>32 000 ₽</strong></td>
+                  <td><span class="status-pill completed">✓ Завершён</span></td>
+                </tr>
+                <tr data-category="furniture" data-status="completed" data-worker="mk" onclick="location.href='project-detail.html'">
+                  <td><strong>Сборка офисной мебели</strong></td>
+                  <td>Хозяйственные</td>
+                  <td>
+                    <div class="exec-cell" onclick="event.stopPropagation(); location.href='workers.html'">
+                      <div class="exec-avatar">МК</div>
+                      <span>Мария Козлова</span>
+                    </div>
+                  </td>
+                  <td>01.06.2026</td>
+                  <td><strong>25 000 ₽</strong></td>
+                  <td><span class="status-pill completed">✓ Завершён</span></td>
+                </tr>
+                <tr data-category="hvac" data-status="completed" data-worker="dw" onclick="location.href='project-detail.html'">
+                  <td><strong>Установка кондиционера</strong></td>
+                  <td>ОВиК</td>
+                  <td>
+                    <div class="exec-cell" onclick="event.stopPropagation(); location.href='workers.html'">
+                      <div class="exec-avatar">ДВ</div>
+                      <span>Дмитрий Волков</span>
+                    </div>
+                  </td>
+                  <td>08.06.2026</td>
+                  <td><strong>18 500 ₽</strong></td>
+                  <td><span class="status-pill completed">✓ Завершён</span></td>
+                </tr>
+                <tr data-category="repair" data-status="active" data-worker="is" onclick="location.href='project-detail.html'">
+                  <td><strong>Ремонт сантехники</strong></td>
+                  <td>Ремонт</td>
+                  <td>
+                    <div class="exec-cell" onclick="event.stopPropagation(); location.href='workers.html'">
+                      <div class="exec-avatar">ИС</div>
+                      <span>Иван Сидоров</span>
+                    </div>
+                  </td>
+                  <td>07.06.2026</td>
+                  <td><strong>12 000 ₽</strong></td>
+                  <td><span class="status-pill active">⏳ В работе</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="empty-state" id="empty-finance">
+            <div class="icon">📭</div>
+            <h3>Нет данных по выбранным фильтрам</h3>
+            <p>Попробуйте изменить параметры или сбросить фильтры</p>
+          </div>
+        </div>
+
+        <div class="report-actions">
+          <button class="btn-report btn-report-primary" onclick="exportReport('pdf')">📥 Скачать PDF</button>
+          <button class="btn-report btn-report-success" href = "https://file-examples.com/wp-content/storage/2017/02/file_example_XLS_10.xls",onclick="exportReport('xlsx')">📊 Скачать Excel</button>
+          <button class="btn-report btn-report-secondary" onclick="window.print()">🖨️ Печать</button>
+          <button class="btn-report btn-report-secondary" onclick="sendByEmail()">📧 На email</button>
+        </div>
+      </div>
+
+      <!-- VIEW: WORKERS -->
+      <div class="report-view" id="view-workers">
+        <div class="report-header">
+          <div>
+            <h2 class="report-title">👷 Отчёт по работникам</h2>
+            <div class="report-period">
+              📅 Период: 01.06.2026 — 08.06.2026
+              <button class="period-edit" onclick="location.href='project-detail.html'">Изменить</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="report-summary">
+          <div class="summary-card" onclick="location.href='workers.html'">
+            <div class="summary-label">👥 Всего работников</div>
+            <div class="summary-value">8</div>
+            <div class="summary-delta">+1 за месяц</div>
+          </div>
+          <div class="summary-card secondary" onclick="location.href='workers.html'">
+            <div class="summary-label">✅ Активных</div>
+            <div class="summary-value">6</div>
+            <div class="summary-delta">75% от всех</div>
+          </div>
+          <div class="summary-card warning" onclick="location.href='workers.html'">
+            <div class="summary-label">⭐ Средний рейтинг</div>
+            <div class="summary-value">4.8</div>
+            <div class="summary-delta">↑ +0.2</div>
+          </div>
+          <div class="summary-card danger" onclick="location.href='manager.html'">
+            <div class="summary-label">📋 Задач на чел.</div>
+            <div class="summary-value">3.2</div>
+            <div class="summary-delta">Оптимум: 2-4</div>
+          </div>
+        </div>
+
+        <div class="report-section">
+          <div class="section-header">
+            <h3 class="section-title">📊 Статистика по работникам</h3>
+            <a href="workers.html" class="section-link">Все работники →</a>
+          </div>
+          <div class="report-table-wrap">
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>Работник</th>
+                  <th>Проектов</th>
+                  <th>Доход</th>
+                  <th>Рейтинг</th>
+                  <th>В срок</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr onclick="location.href='workers.html'">
+                  <td>
+                    <div class="exec-cell">
+                      <div class="exec-avatar">АП</div>
+                      <div><strong>Алексей Петров</strong><br><small style="color:#666;">Электрик</small></div>
+                    </div>
+                  </td>
+                  <td>89</td>
+                  <td><strong>285 000 ₽</strong></td>
+                  <td><span class="rating-stars">★★★★★</span> 4.9</td>
+                  <td>96%</td>
+                </tr>
+                <tr onclick="location.href='workers.html'">
+                  <td>
+                    <div class="exec-cell">
+                      <div class="exec-avatar">ИС</div>
+                      <div><strong>Иван Сидоров</strong><br><small style="color:#666;">Сантехник</small></div>
+                    </div>
+                  </td>
+                  <td>124</td>
+                  <td><strong>312 000 ₽</strong></td>
+                  <td><span class="rating-stars">★★★★★</span> 4.8</td>
+                  <td>94%</td>
+                </tr>
+                <tr onclick="location.href='workers.html'">
+                  <td>
+                    <div class="exec-cell">
+                      <div class="exec-avatar">ДВ</div>
+                      <div><strong>Дмитрий Волков</strong><br><small style="color:#666;">Монтажник</small></div>
+                    </div>
+                  </td>
+                  <td>72</td>
+                  <td><strong>198 000 ₽</strong></td>
+                  <td><span class="rating-stars">★★★★★</span> 4.9</td>
+                  <td>98%</td>
+                </tr>
+                <tr onclick="location.href='workers.html'">
+                  <td>
+                    <div class="exec-cell">
+                      <div class="exec-avatar">МК</div>
+                      <div><strong>Мария Козлова</strong><br><small style="color:#666;">Клинер</small></div>
+                    </div>
+                  </td>
+                  <td>56</td>
+                  <td><strong>142 000 ₽</strong></td>
+                  <td><span class="rating-stars">★★★★☆</span> 4.7</td>
+                  <td>92%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="report-actions">
+          <button class="btn-report btn-report-primary" onclick="exportReport('pdf')">📥 Скачать PDF</button>
+          <button class="btn-report btn-report-success" href = "https://file-examples.com/wp-content/storage/2017/02/file_example_XLS_10.xls",onclick="exportReport('xlsx')">📊 Скачать Excel</button>
+          <button class="btn-report btn-report-secondary" onclick="window.print()">🖨️ Печать</button>
+        </div>
+      </div>
+
+      <!-- VIEW: PROJECTS -->
+      <div class="report-view" id="view-projects">
+        <div class="report-header">
+          <div>
+            <h2 class="report-title">📁 Отчёт по проектам</h2>
+            <div class="report-period">
+              📅 Период: 01.06.2026 — 08.06.2026
+              <button class="period-edit" onclick="location.href='project-detail.html'">Изменить</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="report-summary">
+          <div class="summary-card" onclick="location.href='projects.html'">
+            <div class="summary-label">📋 Всего проектов</div>
+            <div class="summary-value">159</div>
+            <div class="summary-delta">+15 за неделю</div>
+          </div>
+          <div class="summary-card secondary" onclick="location.href='projects.html'">
+            <div class="summary-label">✅ Успешных</div>
+            <div class="summary-value">147</div>
+            <div class="summary-delta">92% успеха</div>
+          </div>
+          <div class="summary-card warning" onclick="location.href='projects.html'">
+            <div class="summary-label">⏸️ На паузе</div>
+            <div class="summary-value">8</div>
+            <div class="summary-delta">Требуют внимания</div>
+          </div>
+          <div class="summary-card danger" onclick="location.href='projects.html'">
+            <div class="summary-label">❌ Отменённых</div>
+            <div class="summary-value">4</div>
+            <div class="summary-delta">2.5% от всех</div>
+          </div>
+        </div>
+
+        <div class="report-section">
+          <div class="section-header">
+            <h3 class="section-title">📊 Распределение по категориям</h3>
+            <a href="projects.html" class="section-link">Все проекты →</a>
+          </div>
+          <div class="chart-placeholder">
+            <div class="chart-bar" style="height: 80%;" data-label="Электр." data-value="24"></div>
+            <div class="chart-bar" style="height: 60%;" data-label="Сантех." data-value="18"></div>
+            <div class="chart-bar" style="height: 50%;" data-label="Монтаж" data-value="15"></div>
+            <div class="chart-bar" style="height: 35%;" data-label="ОВиК" data-value="12"></div>
+            <div class="chart-bar" style="height: 30%;" data-label="Ремонт" data-value="10"></div>
+            <div class="chart-bar" style="height: 25%;" data-label="Клин." data-value="9"></div>
+          </div>
+        </div>
+
+        <div class="report-actions">
+          <button class="btn-report btn-report-primary" onclick="exportReport('pdf')">📥 Скачать PDF</button>
+          <button class="btn-report btn-report-success" onclick="exportReport('xlsx')">📊 Скачать Excel</button>
+          <button class="btn-report btn-report-secondary" onclick="window.print()">🖨️ Печать</button>
+        </div>
+      </div>
+
+      <!-- VIEW: PERIODS -->
+      <div class="report-view" id="view-periods">
+        <div class="report-header">
+          <div>
+            <h2 class="report-title">📅 Отчёт по периодам</h2>
+            <div class="report-period">
+              Сравнение периодов за последние 6 месяцев
+              <button class="period-edit" onclick="location.href='project-detail.html'">Настроить</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="report-summary">
+          <div class="summary-card">
+            <div class="summary-label">📆 Этот месяц</div>
+            <div class="summary-value">52K ₽</div>
+            <div class="summary-delta">↑ +26% к пред.</div>
+          </div>
+          <div class="summary-card secondary">
+            <div class="summary-label">📊 Средний/мес</div>
+            <div class="summary-value">39K ₽</div>
+            <div class="summary-delta">За полгода</div>
+          </div>
+          <div class="summary-card warning">
+            <div class="summary-label">🏆 Лучший месяц</div>
+            <div class="summary-value">Июнь</div>
+            <div class="summary-delta">52 000 ₽</div>
+          </div>
+          <div class="summary-card danger">
+            <div class="summary-label">📉 Худший месяц</div>
+            <div class="summary-value">Январь</div>
+            <div class="summary-delta">28 000 ₽</div>
+          </div>
+        </div>
+
+        <div class="report-section">
+          <div class="section-header">
+            <h3 class="section-title">📊 Динамика по месяцам</h3>
+          </div>
+          <div class="report-table-wrap">
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>Месяц</th>
+                  <th>Проектов</th>
+                  <th>Доход</th>
+                  <th>Средний чек</th>
+                  <th>Динамика</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr onclick="location.href='project-detail.html'">
+                  <td><strong>Июнь 2026</strong></td>
+                  <td>22</td>
+                  <td>52 000 ₽</td>
+                  <td>18 200 ₽</td>
+                  <td style="color:#10b981;">↑ +26%</td>
+                </tr>
+                <tr onclick="location.href='project-detail.html'">
+                  <td><strong>Май 2026</strong></td>
+                  <td>18</td>
+                  <td>41 000 ₽</td>
+                  <td>17 800 ₽</td>
+                  <td style="color:#10b981;">↑ +5%</td>
+                </tr>
+                <tr onclick="location.href='project-detail.html'">
+                  <td><strong>Апрель 2026</strong></td>
+                  <td>20</td>
+                  <td>43 000 ₽</td>
+                  <td>18 500 ₽</td>
+                  <td style="color:#10b981;">↑ +22%</td>
+                </tr>
+                <tr onclick="location.href='project-detail.html'">
+                  <td><strong>Март 2026</strong></td>
+                  <td>16</td>
+                  <td>35 000 ₽</td>
+                  <td>17 100 ₽</td>
+                  <td style="color:#ef4444;">↓ -8%</td>
+                </tr>
+                <tr onclick="location.href='project-detail.html'">
+                  <td><strong>Февраль 2026</strong></td>
+                  <td>17</td>
+                  <td>38 000 ₽</td>
+                  <td>17 900 ₽</td>
+                  <td style="color:#10b981;">↑ +35%</td>
+                </tr>
+                <tr onclick="location.href='project-detail.html'">
+                  <td><strong>Январь 2026</strong></td>
+                  <td>14</td>
+                  <td>28 000 ₽</td>
+                  <td>16 400 ₽</td>
+                  <td style="color:#6b7280;">— База</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="report-actions">
+          <button class="btn-report btn-report-primary" onclick="exportReport('pdf')">📥 Скачать PDF</button>
+          <button class="btn-report btn-report-success" onclick="exportReport('xlsx')">📊 Скачать Excel</button>
+          <button class="btn-report btn-report-secondary" onclick="window.print()">🖨️ Печать</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // Burger
+  document.querySelector('.burger').addEventListener('click', function() {
+    document.querySelector('nav').classList.toggle('open');
+  });
+
+  // Закрытие меню профиля
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.profile-dropdown') && !e.target.closest('.header-logo .avatar')) {
+      document.querySelectorAll('.profile-menu').forEach(m => m.classList.remove('show'));
+    }
+  });
+
+  // Toast
+  function showToast(msg, type = '') {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.className = 'toast ' + type + ' show';
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  // Переключение отчётов
+  function switchReport(view, btn) {
+    document.querySelectorAll('.report-view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.report-type').forEach(t => t.classList.remove('active'));
+    document.getElementById('view-' + view).classList.add('active');
+    btn.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Фильтры финансовой таблицы
+  function applyFilters() {
+    const cat = document.getElementById('f-category').value;
+    const status = document.getElementById('f-status').value;
+    const worker = document.getElementById('f-worker').value;
+    const rows = document.querySelectorAll('#finance-tbody tr');
+    let visible = 0;
+
+    rows.forEach(row => {
+      const matchCat = !cat || row.dataset.category === cat;
+      const matchStatus = !status || row.dataset.status === status;
+      const matchWorker = !worker || row.dataset.worker === worker;
+
+      if (matchCat && matchStatus && matchWorker) {
+        row.classList.remove('hidden');
+        visible++;
+      } else {
+        row.classList.add('hidden');
+      }
+    });
+
+    document.getElementById('empty-finance').classList.toggle('show', visible === 0);
+  }
+
+  function resetFilters() {
+    document.getElementById('f-category').value = '';
+    document.getElementById('f-status').value = '';
+    document.getElementById('f-worker').value = '';
+    applyFilters();
+    showToast('🔄 Фильтры сброшены', 'info');
+  }
+
+  // Экспорт отчёта
+  function exportReport(format) {
+    const formatNames = {
+      pdf: 'PDF',
+      xlsx: 'Excel',
+      csv: 'CSV'
+    };
+    showToast('📥 Начинается формирование ' + formatNames[format] + '...');
+    setTimeout(() => {
+      showToast('✓ Отчёт.' + format + ' успешно сохранён', 'success');
+    }, 1200);
+  }
+
+  // Отправка на email
+  function sendByEmail() {
+    const email = prompt('Введите email для отправки отчёта:', 'maksim7892@gmail.com');
+    if (email) {
+      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showToast('✉️ Отправка отчёта на ' + email + '...');
+        setTimeout(() => {
+          showToast('✓ Отчёт отправлен на ' + email, 'success');
+        }, 1500);
+      } else {
+        showToast('⚠ Неверный формат email', '');
+      }
+    }
+  }
+
+  // Клик по столбцам графика
+  document.querySelectorAll('.chart-bar').forEach(bar => {
+    bar.addEventListener('click', () => {
+      showToast('📊 ' + bar.dataset.label + ': ' + bar.dataset.value + ' ₽', 'info');
+    });
+  });
+</script>
+
+</body>
+</html>

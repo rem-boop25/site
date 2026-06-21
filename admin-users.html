@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REMPRO — Управление пользователями</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f7fa; color: #1a1a1a; min-height: 100vh;
+  }
+  header {
+    display: flex; align-items: center; padding: 12px 24px;
+    background: #fff; border-bottom: 1px solid #e8e8e8; gap: 16px; position: relative;
+  }
+  .header-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 600; font-size: 16px; white-space: nowrap;
+  }
+  .header-logo .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 13px; font-weight: 600;
+  }
+  nav { display: flex; align-items: center; gap: 20px; flex: 1; overflow-x: auto; }
+  nav a { text-decoration: none; color: #333; font-size: 14px; white-space: nowrap; }
+  nav a:hover, nav a.active { color: #3b82f6; }
+  .btn-create {
+    background: #3b82f6; border: none; color: #fff;
+    padding: 8px 20px; border-radius: 8px; font-size: 14px;
+    cursor: pointer; white-space: nowrap; font-weight: 500;
+  }
+  .btn-create:hover { background: #2563eb; }
+  .burger { display: none; background: none; border: none; font-size: 24px; cursor: pointer; color: #333; }
+
+  main { max-width: 1400px; margin: 0 auto; padding: 32px 20px 60px; }
+  .page-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 24px; flex-wrap: wrap; gap: 16px;
+  }
+  .page-title { font-size: 28px; font-weight: 700; }
+
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    margin-bottom: 24px;
+  }
+  .stat-box {
+    background: #fff; border-radius: 12px; padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .stat-box-label { font-size: 13px; color: #666; margin-bottom: 8px; }
+  .stat-box-value { font-size: 28px; font-weight: 700; }
+  .stat-box-value.blue { color: #3b82f6; }
+  .stat-box-value.green { color: #10b981; }
+  .stat-box-value.orange { color: #f59e0b; }
+  .stat-box-value.red { color: #ef4444; }
+
+  .filters-bar {
+    background: #fff; border-radius: 12px; padding: 16px 20px;
+    margin-bottom: 24px; display: flex; gap: 16px; flex-wrap: wrap; align-items: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .filter-group { display: flex; flex-direction: column; gap: 4px; }
+  .filter-group label { font-size: 12px; color: #666; font-weight: 500; }
+  .filter-group input, .filter-group select {
+    padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px;
+    font-size: 14px; outline: none; min-width: 180px;
+  }
+
+  .users-table-wrap {
+    background: #fff; border-radius: 16px; padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow-x: auto;
+  }
+  .users-table {
+    width: 100%; border-collapse: collapse; min-width: 900px;
+  }
+  .users-table th {
+    text-align: left; padding: 12px; font-size: 13px; color: #666;
+    font-weight: 600; border-bottom: 2px solid #e5e7eb;
+  }
+  .users-table td {
+    padding: 14px 12px; border-bottom: 1px solid #f0f0f0; font-size: 14px;
+  }
+  .users-table tr:hover td { background: #f9fafb; }
+
+  .user-cell { display: flex; align-items: center; gap: 12px; }
+  .user-avatar-small {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 14px; font-weight: 600;
+  }
+  .user-name { font-weight: 600; }
+  .user-email { font-size: 12px; color: #999; }
+
+  .role-badge {
+    padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;
+  }
+  .role-badge.admin { background: #fee2e2; color: #dc2626; }
+  .role-badge.manager { background: #dbeafe; color: #2563eb; }
+  .role-badge.worker { background: #d1fae5; color: #059669; }
+  .role-badge.customer { background: #fef3c7; color: #d97706; }
+
+  .status-dot {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 13px;
+  }
+  .status-dot::before {
+    content: ""; width: 8px; height: 8px; border-radius: 50%;
+  }
+  .status-dot.active::before { background: #10b981; }
+  .status-dot.pending::before { background: #f59e0b; }
+  .status-dot.blocked::before { background: #ef4444; }
+
+  .action-btns { display: flex; gap: 6px; }
+  .btn-icon {
+    width: 32px; height: 32px; border-radius: 6px;
+    border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 14px; transition: all 0.2s;
+  }
+  .btn-icon.edit { background: #eff6ff; color: #3b82f6; }
+  .btn-icon.edit:hover { background: #dbeafe; }
+  .btn-icon.block { background: #fef3c7; color: #d97706; }
+  .btn-icon.block:hover { background: #fde68a; }
+  .btn-icon.delete { background: #fee2e2; color: #dc2626; }
+  .btn-icon.delete:hover { background: #fecaca; }
+
+  .pagination {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 24px; flex-wrap: wrap; gap: 16px;
+  }
+  .pagination-info { font-size: 14px; color: #666; }
+  .pagination-btns { display: flex; gap: 8px; }
+  .pagination-btns button {
+    padding: 8px 14px; border: 1px solid #ddd; background: #fff;
+    border-radius: 8px; cursor: pointer; font-size: 14px;
+  }
+  .pagination-btns button:hover:not(:disabled) { background: #f5f5f5; }
+  .pagination-btns button:disabled { opacity: 0.4; cursor: default; }
+  .pagination-btns button.active { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+
+  @media (max-width: 768px) {
+    nav { display: none; }
+    nav.open {
+      display: flex; flex-direction: column;
+      position: absolute; top: 56px; left: 0; right: 0;
+      background: #fff; padding: 20px;
+      border-bottom: 1px solid #e8e8e8; z-index: 100; gap: 14px;
+    }
+    .burger { display: block; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="burger" onclick="document.querySelector('nav').classList.toggle('open')">☰</button>
+  <div class="header-logo">
+    <div class="avatar">МГ</div>
+    <span>Максим Гусев</span>
+  </div>
+  <nav>
+    <a href="dashboard.html">Рабочий стол</a>
+    <a href="projects.html">Проекты</a>
+    <a href="search.html">Поиск</a>
+    <a href="panels.html">Панели</a>
+    <a href="admin.html">Администратор</a>
+    <a href="manager.html">Менеджер</a>
+    <a href="workers.html">Рабочие</a>
+  </nav>
+  <button class="btn-create">+ Добавить пользователя</button>
+</header>
+
+<main>
+  <div class="page-header">
+    <h1 class="page-title">Управление пользователями</h1>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-box-label">Всего пользователей</div>
+      <div class="stat-box-value blue">1,247</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-label">Активных сейчас</div>
+      <div class="stat-box-value green">128</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-label">Ожидают верификации</div>
+      <div class="stat-box-value orange">23</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-label">Заблокировано</div>
+      <div class="stat-box-value red">12</div>
+    </div>
+  </div>
+
+  <div class="filters-bar">
+    <div class="filter-group">
+      <label>Поиск</label>
+      <input type="text" placeholder="Имя, email, телефон...">
+    </div>
+    <div class="filter-group">
+      <label>Роль</label>
+      <select>
+        <option>Все роли</option>
+        <option>Администратор</option>
+        <option>Менеджер</option>
+        <option>Исполнитель</option>
+        <option>Заказчик</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Статус</label>
+      <select>
+        <option>Все статусы</option>
+        <option>Активен</option>
+        <option>Ожидает</option>
+        <option>Заблокирован</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Дата регистрации</label>
+      <input type="date">
+    </div>
+    <button class="btn-create">Применить</button>
+  </div>
+
+  <div class="users-table-wrap">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>Пользователь</th>
+          <th>Роль</th>
+          <th>Статус</th>
+          <th>Город</th>
+          <th>Проектов</th>
+          <th>Рейтинг</th>
+          <th>Дата регистрации</th>
+          <th>Действия</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <div class="user-cell">
+              <div class="user-avatar-small">АП</div>
+              <div>
+                <div class="user-name">Алексей Петров</div>
+                <div class="user-email">petrov@mail.ru</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="role-badge admin">Админ</span></td>
+          <td><span class="status-dot active">Активен</span></td>
+          <td>Калининград</td>
+          <td>89</td>
+          <td>★ 4.9</td>
+          <td>15.03.2024</td>
+          <td>
+            <div class="action-btns">
+              <button class="btn-icon edit" title="Редактировать">✏️</button>
+              <button class="btn-icon block" title="Заблокировать"></button>
+              <button class="btn-icon delete" title="Удалить">️</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="user-cell">
+              <div class="user-avatar-small">ИС</div>
+              <div>
+                <div class="user-name">Иван Сидоров</div>
+                <div class="user-email">sidorov@mail.ru</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="role-badge worker">Исполнитель</span></td>
+          <td><span class="status-dot active">Активен</span></td>
+          <td>Калининград</td>
+          <td>124</td>
+          <td>★ 4.8</td>
+          <td>22.03.2024</td>
+          <td>
+            <div class="action-btns">
+              <button class="btn-icon edit" title="Редактировать">✏️</button>
+              <button class="btn-icon block" title="Заблокировать">🚫</button>
+              <button class="btn-icon delete" title="Удалить">🗑️</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="user-cell">
+              <div class="user-avatar-small">МК</div>
+              <div>
+                <div class="user-name">Мария Козлова</div>
+                <div class="user-email">kozlova@mail.ru</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="role-badge worker">Исполнитель</span></td>
+          <td><span class="status-dot active">Активен</span></td>
+          <td>Калининград</td>
+          <td>56</td>
+          <td>★ 4.7</td>
+          <td>05.04.2024</td>
+          <td>
+            <div class="action-btns">
+              <button class="btn-icon edit" title="Редактировать">✏️</button>
+              <button class="btn-icon block" title="Заблокировать">🚫</button>
+              <button class="btn-icon delete" title="Удалить">🗑️</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="user-cell">
+              <div class="user-avatar-small">ДВ</div>
+              <div>
+                <div class="user-name">Дмитрий Волков</div>
+                <div class="user-email">volkov@mail.ru</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="role-badge worker">Исполнитель</span></td>
+          <td><span class="status-dot pending">Ожидает</span></td>
+          <td>Калининград</td>
+          <td>72</td>
+          <td>★ 4.9</td>
+          <td>10.06.2026</td>
+          <td>
+            <div class="action-btns">
+              <button class="btn-icon edit" title="Редактировать">✏️</button>
+              <button class="btn-icon block" title="Заблокировать"></button>
+              <button class="btn-icon delete" title="Удалить">🗑️</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="user-cell">
+              <div class="user-avatar-small">ЕН</div>
+              <div>
+                <div class="user-name">Елена Новикова</div>
+                <div class="user-email">novikova@mail.ru</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="role-badge customer">Заказчик</span></td>
+          <td><span class="status-dot blocked">Заблокирован</span></td>
+          <td>Калининград</td>
+          <td>34</td>
+          <td>★ 4.5</td>
+          <td>18.04.2024</td>
+          <td>
+            <div class="action-btns">
+              <button class="btn-icon edit" title="Редактировать">✏️</button>
+              <button class="btn-icon block" title="Разблокировать">✅</button>
+              <button class="btn-icon delete" title="Удалить">️</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="user-cell">
+              <div class="user-avatar-small">СМ</div>
+              <div>
+                <div class="user-name">Сергей Морозов</div>
+                <div class="user-email">morozov@mail.ru</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="role-badge manager">Менеджер</span></td>
+          <td><span class="status-dot active">Активен</span></td>
+          <td>Калининград</td>
+          <td>145</td>
+          <td>★ 4.9</td>
+          <td>12.02.2024</td>
+          <td>
+            <div class="action-btns">
+              <button class="btn-icon edit" title="Редактировать">✏️</button>
+              <button class="btn-icon block" title="Заблокировать">🚫</button>
+              <button class="btn-icon delete" title="Удалить">🗑️</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination">
+    <div class="pagination-info">Показано 1-6 из 1,247 пользователей</div>
+    <div class="pagination-btns">
+      <button disabled>← Пред.</button>
+      <button class="active">1</button>
+      <button>2</button>
+      <button>3</button>
+      <button>...</button>
+      <button>208</button>
+      <button>След. →</button>
+    </div>
+  </div>
+</main>
+
+<script>
+  document.querySelector('.burger').addEventListener('click', function() {
+    document.querySelector('nav').classList.toggle('open');
+  });
+</script>
+
+</body>
+</html>

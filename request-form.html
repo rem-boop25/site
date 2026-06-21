@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REMPRO — Создание запроса на сметы</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f7fa;
+    color: #1a1a1a;
+    min-height: 100vh;
+  }
+
+  header {
+    display: flex; align-items: center; padding: 12px 24px;
+    background: #fff; border-bottom: 1px solid #e8e8e8; gap: 16px;
+    position: relative;
+  }
+  .header-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 600; font-size: 16px; white-space: nowrap;
+  }
+  .header-logo .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 14px; font-weight: 600;
+    cursor: pointer;
+  }
+  nav {
+    display: flex; align-items: center; gap: 20px; flex: 1; overflow-x: auto;
+  }
+  nav a {
+    text-decoration: none; color: #333; font-size: 14px; white-space: nowrap;
+  }
+  nav a:hover, nav a.active { color: #3b82f6; }
+
+  .header-actions { display: flex; align-items: center; gap: 16px; }
+  .btn-create {
+    background: #3b82f6; border: none; color: #fff;
+    padding: 8px 20px; border-radius: 8px; font-size: 14px;
+    cursor: pointer; white-space: nowrap; font-weight: 500;
+  }
+  .btn-create:hover { background: #2563eb; }
+
+  .dropdown { position: relative; }
+  .dropdown-menu {
+    display: none; position: absolute; top: 100%; right: 0;
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1); min-width: 220px;
+    z-index: 1000; padding: 8px 0; margin-top: 8px;
+  }
+  .dropdown:hover .dropdown-menu { display: block; }
+  .dropdown-menu a {
+    display: block; padding: 10px 16px; font-size: 14px;
+    color: #333; text-decoration: none; white-space: nowrap;
+  }
+  .dropdown-menu a:hover { background: #f5f7fa; color: #3b82f6; }
+
+  .profile-dropdown { position: relative; }
+  .profile-menu {
+    display: none; position: absolute; top: 100%; right: 0;
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1); min-width: 220px;
+    z-index: 1000; padding: 8px 0; margin-top: 8px;
+  }
+  .profile-menu.show { display: block; }
+  .profile-menu a {
+    display: block; padding: 10px 16px; font-size: 14px;
+    color: #333; text-decoration: none;
+  }
+  .profile-menu a:hover { background: #f5f7fa; color: #3b82f6; }
+  .profile-menu .divider { height: 1px; background: #e8e8e8; margin: 8px 0; }
+  .profile-menu .logout { color: #ef4444; }
+  .profile-menu .logout:hover { background: #fee2e2; color: #dc2626; }
+
+  .burger {
+    display: none; background: none; border: none;
+    font-size: 24px; cursor: pointer; color: #333;
+  }
+
+  main {
+    max-width: 900px;
+    margin: 32px auto;
+    padding: 0 20px;
+  }
+
+  .breadcrumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: #666; margin-bottom: 16px;
+  }
+  .breadcrumbs a { color: #3b82f6; text-decoration: none; }
+  .breadcrumbs a:hover { text-decoration: underline; }
+  .breadcrumbs .sep { color: #ccc; }
+
+  .form-card {
+    background: #fff;
+    border: 1.5px solid #93c5fd;
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .form-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e8e8e8;
+    gap: 16px;
+  }
+  .form-header h1 { font-size: 20px; font-weight: 700; }
+  .form-subtitle { font-size: 13px; color: #666; margin-top: 2px; }
+  .btn-config {
+    background: #3b82f6; color: #fff; border: none;
+    padding: 8px 16px; border-radius: 8px; font-size: 13px;
+    cursor: pointer; display: flex; align-items: center; gap: 6px;
+    font-weight: 500; transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn-config:hover { background: #2563eb; transform: translateY(-1px); }
+
+  .top-fields {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e8e8e8;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .field-row {
+    display: flex; align-items: center; gap: 16px;
+  }
+  .field-row label {
+    width: 160px; font-size: 14px; color: #333; flex-shrink: 0;
+    font-weight: 500;
+  }
+  .field-row label .req { color: #ef4444; }
+  .field-row input,
+  .field-row select {
+    flex: 1; max-width: 400px;
+    padding: 10px 12px; border: 1px solid #ddd;
+    border-radius: 8px; font-size: 14px; outline: none;
+    font-family: inherit;
+    transition: border-color 0.2s;
+  }
+  .field-row input:focus,
+  .field-row select:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+  .field-row input[readonly] { background: #f9fafb; color: #6b7280; cursor: not-allowed; }
+  .field-row input.error { border-color: #ef4444; background: #fef2f2; }
+
+  .field-hint {
+    font-size: 11px; color: #6b7280; margin-top: 4px;
+  }
+
+  .tabs {
+    display: flex; gap: 0;
+    border-bottom: 2px solid #e8e8e8;
+    padding: 0 24px;
+    overflow-x: auto;
+  }
+  .tab {
+    padding: 14px 16px; font-size: 14px; color: #888;
+    cursor: pointer; white-space: nowrap;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+    font-weight: 500;
+  }
+  .tab:hover { color: #333; }
+  .tab.active {
+    color: #1a1a1a; font-weight: 600;
+    border-bottom-color: #3b82f6;
+  }
+
+  .tab-content { padding: 24px; display: none; }
+  .tab-content.active { display: block; animation: fadeIn 0.3s; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .tab-content .field-row { margin-bottom: 16px; }
+
+  .rte {
+    border: 1px solid #ddd; border-radius: 10px;
+    overflow: hidden; margin-bottom: 4px;
+    flex: 1; max-width: 500px;
+  }
+  .rte-toolbar {
+    display: flex; align-items: center; gap: 4px;
+    padding: 8px 10px; background: #fafafa;
+    border-bottom: 1px solid #eee; flex-wrap: wrap;
+  }
+  .rte-toolbar select,
+  .rte-toolbar button {
+    padding: 4px 8px; border: 1px solid #ddd;
+    background: #fff; border-radius: 4px;
+    font-size: 13px; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .rte-toolbar button:hover { background: #eff6ff; border-color: #3b82f6; color: #3b82f6; }
+  .rte-toolbar button.active { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+  .rte-toolbar .sep { width: 1px; height: 20px; background: #ddd; margin: 0 4px; }
+  .rte textarea {
+    width: 100%; min-height: 120px; padding: 12px;
+    border: none; outline: none; font-size: 14px;
+    resize: vertical; font-family: inherit;
+  }
+  .rte-tabs { display: flex; border-top: 1px solid #eee; }
+  .rte-tab {
+    padding: 8px 16px; font-size: 13px; cursor: pointer;
+    border-right: 1px solid #eee;
+    transition: all 0.2s;
+  }
+  .rte-tab:hover { background: #f9fafb; }
+  .rte-tab.active {
+    background: #eff6ff; color: #3b82f6; font-weight: 600;
+  }
+
+  .file-upload {
+    border: 1.5px dashed #ccc; border-radius: 10px;
+    padding: 16px; text-align: center;
+    color: #888; font-size: 13px;
+    cursor: pointer; transition: all 0.2s;
+    position: relative;
+  }
+  .file-upload:hover { border-color: #3b82f6; background: #f0f7ff; color: #3b82f6; }
+  .file-upload.uploaded {
+    border-color: #10b981; background: #f0fdf4; color: #065f46;
+    border-style: solid;
+  }
+  .file-upload .icon { font-size: 24px; margin-bottom: 4px; }
+  .file-upload input[type="file"] { display: none; }
+  .file-upload .filename {
+    font-size: 11px; color: #059669; font-weight: 600;
+    margin-top: 4px; word-break: break-all;
+  }
+  .file-upload .remove-btn {
+    position: absolute; top: 4px; right: 4px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: rgba(239,68,68,0.1); color: #ef4444;
+    border: none; cursor: pointer; font-size: 12px;
+    display: none; align-items: center; justify-content: center;
+  }
+  .file-upload.uploaded .remove-btn { display: flex; }
+
+  .file-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .comment-block {
+    border: 1px solid #ddd; border-radius: 10px;
+    padding: 16px; flex: 1; max-width: 500px;
+  }
+  .comment-block textarea {
+    width: 100%; min-height: 60px; border: none;
+    outline: none; font-size: 14px; resize: vertical;
+    font-family: inherit; margin-bottom: 12px;
+  }
+
+  .form-footer {
+    background: #fff;
+    border: 1.5px solid #93c5fd;
+    border-radius: 16px;
+    margin-top: 20px;
+    padding: 16px 24px;
+    display: flex; align-items: center;
+    justify-content: space-between; gap: 16px;
+    flex-wrap: wrap;
+  }
+  .form-footer label {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 14px; color: #555; cursor: pointer;
+  }
+  .form-footer input[type="checkbox"] {
+    width: 18px; height: 18px; accent-color: #3b82f6;
+    cursor: pointer;
+  }
+  .footer-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn-submit {
+    background: #3b82f6; color: #fff; border: none;
+    padding: 10px 24px; border-radius: 8px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-submit:hover:not(:disabled) { background: #2563eb; transform: translateY(-1px); }
+  .btn-submit:disabled { background: #93c5fd; cursor: not-allowed; }
+  .btn-cancel {
+    background: #fff; color: #333;
+    border: 1px solid #ddd;
+    padding: 10px 24px; border-radius: 8px;
+    font-size: 14px; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-cancel:hover { background: #f5f5f5; border-color: #9ca3af; }
+  .btn-draft {
+    background: #fff; color: #6b7280;
+    border: 1px solid #ddd;
+    padding: 10px 24px; border-radius: 8px;
+    font-size: 14px; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-draft:hover { background: #f9fafb; color: #1a1a1a; }
+
+  .toast {
+    position: fixed; bottom: 20px; right: 20px;
+    background: #1a1a1a; color: #fff;
+    padding: 14px 20px; border-radius: 10px;
+    font-size: 14px; font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    transform: translateY(100px); opacity: 0;
+    transition: all 0.3s; z-index: 2000;
+    display: flex; align-items: center; gap: 10px;
+    max-width: 360px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { background: #059669; }
+  .toast.error { background: #dc2626; }
+  .toast.info { background: #2563eb; }
+
+  @media (max-width: 768px) {
+    nav { display: none; }
+    nav.open {
+      display: flex; flex-direction: column;
+      position: absolute; top: 56px; left: 0; right: 0;
+      background: #fff; padding: 20px;
+      border-bottom: 1px solid #e8e8e8; z-index: 100; gap: 14px;
+    }
+    .burger { display: block; }
+    .field-row { flex-direction: column; align-items: flex-start; gap: 6px; }
+    .field-row label { width: auto; }
+    .field-row input, .field-row select, .rte, .comment-block { max-width: 100%; width: 100%; }
+    .tab-content .field-row label { width: auto; }
+    .file-grid { grid-template-columns: 1fr; }
+    .form-header { flex-direction: column; gap: 12px; align-items: flex-start; }
+    .form-footer { flex-direction: column; align-items: stretch; }
+    .footer-actions { flex-direction: column; }
+    .dropdown-menu, .profile-menu {
+      position: fixed; top: 70px; right: 20px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="burger" onclick="document.querySelector('nav').classList.toggle('open')">☰</button>
+  <div class="header-logo">
+    <div class="avatar" onclick="document.querySelector('.profile-menu').classList.toggle('show')">МГ</div>
+    <span>Максим Гусев</span>
+  </div>
+  <nav>
+    <a href="dashboard.html">Рабочий стол</a>
+    <a href="projects.html" class="active">Проекты</a>
+    <a href="search.html">Поиск</a>
+    <a href="messages.html">Сообщения</a>
+    <a href="notifications.html">Уведомления</a>
+    <a href="finance.html">Финансы</a>
+    <div class="dropdown">
+      <a href="#" class="dropdown-toggle">Ещё ▾</a>
+      <div class="dropdown-menu">
+        <a href="calendar.html">📅 Календарь</a>
+        <a href="documents.html">📄 Документы</a>
+        <a href="reviews.html">⭐ Отзывы</a>
+        <a href="portfolio.html">🖼️ Портфолио</a>
+        <a href="workers.html">👷 Рабочие</a>
+        <a href="panels.html">📊 Панели</a>
+        <a href="reports.html">📈 Отчёты</a>
+        <a href="specializations.html">🔧 Специализация</a>
+        <a href="admin.html">⚙️ Администратор</a>
+        <a href="manager.html">👔 Менеджер</a>
+      </div>
+    </div>
+  </nav>
+  <div class="header-actions">
+    <button class="btn-create" onclick="location.href='request-form.html'">+ Создать</button>
+    <div class="profile-dropdown">
+      <div class="avatar" onclick="document.querySelector('.profile-menu').classList.toggle('show')">МГ</div>
+      <div class="profile-menu">
+        <a href="profile.html">👤 Мой профиль</a>
+        <a href="personal-data.html">📋 Персональные данные</a>
+        <a href="settings.html">⚙️ Настройки</a>
+        <a href="help.html">❓ Помощь</a>
+        <div class="divider"></div>
+        <a href="login.html" class="logout">🚪 Выйти</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="breadcrumbs">
+    <a href="dashboard.html">Рабочий стол</a>
+    <span class="sep">›</span>
+    <a href="projects.html">Проекты</a>
+    <span class="sep">›</span>
+    <span>Создание запроса</span>
+  </div>
+
+  <div class="form-card">
+    <div class="form-header">
+      <div>
+        <h1>📋 Создание запроса на сметы</h1>
+        <div class="form-subtitle">Заполните все обязательные поля для создания нового запроса</div>
+      </div>
+      <button class="btn-config" onclick="location.href='404.html'">⚙️ Конфигурировать поле</button>
+    </div>
+
+    <div class="top-fields">
+      <div class="field-row">
+        <label>Имя запроса <span class="req">*</span></label>
+        <input type="text" id="f-name" placeholder="Например: Ремонт офиса на Ленина">
+      </div>
+      <div class="field-row">
+        <label>Объект <span class="req">*</span></label>
+        <input type="text" id="f-object" placeholder="Адрес или название объекта">
+      </div>
+      <div class="field-row">
+        <label>Проект</label>
+        <input type="text" id="f-project" placeholder="Связанный проект (опционально)">
+      </div>
+      <div class="field-row">
+        <label>Тип запроса <span class="req">*</span></label>
+        <select id="f-type">
+          <option value="incident">Инцидент</option>
+          <option value="request">Запрос</option>
+          <option value="problem">Проблема</option>
+          <option value="change">Изменение</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="info">ℹ️ Информация</div>
+      <div class="tab" data-tab="budget">💰 Бюджет</div>
+      <div class="tab" data-tab="class">📂 Классификации</div>
+      <div class="tab" data-tab="portal">🌐 Рабочий портал</div>
+      <div class="tab" data-tab="default">⚙️ По умолчанию</div>
+    </div>
+
+    <!-- Tab: Информация -->
+    <div class="tab-content active" id="tab-info">
+      <div class="field-row">
+        <label>Тема <span class="req">*</span></label>
+        <input type="text" id="f-subject" placeholder="Краткое описание проблемы">
+      </div>
+      <div class="field-row" style="align-items:flex-start;">
+        <label style="padding-top:10px;">Описание</label>
+        <div class="rte">
+          <div class="rte-toolbar">
+            <select onchange="applyStyle(this)"><option>Стиль</option><option value="h2">Заголовок</option><option value="p">Параграф</option></select>
+            <button title="Жирный" onclick="execFormat('bold', this)"><b>B</b></button>
+            <button title="Курсив" onclick="execFormat('italic', this)"><i>I</i></button>
+            <button title="Подчёркнутый" onclick="execFormat('underline', this)"><u>U</u></button>
+            <button title="Цвет текста" style="color:#e53e3e;" onclick="location.href='404.html'"><b>A</b></button>
+            <div class="sep"></div>
+            <button title="Вставить ссылку" onclick="insertLink()">🔗</button>
+            <button title="Нумерованный список" onclick="execFormat('insertOrderedList')">≡</button>
+            <button title="Маркированный список" onclick="execFormat('insertUnorderedList')">☰</button>
+            <div class="sep"></div>
+            <button title="Эмодзи" onclick="insertEmoji()">😊</button>
+            <button title="Дополнительно" onclick="location.href='404.html'">⌄</button>
+          </div>
+          <textarea id="rte-1" placeholder="Опишите подробно, что требуется сделать..."></textarea>
+          <div class="rte-tabs">
+            <div class="rte-tab active" onclick="switchRteTab(this, 'visual')">Визуальный</div>
+            <div class="rte-tab" onclick="switchRteTab(this, 'text')">Текстовый</div>
+          </div>
+        </div>
+      </div>
+      <div class="field-row">
+        <label>Бюджет</label>
+        <input type="text" id="f-budget-info" placeholder="1 500 рублей">
+      </div>
+      <div class="field-row" style="align-items:flex-start;">
+        <label style="padding-top:10px;">Вложение</label>
+        <div style="flex:1; max-width:400px;">
+          <label class="file-upload" id="main-upload" for="main-file">
+            <div class="icon">☁️</div>
+            <div>Перетащите сюда или выберите с диска</div>
+            <div class="filename"></div>
+            <input type="file" id="main-file" accept="*/*" onchange="handleFileUpload(this, 'main-upload')">
+            <button class="remove-btn" onclick="event.preventDefault(); event.stopPropagation(); removeFile('main-upload')">×</button>
+          </label>
+        </div>
+      </div>
+      <div class="field-row">
+        <label>Автор</label>
+        <input type="text" value="ДТО ИП 'Гусев'" readonly>
+      </div>
+      <div class="field-row">
+        <label>Классификация</label>
+        <input type="text" id="f-classification" placeholder="Электро-монтажник">
+      </div>
+      <div class="field-row">
+        <label>SD Индикатор заявки</label>
+        <input type="text" id="f-sd" readonly style="color:#3b82f6; font-weight:600;">
+      </div>
+      <div class="field-row">
+        <label>Рабочий портал</label>
+        <input type="text" id="f-portal-info" placeholder="Название портала">
+      </div>
+    </div>
+
+    <!-- Tab: Классификации -->
+    <div class="tab-content" id="tab-class">
+      <div class="field-row">
+        <label>Тема</label>
+        <input type="text" placeholder="Тема для классификации">
+      </div>
+      <div class="field-row" style="align-items:flex-start;">
+        <label style="padding-top:10px;">Описание</label>
+        <div class="rte">
+          <div class="rte-toolbar">
+            <select><option>Стиль</option></select>
+            <button onclick="execFormat('bold', this)"><b>B</b></button>
+            <button onclick="execFormat('italic', this)"><i>I</i></button>
+            <button onclick="execFormat('underline', this)"><u>U</u></button>
+            <button style="color:#e53e3e;" onclick="location.href='404.html'"><b>A</b></button>
+            <div class="sep"></div>
+            <button onclick="insertLink()">🔗</button>
+            <button onclick="execFormat('insertOrderedList')">≡</button>
+            <button onclick="execFormat('insertUnorderedList')">☰</button>
+            <div class="sep"></div>
+            <button onclick="insertEmoji()">😊</button>
+            <button onclick="location.href='404.html'">⌄</button>
+          </div>
+          <textarea placeholder="Описание для классификации..."></textarea>
+          <div class="rte-tabs">
+            <div class="rte-tab active" onclick="switchRteTab(this, 'visual')">Визуальный</div>
+            <div class="rte-tab" onclick="switchRteTab(this, 'text')">Текстовый</div>
+          </div>
+        </div>
+      </div>
+      <div class="field-row">
+        <label>Бюджет</label>
+        <input type="text" placeholder="1 500 рублей">
+      </div>
+      <div class="field-row">
+        <label>Наименование объекта</label>
+        <input type="text" placeholder="Официальное название">
+      </div>
+      <div class="field-row">
+        <label>Автор</label>
+        <input type="text" value="ДТО ИП 'Гусев'" readonly>
+      </div>
+      <div class="field-row">
+        <label>SD Индикатор заявки</label>
+        <input type="text" value="SD-189562" style="color:#3b82f6; font-weight:600;" readonly>
+      </div>
+      <div class="field-row" style="align-items:flex-start;">
+        <label style="padding-top:10px;">Комментарии</label>
+        <div class="comment-block">
+          <textarea placeholder="Не правильная проводка кабеля"></textarea>
+          <div class="file-grid">
+            <label class="file-upload" id="c-upload-1" for="c-file-1">
+              <div class="icon">🖼️</div>
+              <div>Прикрепить файл</div>
+              <div class="filename"></div>
+              <input type="file" id="c-file-1" accept="image/*" onchange="handleFileUpload(this, 'c-upload-1')">
+              <button class="remove-btn" onclick="event.preventDefault(); event.stopPropagation(); removeFile('c-upload-1')">×</button>
+            </label>
+            <label class="file-upload" id="c-upload-2" for="c-file-2">
+              <div class="icon">🖼️</div>
+              <div>Прикрепить файл</div>
+              <div class="filename"></div>
+              <input type="file" id="c-file-2" accept="image/*" onchange="handleFileUpload(this, 'c-upload-2')">
+              <button class="remove-btn" onclick="event.preventDefault(); event.stopPropagation(); removeFile('c-upload-2')">×</button>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="field-row" style="align-items:flex-start;">
+        <label style="padding-top:10px;">Ответ на комментарии</label>
+        <div class="comment-block">
+          <textarea placeholder="Высел по замену. Всё заменил и установил"></textarea>
+          <div class="file-grid">
+            <label class="file-upload" id="a-upload-1" for="a-file-1">
+              <div class="icon">📎</div>
+              <div>Прикрепить файл</div>
+              <div class="filename"></div>
+              <input type="file" id="a-file-1" accept="*/*" onchange="handleFileUpload(this, 'a-upload-1')">
+              <button class="remove-btn" onclick="event.preventDefault(); event.stopPropagation(); removeFile('a-upload-1')">×</button>
+            </label>
+            <label class="file-upload" id="a-upload-2" for="a-file-2">
+              <div class="icon">🖼️</div>
+              <div>Прикрепить файл</div>
+              <div class="filename"></div>
+              <input type="file" id="a-file-2" accept="image/*" onchange="handleFileUpload(this, 'a-upload-2')">
+              <button class="remove-btn" onclick="event.preventDefault(); event.stopPropagation(); removeFile('a-upload-2')">×</button>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Бюджет -->
+    <div class="tab-content" id="tab-budget">
+      <div class="field-row">
+        <label>Бюджет <span class="req">*</span></label>
+        <input type="number" id="f-budget-amount" placeholder="1500" min="0">
+      </div>
+      <div class="field-row">
+        <label>Валюта</label>
+        <select id="f-currency">
+          <option value="RUB">₽ RUB (Российский рубль)</option>
+          <option value="USD">$ USD (Доллар США)</option>
+          <option value="EUR">€ EUR (Евро)</option>
+          <option value="BYN">Br BYN (Белорусский рубль)</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <label>Тип оплаты</label>
+        <select>
+          <option>Фиксированная цена</option>
+          <option>Почасовая оплата</option>
+          <option>По этапам</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <label>НДС</label>
+        <select>
+          <option>Без НДС</option>
+          <option>Включая НДС 20%</option>
+          <option>НДС сверху</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Tab: Рабочий портал -->
+    <div class="tab-content" id="tab-portal">
+      <div class="field-row">
+        <label>Название портала</label>
+        <input type="text" placeholder="Например: JIRA, ServiceNow">
+      </div>
+      <div class="field-row">
+        <label>URL портала</label>
+        <input type="url" placeholder="https://portal.example.com">
+      </div>
+      <div class="field-row">
+        <label>Номер тикета</label>
+        <input type="text" placeholder="TICKET-12345">
+      </div>
+      <div class="field-row">
+        <label>Приоритет</label>
+        <select>
+          <option>Низкий</option>
+          <option>Средний</option>
+          <option>Высокий</option>
+          <option>Критический</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Tab: По умолчанию -->
+    <div class="tab-content" id="tab-default">
+      <p style="color:#666; font-size:14px; margin-bottom:16px;">
+        ⚙️ Здесь можно настроить поля, которые будут отображаться по умолчанию при создании новых запросов.
+      </p>
+      <div class="field-row">
+        <label>Обязательные поля</label>
+        <div style="flex:1; max-width:400px; font-size:13px; color:#666; line-height:1.8;">
+          <label style="display:block;"><input type="checkbox" checked> Имя запроса</label>
+          <label style="display:block;"><input type="checkbox" checked> Объект</label>
+          <label style="display:block;"><input type="checkbox" checked> Тип запроса</label>
+          <label style="display:block;"><input type="checkbox" checked> Тема</label>
+          <label style="display:block;"><input type="checkbox"> Описание (обязательное)</label>
+          <label style="display:block;"><input type="checkbox"> Бюджет (обязательный)</label>
+        </div>
+      </div>
+      <div class="field-row">
+        <label></label>
+        <button class="btn-config" onclick="showToast('✓ Настройки сохранены', 'success')" style="background:#10b981;">💾 Сохранить настройки</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-footer">
+    <label>
+      <input type="checkbox" id="create-another">
+      Создать ещё один после сохранения
+    </label>
+    <div class="footer-actions">
+      <button class="btn-draft" onclick="saveDraft()">📥 Сохранить черновик</button>
+      <button class="btn-cancel" onclick="cancelForm()">Отмена</button>
+      <button class="btn-submit" onclick="submitForm()">✨ Создать запрос</button>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // Burger
+  document.querySelector('.burger').addEventListener('click', function() {
+    document.querySelector('nav').classList.toggle('open');
+  });
+
+  // Закрытие меню профиля
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.profile-dropdown') && !e.target.closest('.header-logo .avatar')) {
+      document.querySelectorAll('.profile-menu').forEach(m => m.classList.remove('show'));
+    }
+  });
+
+  // Toast
+  function showToast(msg, type = '') {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.className = 'toast ' + type + ' show';
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  // Переключение вкладок формы
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+    });
+  });
+
+  // Генерация SD-индикатора
+  function generateSD() {
+    const num = Math.floor(Math.random() * 900000) + 100000;
+    document.getElementById('f-sd').value = 'SD-' + num;
+  }
+  generateSD();
+
+  // Загрузка файлов
+  function handleFileUpload(input, uploadId) {
+    const label = document.getElementById(uploadId);
+    if (input.files.length > 0) {
+      const file = input.files[0];
+      const maxSize = 25 * 1024 * 1024;
+      if (file.size > maxSize) {
+        showToast('⚠ Файл слишком большой (макс. 25 МБ)', 'error');
+        input.value = '';
+        return;
+      }
+      label.classList.add('uploaded');
+      label.querySelector('.icon').textContent = '✅';
+      label.querySelector('.filename').textContent = file.name + ' (' + formatSize(file.size) + ')';
+      showToast('📎 Файл прикреплён: ' + file.name, 'success');
+    }
+  }
+
+  function removeFile(uploadId) {
+    const label = document.getElementById(uploadId);
+    const input = label.querySelector('input[type="file"]');
+    input.value = '';
+    label.classList.remove('uploaded');
+    label.querySelector('.icon').textContent = uploadId.includes('c-upload') || uploadId.includes('a-upload-2') ? '🖼️' : uploadId === 'main-upload' ? '☁️' : '📎';
+    label.querySelector('.filename').textContent = '';
+    showToast('🗑️ Файл удалён');
+  }
+
+  function formatSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' КБ';
+    return (bytes/(1024*1024)).toFixed(1) + ' МБ';
+  }
+
+  // RTE функции
+  function execFormat(cmd, btn) {
+    const activeTextarea = document.querySelector('.tab-content.active textarea');
+    if (!activeTextarea) return;
+    
+    const start = activeTextarea.selectionStart;
+    const end = activeTextarea.selectionEnd;
+    const text = activeTextarea.value;
+    const selected = text.substring(start, end);
+    
+    let wrapped = selected;
+    if (cmd === 'bold') wrapped = '**' + selected + '**';
+    else if (cmd === 'italic') wrapped = '_' + selected + '_';
+    else if (cmd === 'underline') wrapped = '__' + selected + '__';
+    else if (cmd === 'insertOrderedList') wrapped = '\n1. ' + selected;
+    else if (cmd === 'insertUnorderedList') wrapped = '\n• ' + selected;
+    
+    activeTextarea.value = text.substring(0, start) + wrapped + text.substring(end);
+    activeTextarea.focus();
+    
+    if (btn) {
+      btn.classList.toggle('active');
+      setTimeout(() => btn.classList.remove('active'), 300);
+    }
+    showToast('✓ Форматирование применено', 'info');
+  }
+
+  function applyStyle(select) {
+    if (select.value === 'h2' || select.value === 'p') {
+      showToast('✓ Стиль «' + select.options[select.selectedIndex].text + '» применён', 'info');
+      select.value = 'Стиль';
+    }
+  }
+
+  function insertLink() {
+    const url = prompt('Введите URL ссылки:', 'https://');
+    if (url && url !== 'https://') {
+      const text = prompt('Текст ссылки:', 'нажмите здесь');
+      if (text) {
+        const activeTextarea = document.querySelector('.tab-content.active textarea');
+        if (activeTextarea) {
+          const start = activeTextarea.selectionStart;
+          const val = activeTextarea.value;
+          activeTextarea.value = val.substring(0, start) + '[' + text + '](' + url + ')' + val.substring(start);
+          showToast('🔗 Ссылка вставлена', 'success');
+        }
+      }
+    }
+  }
+
+  function insertEmoji() {
+    const emojis = ['😊', '👍', '✅', '⚠️', '📎', '💡', '🔧', '⭐'];
+    const emoji = emojis[Math.floor(Math.random() * emojis.length)];
+    const activeTextarea = document.querySelector('.tab-content.active textarea');
+    if (activeTextarea) {
+      const start = activeTextarea.selectionStart;
+      const val = activeTextarea.value;
+      activeTextarea.value = val.substring(0, start) + emoji + val.substring(start);
+      showToast('😀 Эмодзи ' + emoji + ' вставлен', 'info');
+    }
+  }
+
+  function switchRteTab(tab, mode) {
+    tab.parentElement.querySelectorAll('.rte-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const rte = tab.closest('.rte');
+    const textarea = rte.querySelector('textarea');
+    if (mode === 'text') {
+      textarea.style.fontFamily = 'monospace';
+      textarea.style.background = '#fafafa';
+    } else {
+      textarea.style.fontFamily = 'inherit';
+      textarea.style.background = '#fff';
+    }
+  }
+
+  // Валидация и отправка
+  function validateForm() {
+    const name = document.getElementById('f-name').value.trim();
+    const object = document.getElementById('f-object').value.trim();
+    const subject = document.getElementById('f-subject').value.trim();
+
+    let valid = true;
+
+    if (!name) {
+      document.getElementById('f-name').classList.add('error');
+      showToast('⚠ Укажите имя запроса', 'error');
+      valid = false;
+    } else {
+      document.getElementById('f-name').classList.remove('error');
+    }
+
+    if (!object) {
+      document.getElementById('f-object').classList.add('error');
+      if (valid) showToast('⚠ Укажите объект', 'error');
+      valid = false;
+    } else {
+      document.getElementById('f-object').classList.remove('error');
+    }
+
+    if (!subject) {
+      document.getElementById('f-subject').classList.add('error');
+      if (valid) showToast('⚠ Укажите тему', 'error');
+      valid = false;
+    } else {
+      document.getElementById('f-subject').classList.remove('error');
+    }
+
+    return valid;
+  }
+
+  function submitForm() {
+    if (!validateForm()) return;
+
+    const btn = document.querySelector('.btn-submit');
+    btn.disabled = true;
+    btn.textContent = '⏳ Создание...';
+
+    setTimeout(() => {
+      const sd = document.getElementById('f-sd').value;
+      const name = document.getElementById('f-name').value;
+      showToast('✅ Запрос «' + name + '» (' + sd + ') успешно создан!', 'success');
+      
+      const createAnother = document.getElementById('create-another').checked;
+      setTimeout(() => {
+        if (createAnother) {
+          resetForm();
+          showToast('📋 Форма очищена для нового запроса', 'info');
+        } else {
+          location.href = 'projects.html';
+        }
+      }, 1200);
+    }, 800);
+  }
+
+  function saveDraft() {
+    const name = document.getElementById('f-name').value.trim();
+    if (!name) {
+      showToast('⚠ Укажите хотя бы имя запроса для черновика', 'error');
+      return;
+    }
+    showToast('📥 Черновик «' + name + '» сохранён', 'success');
+  }
+
+  function cancelForm() {
+    if (confirm('Отменить создание запроса?\n\nВсе несохранённые данные будут потеряны.')) {
+      location.href = 'projects.html';
+    }
+  }
+
+  function resetForm() {
+    document.querySelectorAll('input[type="text"], input[type="number"], input[type="url"], textarea').forEach(el => {
+      if (!el.hasAttribute('readonly')) el.value = '';
+    });
+    document.querySelectorAll('.file-upload.uploaded').forEach(label => {
+      const id = label.id;
+      removeFile(id);
+    });
+    generateSD();
+    document.querySelector('.btn-submit').disabled = false;
+    document.querySelector('.btn-submit').textContent = '✨ Создать запрос';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Очистка ошибок при вводе
+  ['f-name', 'f-object', 'f-subject'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', () => el.classList.remove('error'));
+  });
+</script>
+
+</body>
+</html>

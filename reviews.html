@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REMPRO — Отзывы</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f7fa; color: #1a1a1a; min-height: 100vh;
+  }
+  header {
+    display: flex; align-items: center; padding: 12px 24px;
+    background: #fff; border-bottom: 1px solid #e8e8e8; gap: 16px; position: relative;
+  }
+  .header-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 600; font-size: 16px; white-space: nowrap;
+  }
+  .header-logo .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 13px; font-weight: 600;
+    cursor: pointer;
+  }
+  nav { display: flex; align-items: center; gap: 20px; flex: 1; overflow-x: auto; }
+  nav a { text-decoration: none; color: #333; font-size: 14px; white-space: nowrap; }
+  nav a:hover, nav a.active { color: #3b82f6; }
+
+  .header-actions { display: flex; align-items: center; gap: 16px; }
+  .btn-create {
+    background: #3b82f6; border: none; color: #fff;
+    padding: 8px 20px; border-radius: 8px; font-size: 14px;
+    cursor: pointer; white-space: nowrap; font-weight: 500;
+  }
+  .btn-create:hover { background: #2563eb; }
+
+  .dropdown { position: relative; }
+  .dropdown-menu {
+    display: none; position: absolute; top: 100%; right: 0;
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1); min-width: 220px;
+    z-index: 1000; padding: 8px 0; margin-top: 8px;
+  }
+  .dropdown:hover .dropdown-menu { display: block; }
+  .dropdown-menu a, .dropdown-menu button {
+    display: block; padding: 10px 16px; font-size: 14px;
+    color: #333; text-decoration: none; white-space: nowrap;
+    width: 100%; background: none; border: none; text-align: left;
+    cursor: pointer; font-family: inherit;
+  }
+  .dropdown-menu a:hover, .dropdown-menu button:hover { background: #f5f7fa; color: #3b82f6; }
+
+  .profile-dropdown { position: relative; }
+  .profile-menu {
+    display: none; position: absolute; top: 100%; right: 0;
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1); min-width: 220px;
+    z-index: 1000; padding: 8px 0; margin-top: 8px;
+  }
+  .profile-menu.show { display: block; }
+  .profile-menu a {
+    display: block; padding: 10px 16px; font-size: 14px;
+    color: #333; text-decoration: none;
+  }
+  .profile-menu a:hover { background: #f5f7fa; color: #3b82f6; }
+  .profile-menu .divider { height: 1px; background: #e8e8e8; margin: 8px 0; }
+  .profile-menu .logout { color: #ef4444; }
+  .profile-menu .logout:hover { background: #fee2e2; color: #dc2626; }
+
+  .burger { display: none; background: none; border: none; font-size: 24px; cursor: pointer; color: #333; }
+
+  main { max-width: 1000px; margin: 0 auto; padding: 32px 20px 60px; }
+
+  .breadcrumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: #666; margin-bottom: 16px;
+  }
+  .breadcrumbs a { color: #3b82f6; text-decoration: none; }
+  .breadcrumbs a:hover { text-decoration: underline; }
+  .breadcrumbs .sep { color: #ccc; }
+
+  .page-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+  }
+  .page-title { font-size: 28px; font-weight: 700; }
+  .reviews-counter {
+    background: #eff6ff; color: #3b82f6;
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 13px; font-weight: 600;
+  }
+
+  /* Rating summary */
+  .rating-summary {
+    background: #fff; border-radius: 16px; padding: 32px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    margin-bottom: 24px;
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 32px;
+    align-items: center;
+  }
+  .rating-big { text-align: center; }
+  .rating-value {
+    font-size: 64px; font-weight: 700; color: #3b82f6;
+    line-height: 1;
+  }
+  .rating-stars { font-size: 24px; color: #fbbf24; margin: 8px 0; }
+  .rating-count { font-size: 14px; color: #666; cursor: pointer; }
+  .rating-count:hover { color: #3b82f6; text-decoration: underline; }
+
+  .rating-bars { display: flex; flex-direction: column; gap: 8px; }
+  .rating-bar-row {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 13px; cursor: pointer;
+    padding: 4px 8px; border-radius: 6px;
+    transition: background 0.15s;
+  }
+  .rating-bar-row:hover { background: #f9fafb; }
+  .rating-bar-row.active { background: #eff6ff; }
+  .rating-bar-label { width: 60px; color: #666; }
+  .rating-bar-track {
+    flex: 1; height: 8px; background: #f0f0f0; border-radius: 4px; overflow: hidden;
+  }
+  .rating-bar-fill {
+    height: 100%; background: #fbbf24; border-radius: 4px;
+    transition: width 0.5s;
+  }
+  .rating-bar-count { width: 40px; text-align: right; color: #666; font-weight: 500; }
+
+  /* Filters */
+  .filters-bar {
+    background: #fff; border-radius: 12px; padding: 16px 20px;
+    margin-bottom: 20px; display: flex; gap: 12px; flex-wrap: wrap;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .filter-group { display: flex; flex-direction: column; gap: 4px; }
+  .filter-group label { font-size: 12px; color: #666; font-weight: 500; }
+  .filter-group input, .filter-group select {
+    padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px;
+    font-size: 14px; outline: none; min-width: 160px;
+  }
+  .filter-group input:focus, .filter-group select:focus { border-color: #3b82f6; }
+
+  .filter-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  .filter-chip {
+    padding: 6px 14px; border-radius: 20px;
+    background: #fff; border: 1px solid #e5e7eb;
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .filter-chip:hover { border-color: #3b82f6; color: #3b82f6; }
+  .filter-chip.active {
+    background: #3b82f6; color: #fff; border-color: #3b82f6;
+  }
+  .filter-chip .count {
+    background: rgba(0,0,0,0.08);
+    padding: 1px 8px; border-radius: 10px;
+    font-size: 11px;
+  }
+  .filter-chip.active .count { background: rgba(255,255,255,0.3); }
+
+  /* Reviews list */
+  .reviews-list { display: flex; flex-direction: column; gap: 16px; }
+  .review-card {
+    background: #fff; border-radius: 16px; padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: all 0.2s;
+  }
+  .review-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .review-card.hidden { display: none; }
+  .review-card.removing {
+    animation: slideOut 0.4s forwards;
+  }
+  @keyframes slideOut {
+    to { opacity: 0; transform: translateX(100px); height: 0; padding: 0; margin: 0; overflow: hidden; }
+  }
+
+  .review-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 12px; flex-wrap: wrap; gap: 12px;
+  }
+  .review-author {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .review-avatar {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 18px; font-weight: 600;
+    cursor: pointer; transition: transform 0.2s;
+  }
+  .review-avatar:hover { transform: scale(1.1); }
+  .review-author-name {
+    font-size: 16px; font-weight: 600;
+    cursor: pointer;
+  }
+  .review-author-name:hover { color: #3b82f6; }
+  .review-author-company {
+    font-size: 13px; color: #666;
+  }
+  .review-date { font-size: 13px; color: #999; }
+  .review-stars {
+    font-size: 18px; color: #fbbf24; margin-bottom: 12px;
+    letter-spacing: 2px;
+  }
+  .review-project {
+    font-size: 13px; color: #3b82f6; margin-bottom: 12px;
+    font-weight: 500; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .review-project:hover { text-decoration: underline; }
+  .review-text {
+    font-size: 14px; line-height: 1.6; color: #374151;
+    margin-bottom: 16px;
+  }
+  .review-text.collapsed {
+    max-height: 66px; overflow: hidden;
+    position: relative;
+  }
+  .review-text.collapsed::after {
+    content: ""; position: absolute;
+    bottom: 0; left: 0; right: 0; height: 20px;
+    background: linear-gradient(transparent, #fff);
+  }
+  .read-more {
+    color: #3b82f6; font-size: 13px; cursor: pointer;
+    font-weight: 500; margin-bottom: 16px; display: inline-block;
+  }
+  .read-more:hover { text-decoration: underline; }
+
+  .review-response {
+    background: #f0f9ff; border-left: 3px solid #3b82f6;
+    padding: 12px 16px; border-radius: 8px;
+    margin-top: 12px;
+  }
+  .review-response-header {
+    font-size: 13px; font-weight: 600; color: #3b82f6; margin-bottom: 6px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .response-badge {
+    background: #dbeafe; color: #1e40af;
+    padding: 1px 8px; border-radius: 10px;
+    font-size: 10px; font-weight: 700;
+  }
+  .review-response-text {
+    font-size: 13px; color: #555; line-height: 1.5;
+  }
+
+  .review-actions {
+    display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap;
+    align-items: center;
+  }
+  .review-actions-right { margin-left: auto; display: flex; gap: 8px; }
+  .btn-review {
+    padding: 8px 16px; border-radius: 8px;
+    font-size: 13px; font-weight: 500; cursor: pointer; border: none;
+    transition: all 0.2s;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-review:hover { transform: translateY(-1px); }
+  .btn-review:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .btn-review-primary { background: #3b82f6; color: #fff; }
+  .btn-review-primary:hover:not(:disabled) { background: #2563eb; }
+  .btn-review-secondary { background: #f3f4f6; color: #374151; }
+  .btn-review-secondary:hover:not(:disabled) { background: #e5e7eb; }
+  .btn-review-success { background: #10b981; color: #fff; }
+  .btn-review-success:hover { background: #059669; }
+  .btn-review-danger { background: #fff; color: #ef4444; border: 1px solid #fee2e2; }
+  .btn-review-danger:hover { background: #fef2f2; }
+
+  .like-count {
+    font-size: 12px; color: #6b7280; font-weight: 500;
+  }
+
+  .review-form {
+    margin-top: 16px; display: none;
+    padding: 16px; background: #f9fafb; border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    animation: fadeIn 0.3s;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .review-form.open { display: block; }
+  .review-form textarea {
+    width: 100%; padding: 12px; border: 1px solid #ddd;
+    border-radius: 10px; font-size: 14px; outline: none;
+    resize: vertical; min-height: 80px; font-family: inherit;
+    margin-bottom: 12px;
+  }
+  .review-form textarea:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+  .review-form-actions { display: flex; gap: 8px; }
+  .char-counter {
+    font-size: 12px; color: #9ca3af; margin-bottom: 8px;
+    text-align: right;
+  }
+  .char-counter.warning { color: #f59e0b; }
+  .char-counter.error { color: #ef4444; }
+
+  .empty-state {
+    text-align: center; padding: 60px 20px;
+    background: #fff; border-radius: 16px;
+    display: none;
+  }
+  .empty-state.show { display: block; }
+  .empty-state .icon { font-size: 64px; margin-bottom: 16px; }
+  .empty-state h3 { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+  .empty-state p { font-size: 14px; color: #666; }
+
+  /* Модальное окно жалобы */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+    z-index: 2000; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: #fff; border-radius: 20px;
+    max-width: 500px; width: 100%;
+    padding: 32px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  .modal h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+  .modal .subtitle { font-size: 14px; color: #666; margin-bottom: 20px; }
+  .report-reasons {
+    display: flex; flex-direction: column; gap: 8px;
+    margin-bottom: 20px;
+  }
+  .reason-item {
+    padding: 12px 16px; border: 1px solid #e5e7eb;
+    border-radius: 10px; cursor: pointer;
+    font-size: 14px; transition: all 0.2s;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .reason-item:hover { border-color: #3b82f6; background: #eff6ff; }
+  .reason-item.selected { border-color: #3b82f6; background: #eff6ff; }
+  .reason-item .radio {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 2px solid #d1d5db; flex-shrink: 0;
+    position: relative;
+  }
+  .reason-item.selected .radio {
+    border-color: #3b82f6;
+  }
+  .reason-item.selected .radio::after {
+    content: ""; position: absolute;
+    top: 3px; left: 3px; right: 3px; bottom: 3px;
+    background: #3b82f6; border-radius: 50%;
+  }
+  .modal textarea {
+    width: 100%; padding: 12px; border: 1px solid #ddd;
+    border-radius: 10px; font-size: 14px; outline: none;
+    resize: vertical; min-height: 80px; font-family: inherit;
+    margin-bottom: 16px;
+  }
+  .modal textarea:focus { border-color: #3b82f6; }
+  .modal-actions { display: flex; gap: 10px; }
+  .modal-actions .btn-review { flex: 1; padding: 12px; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 20px; right: 20px;
+    background: #1a1a1a; color: #fff;
+    padding: 14px 20px; border-radius: 10px;
+    font-size: 14px; font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    transform: translateY(100px); opacity: 0;
+    transition: all 0.3s; z-index: 3000;
+    display: flex; align-items: center; gap: 10px;
+    max-width: 360px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { background: #059669; }
+  .toast.error { background: #dc2626; }
+  .toast.info { background: #2563eb; }
+
+  @media (max-width: 768px) {
+    nav { display: none; }
+    nav.open {
+      display: flex; flex-direction: column;
+      position: absolute; top: 56px; left: 0; right: 0;
+      background: #fff; padding: 20px;
+      border-bottom: 1px solid #e8e8e8; z-index: 100; gap: 14px;
+    }
+    .burger { display: block; }
+    .rating-summary { grid-template-columns: 1fr; gap: 20px; }
+    .rating-value { font-size: 48px; }
+    .dropdown-menu, .profile-menu {
+      position: fixed; top: 70px; right: 20px;
+    }
+    .review-actions { flex-direction: column; align-items: stretch; }
+    .review-actions-right { margin-left: 0; }
+    .filters-bar { flex-direction: column; align-items: stretch; }
+    .filter-group input, .filter-group select { min-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="burger" onclick="document.querySelector('nav').classList.toggle('open')">☰</button>
+  <div class="header-logo">
+    <div class="avatar" onclick="document.querySelector('.profile-menu').classList.toggle('show')">МГ</div>
+    <span>Максим Гусев</span>
+  </div>
+  <nav>
+    <a href="dashboard.html">Рабочий стол</a>
+    <a href="projects.html">Проекты</a>
+    <a href="search.html">Поиск</a>
+    <a href="messages.html">Сообщения</a>
+    <a href="notifications.html">Уведомления</a>
+    <a href="finance.html">Финансы</a>
+    <div class="dropdown">
+      <a href="#" class="dropdown-toggle">Ещё ▾</a>
+      <div class="dropdown-menu">
+        <a href="calendar.html">📅 Календарь</a>
+        <a href="documents.html">📄 Документы</a>
+        <a href="reviews.html" class="active" style="background:#eff6ff; color:#3b82f6;">⭐ Отзывы</a>
+        <a href="portfolio.html">🖼️ Портфолио</a>
+        <a href="workers.html">👷 Рабочие</a>
+        <a href="panels.html">📊 Панели</a>
+        <a href="reports.html">📈 Отчёты</a>
+        <a href="specializations.html">🔧 Специализация</a>
+        <a href="admin.html">⚙️ Администратор</a>
+        <a href="manager.html">👔 Менеджер</a>
+      </div>
+    </div>
+  </nav>
+  <div class="header-actions">
+    <div class="dropdown">
+      <button class="btn-create">📥 Экспорт ▾</button>
+      <div class="dropdown-menu" style="right:0;">
+        <button onclick="exportReviews('pdf')">📄 Скачать PDF</button>
+        <button onclick="exportReviews('xlsx')">📊 Скачать Excel</button>
+        <button onclick="exportReviews('csv')">📋 Скачать CSV</button>
+        <button onclick="window.print()">🖨️ Печать</button>
+      </div>
+    </div>
+    <div class="profile-dropdown">
+      <div class="avatar" onclick="document.querySelector('.profile-menu').classList.toggle('show')">МГ</div>
+      <div class="profile-menu">
+        <a href="profile.html">👤 Мой профиль</a>
+        <a href="personal-data.html">📋 Персональные данные</a>
+        <a href="settings.html">⚙️ Настройки</a>
+        <a href="help.html">❓ Помощь</a>
+        <div class="divider"></div>
+        <a href="login.html" class="logout">🚪 Выйти</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="breadcrumbs">
+    <a href="dashboard.html">Рабочий стол</a>
+    <span class="sep">›</span>
+    <a href="profile.html">Профиль</a>
+    <span class="sep">›</span>
+    <span>Отзывы</span>
+  </div>
+
+  <div class="page-header">
+    <h1 class="page-title">⭐ Отзывы клиентов</h1>
+    <span class="reviews-counter" id="reviews-counter">147 отзывов</span>
+  </div>
+
+  <!-- Rating summary -->
+  <div class="rating-summary">
+    <div class="rating-big">
+      <div class="rating-value">4.8</div>
+      <div class="rating-stars">★★★★★</div>
+      <div class="rating-count" onclick="location.href='reports.html'">на основе 147 отзывов</div>
+    </div>
+    <div class="rating-bars">
+      <div class="rating-bar-row" onclick="filterByStars(5)">
+        <span class="rating-bar-label">5 звёзд</span>
+        <div class="rating-bar-track"><div class="rating-bar-fill" style="width:78%"></div></div>
+        <span class="rating-bar-count">115</span>
+      </div>
+      <div class="rating-bar-row" onclick="filterByStars(4)">
+        <span class="rating-bar-label">4 звезды</span>
+        <div class="rating-bar-track"><div class="rating-bar-fill" style="width:15%"></div></div>
+        <span class="rating-bar-count">22</span>
+      </div>
+      <div class="rating-bar-row" onclick="filterByStars(3)">
+        <span class="rating-bar-label">3 звезды</span>
+        <div class="rating-bar-track"><div class="rating-bar-fill" style="width:5%"></div></div>
+        <span class="rating-bar-count">7</span>
+      </div>
+      <div class="rating-bar-row" onclick="filterByStars(2)">
+        <span class="rating-bar-label">2 звезды</span>
+        <div class="rating-bar-track"><div class="rating-bar-fill" style="width:1%"></div></div>
+        <span class="rating-bar-count">2</span>
+      </div>
+      <div class="rating-bar-row" onclick="filterByStars(1)">
+        <span class="rating-bar-label">1 звезда</span>
+        <div class="rating-bar-track"><div class="rating-bar-fill" style="width:1%"></div></div>
+        <span class="rating-bar-count">1</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Фильтры -->
+  <div class="filter-chips">
+    <div class="filter-chip active" onclick="filterReviews('all', this)">
+      Все <span class="count" id="chip-all">5</span>
+    </div>
+    <div class="filter-chip" onclick="filterReviews('positive', this)">
+      ⭐ Положительные <span class="count">4</span>
+    </div>
+    <div class="filter-chip" onclick="filterReviews('neutral', this)">
+      😐 Нейтральные <span class="count">1</span>
+    </div>
+    <div class="filter-chip" onclick="filterReviews('answered', this)">
+      💬 С ответом <span class="count">2</span>
+    </div>
+    <div class="filter-chip" onclick="filterReviews('pending', this)">
+      ⏳ Без ответа <span class="count">3</span>
+    </div>
+  </div>
+
+  <div class="filters-bar">
+    <div class="filter-group">
+      <label>Поиск</label>
+      <input type="text" id="search-input" placeholder="Имя клиента, текст...">
+    </div>
+    <div class="filter-group">
+      <label>Проект</label>
+      <select id="project-filter">
+        <option value="">Все проекты</option>
+        <option>Монтаж электропроводки</option>
+        <option>Установка кондиционера</option>
+        <option>Ремонт сантехники</option>
+        <option>Сборка офисной мебели</option>
+        <option>Укладка плитки</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Период</label>
+      <select id="period-filter">
+        <option value="">Всё время</option>
+        <option>За неделю</option>
+        <option>За месяц</option>
+        <option>За 3 месяца</option>
+        <option>За год</option>
+      </select>
+    </div>
+    <button class="btn-review btn-review-secondary" onclick="resetFilters()">🔄 Сбросить</button>
+  </div>
+
+  <!-- Reviews -->
+  <div class="reviews-list" id="reviews-list">
+    <!-- Review 1 -->
+    <div class="review-card" data-rating="5" data-answered="yes" data-project="монтаж электропроводки" data-client="александр смирнов">
+      <div class="review-header">
+        <div class="review-author">
+          <div class="review-avatar" onclick="location.href='404.html'">АС</div>
+          <div>
+            <div class="review-author-name" onclick="location.href='404.html'">Александр Смирнов</div>
+            <div class="review-author-company">ООО «Стройка»</div>
+          </div>
+        </div>
+        <div class="review-date">08.06.2026</div>
+      </div>
+      <div class="review-stars">★★★★★</div>
+      <div class="review-project" onclick="location.href='projects.html'">📁 Проект: Монтаж электропроводки в офисе →</div>
+      <div class="review-text">
+        Отличный мастер! Всё сделал быстро и качественно. Проводка уложена аккуратно, все соединения надёжные. 
+        Особенно порадовало, что убрал за собой рабочее место. Рекомендую к сотрудничеству!
+      </div>
+      <div class="review-response">
+        <div class="review-response-header">
+          💬 Ваш ответ <span class="response-badge">ОПУБЛИКОВАН</span>
+        </div>
+        <div class="review-response-text">Спасибо за отзыв! Рад, что работа понравилась. Обращайтесь ещё!</div>
+      </div>
+      <div class="review-actions">
+        <button class="btn-review btn-review-secondary" onclick="likeReview(this)">
+          👍 Полезно <span class="like-count">12</span>
+        </button>
+        <div class="review-actions-right">
+          <button class="btn-review btn-review-secondary" onclick="shareReview('Александр Смирнов')">🔗 Поделиться</button>
+          <button class="btn-review btn-review-danger" onclick="openReportModal('Александр Смирнов')">⚠ Пожаловаться</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Review 2 -->
+    <div class="review-card" data-rating="5" data-answered="no" data-project="установка кондиционера" data-client="иван петров">
+      <div class="review-header">
+        <div class="review-author">
+          <div class="review-avatar" onclick="location.href='404.html'">ИП</div>
+          <div>
+            <div class="review-author-name" onclick="location.href='404.html'">Иван Петров</div>
+            <div class="review-author-company">ИП Петров</div>
+          </div>
+        </div>
+        <div class="review-date">07.06.2026</div>
+      </div>
+      <div class="review-stars">★★★★★</div>
+      <div class="review-project" onclick="location.href='projects.html'">📁 Проект: Установка кондиционера →</div>
+      <div class="review-text">
+        Кондиционер работает отлично. Мастер приехал вовремя, всё установил за 2 часа. 
+        Объяснил как пользоваться, показал пульт. Цена соответствует качеству.
+      </div>
+      <div class="review-form" id="response-form-1">
+        <textarea id="response-text-1" placeholder="Напишите ответ на отзыв..." oninput="updateCharCount('response-text-1', 'char-count-1')" maxlength="500"></textarea>
+        <div class="char-counter" id="char-count-1">0 / 500</div>
+        <div class="review-form-actions">
+          <button class="btn-review btn-review-secondary" onclick="closeResponseForm('response-form-1')">Отмена</button>
+          <button class="btn-review btn-review-success" onclick="sendResponse('response-form-1', 'Иван Петров')">✓ Отправить ответ</button>
+        </div>
+      </div>
+      <div class="review-actions">
+        <button class="btn-review btn-review-primary" onclick="openResponseForm('response-form-1')">💬 Ответить</button>
+        <button class="btn-review btn-review-secondary" onclick="likeReview(this)">
+          👍 Полезно <span class="like-count">8</span>
+        </button>
+        <div class="review-actions-right">
+          <button class="btn-review btn-review-secondary" onclick="shareReview('Иван Петров')">🔗 Поделиться</button>
+          <button class="btn-review btn-review-danger" onclick="openReportModal('Иван Петров')">⚠ Пожаловаться</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Review 3 -->
+    <div class="review-card" data-rating="4" data-answered="yes" data-project="ремонт сантехники" data-client="мария козлова">
+      <div class="review-header">
+        <div class="review-author">
+          <div class="review-avatar" onclick="location.href='404.html'">МК</div>
+          <div>
+            <div class="review-author-name" onclick="location.href='404.html'">Мария Козлова</div>
+            <div class="review-author-company">АО «Офис+»</div>
+          </div>
+        </div>
+        <div class="review-date">05.06.2026</div>
+      </div>
+      <div class="review-stars">★★★★☆</div>
+      <div class="review-project" onclick="location.href='projects.html'">📁 Проект: Ремонт сантехники →</div>
+      <div class="review-text">
+        В целом работа выполнена хорошо, но немного задержался с началом работ. 
+        Сантехника теперь работает без нареканий. Спасибо!
+      </div>
+      <div class="review-response">
+        <div class="review-response-header">
+          💬 Ваш ответ <span class="response-badge">ОПУБЛИКОВАН</span>
+        </div>
+        <div class="review-response-text">Извините за задержку, были непредвиденные обстоятельства. Рад, что результат вас устроил!</div>
+      </div>
+      <div class="review-actions">
+        <button class="btn-review btn-review-secondary" onclick="likeReview(this)">
+          👍 Полезно <span class="like-count">5</span>
+        </button>
+        <div class="review-actions-right">
+          <button class="btn-review btn-review-secondary" onclick="shareReview('Мария Козлова')">🔗 Поделиться</button>
+          <button class="btn-review btn-review-danger" onclick="openReportModal('Мария Козлова')">⚠ Пожаловаться</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Review 4 -->
+    <div class="review-card" data-rating="5" data-answered="no" data-project="сборка офисной мебели" data-client="дмитрий соколов">
+      <div class="review-header">
+        <div class="review-author">
+          <div class="review-avatar" onclick="location.href='404.html'">ДС</div>
+          <div>
+            <div class="review-author-name" onclick="location.href='404.html'">Дмитрий Соколов</div>
+            <div class="review-author-company">ООО «ДомСервис»</div>
+          </div>
+        </div>
+        <div class="review-date">03.06.2026</div>
+      </div>
+      <div class="review-stars">★★★★★</div>
+      <div class="review-project" onclick="location.href='projects.html'">📁 Проект: Сборка офисной мебели →</div>
+      <div class="review-text collapsed" id="text-4">
+        Собрали весь офис за один день! 15 столов, 30 стульев, 5 шкафов. Всё аккуратно, 
+        ничего не поцарапали. Очень довольны результатом. Будем обращаться ещё. 
+        Отдельное спасибо за оперативность — начали работу уже на следующий день после заявки. 
+        Мастер был очень вежливый и профессиональный.
+      </div>
+      <span class="read-more" id="read-more-4" onclick="toggleReadMore('text-4', 'read-more-4')">Читать полностью</span>
+      <div class="review-form" id="response-form-2">
+        <textarea id="response-text-2" placeholder="Напишите ответ на отзыв..." oninput="updateCharCount('response-text-2', 'char-count-2')" maxlength="500"></textarea>
+        <div class="char-counter" id="char-count-2">0 / 500</div>
+        <div class="review-form-actions">
+          <button class="btn-review btn-review-secondary" onclick="closeResponseForm('response-form-2')">Отмена</button>
+          <button class="btn-review btn-review-success" onclick="sendResponse('response-form-2', 'Дмитрий Соколов')">✓ Отправить ответ</button>
+        </div>
+      </div>
+      <div class="review-actions">
+        <button class="btn-review btn-review-primary" onclick="openResponseForm('response-form-2')">💬 Ответить</button>
+        <button class="btn-review btn-review-secondary" onclick="likeReview(this)">
+          👍 Полезно <span class="like-count">15</span>
+        </button>
+        <div class="review-actions-right">
+          <button class="btn-review btn-review-secondary" onclick="shareReview('Дмитрий Соколов')">🔗 Поделиться</button>
+          <button class="btn-review btn-review-danger" onclick="openReportModal('Дмитрий Соколов')">⚠ Пожаловаться</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Review 5 -->
+    <div class="review-card" data-rating="5" data-answered="no" data-project="укладка плитки" data-client="ирина антонова">
+      <div class="review-header">
+        <div class="review-author">
+          <div class="review-avatar" onclick="location.href='404.html'">ИА</div>
+          <div>
+            <div class="review-author-name" onclick="location.href='404.html'">Ирина Антонова</div>
+            <div class="review-author-company">Частный клиент</div>
+          </div>
+        </div>
+        <div class="review-date">01.06.2026</div>
+      </div>
+      <div class="review-stars">★★★★★</div>
+      <div class="review-project" onclick="location.href='projects.html'">📁 Проект: Укладка плитки в ванной →</div>
+      <div class="review-text">
+        Превосходная работа! Плитка уложена идеально ровно, швы аккуратные. 
+        Ванная выглядит как новая. Мастер очень внимательный к деталям.
+      </div>
+      <div class="review-form" id="response-form-3">
+        <textarea id="response-text-3" placeholder="Напишите ответ на отзыв..." oninput="updateCharCount('response-text-3', 'char-count-3')" maxlength="500"></textarea>
+        <div class="char-counter" id="char-count-3">0 / 500</div>
+        <div class="review-form-actions">
+          <button class="btn-review btn-review-secondary" onclick="closeResponseForm('response-form-3')">Отмена</button>
+          <button class="btn-review btn-review-success" onclick="sendResponse('response-form-3', 'Ирина Антонова')">✓ Отправить ответ</button>
+        </div>
+      </div>
+      <div class="review-actions">
+        <button class="btn-review btn-review-primary" onclick="openResponseForm('response-form-3')">💬 Ответить</button>
+        <button class="btn-review btn-review-secondary" onclick="likeReview(this)">
+          👍 Полезно <span class="like-count">10</span>
+        </button>
+        <div class="review-actions-right">
+          <button class="btn-review btn-review-secondary" onclick="shareReview('Ирина Антонова')">🔗 Поделиться</button>
+          <button class="btn-review btn-review-danger" onclick="openReportModal('Ирина Антонова')">⚠ Пожаловаться</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-state" id="empty-state">
+      <div class="icon">🔍</div>
+      <h3>Отзывы не найдены</h3>
+      <p>Попробуйте изменить параметры фильтрации</p>
+    </div>
+  </div>
+</main>
+
+<!-- Модальное окно жалобы -->
+<div class="modal-overlay" id="report-modal" onclick="if(event.target===this) closeReportModal()">
+  <div class="modal">
+    <h2>⚠️ Пожаловаться на отзыв</h2>
+    <div class="subtitle">Укажите причину жалобы на отзыв от <strong id="report-client-name">—</strong></div>
+    <div class="report-reasons" id="report-reasons">
+      <div class="reason-item" onclick="selectReason(this)">
+        <div class="radio"></div>
+        <span>🚫 Оскорбления или ненормативная лексика</span>
+      </div>
+      <div class="reason-item" onclick="selectReason(this)">
+        <div class="radio"></div>
+        <span>❌ Не соответствует действительности</span>
+      </div>
+      <div class="reason-item" onclick="selectReason(this)">
+        <div class="radio"></div>
+        <span>🔞 Спам или реклама</span>
+      </div>
+      <div class="reason-item" onclick="selectReason(this)">
+        <div class="radio"></div>
+        <span>👤 Фейковый отзыв / не от клиента</span>
+      </div>
+      <div class="reason-item" onclick="selectReason(this)">
+        <div class="radio"></div>
+        <span>⚖️ Другое</span>
+      </div>
+    </div>
+    <textarea id="report-comment" placeholder="Дополнительный комментарий (необязательно)"></textarea>
+    <div class="modal-actions">
+      <button class="btn-review btn-review-secondary" onclick="closeReportModal()">Отмена</button>
+      <button class="btn-review btn-review-danger" onclick="submitReport()" style="flex:2;">📨 Отправить жалобу</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // Burger
+  document.querySelector('.burger').addEventListener('click', function() {
+    document.querySelector('nav').classList.toggle('open');
+  });
+
+  // Закрытие меню профиля
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.profile-dropdown') && !e.target.closest('.header-logo .avatar')) {
+      document.querySelectorAll('.profile-menu').forEach(m => m.classList.remove('show'));
+    }
+  });
+
+  // Toast
+  function showToast(msg, type = '') {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.className = 'toast ' + type + ' show';
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  // Плюрализация
+  function pluralize(n, one, few, many) {
+    const mod10 = n % 10, mod100 = n % 100;
+    if (mod100 >= 11 && mod100 <= 19) return many;
+    if (mod10 === 1) return one;
+    if (mod10 >= 2 && mod10 <= 4) return few;
+    return many;
+  }
+
+  // Фильтрация по звёздам
+  function filterByStars(stars) {
+    document.querySelectorAll('.rating-bar-row').forEach(r => r.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    
+    const cards = document.querySelectorAll('.review-card');
+    cards.forEach(card => {
+      if (parseInt(card.dataset.rating) === stars) {
+        card.classList.remove('hidden');
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+    updateCounter();
+    showToast('⭐ Показаны отзывы с ' + stars + ' ' + pluralize(stars, 'звездой', 'звёздами', 'звёздами'), 'info');
+  }
+
+  // Фильтрация по чипам
+  let currentChip = 'all';
+  function filterReviews(type, chip) {
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    currentChip = type;
+    applyAllFilters();
+  }
+
+  // Применение всех фильтров
+  function applyAllFilters() {
+    const search = document.getElementById('search-input').value.toLowerCase();
+    const project = document.getElementById('project-filter').value.toLowerCase();
+    const cards = document.querySelectorAll('.review-card');
+    let visible = 0;
+
+    cards.forEach(card => {
+      let show = true;
+
+      // Фильтр по чипу
+      if (currentChip === 'positive' && parseInt(card.dataset.rating) < 5) show = false;
+      if (currentChip === 'neutral' && parseInt(card.dataset.rating) !== 4) show = false;
+      if (currentChip === 'answered' && card.dataset.answered !== 'yes') show = false;
+      if (currentChip === 'pending' && card.dataset.answered !== 'no') show = false;
+
+      // Поиск
+      if (search && !card.dataset.client.includes(search) && !card.querySelector('.review-text').textContent.toLowerCase().includes(search)) {
+        show = false;
+      }
+
+      // Проект
+      if (project && !card.dataset.project.toLowerCase().includes(project.toLowerCase())) {
+        show = false;
+      }
+
+      if (show) {
+        card.classList.remove('hidden');
+        visible++;
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+
+    document.getElementById('empty-state').classList.toggle('show', visible === 0);
+    updateCounter(visible);
+  }
+
+  function updateCounter(visible) {
+    if (visible === undefined) visible = document.querySelectorAll('.review-card:not(.hidden)').length;
+    document.getElementById('reviews-counter').textContent = 
+      visible + ' ' + pluralize(visible, 'отзыв', 'отзыва', 'отзывов');
+  }
+
+  function resetFilters() {
+    document.getElementById('search-input').value = '';
+    document.getElementById('project-filter').value = '';
+    document.getElementById('period-filter').value = '';
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    document.querySelector('.filter-chip').classList.add('active');
+    document.querySelectorAll('.rating-bar-row').forEach(r => r.classList.remove('active'));
+    currentChip = 'all';
+    applyAllFilters();
+    showToast('🔄 Фильтры сброшены', 'info');
+  }
+
+  document.getElementById('search-input').addEventListener('input', applyAllFilters);
+  document.getElementById('project-filter').addEventListener('change', applyAllFilters);
+  document.getElementById('period-filter').addEventListener('change', function() {
+    showToast('📅 Фильтр по периоду: ' + this.options[this.selectedIndex].text, 'info');
+    applyAllFilters();
+  });
+
+  // Формы ответов
+  function openResponseForm(formId) {
+    const form = document.getElementById(formId);
+    form.classList.add('open');
+    form.querySelector('textarea').focus();
+  }
+
+  function closeResponseForm(formId) {
+    document.getElementById(formId).classList.remove('open');
+  }
+
+  function sendResponse(formId, clientName) {
+    const form = document.getElementById(formId);
+    const textarea = form.querySelector('textarea');
+    const text = textarea.value.trim();
+
+    if (text.length < 5) {
+      showToast('⚠ Ответ должен содержать минимум 5 символов', 'error');
+      return;
+    }
+
+    const card = form.closest('.review-card');
+    
+    // Заменяем форму на отображение ответа
+    form.classList.remove('open');
+    const responseHtml = `
+      <div class="review-response" style="animation: fadeIn 0.3s;">
+        <div class="review-response-header">
+          💬 Ваш ответ <span class="response-badge">ОПУБЛИКОВАН</span>
+        </div>
+        <div class="review-response-text">${escapeHtml(text)}</div>
+      </div>
+    `;
+    form.insertAdjacentHTML('beforebegin', responseHtml);
+    form.remove();
+
+    // Меняем кнопки действий
+    const actions = card.querySelector('.review-actions');
+    const replyBtn = actions.querySelector('.btn-review-primary');
+    if (replyBtn) {
+      replyBtn.className = 'btn-review btn-review-secondary';
+      replyBtn.innerHTML = '✓ Ответ отправлен';
+      replyBtn.disabled = true;
+    }
+
+    card.dataset.answered = 'yes';
+    showToast('✅ Ответ ' + clientName + ' успешно опубликован', 'success');
+    updateChipCounts();
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // Счётчик символов
+  function updateCharCount(textareaId, counterId) {
+    const textarea = document.getElementById(textareaId);
+    const counter = document.getElementById(counterId);
+    const len = textarea.value.length;
+    counter.textContent = len + ' / 500';
+    counter.className = 'char-counter';
+    if (len > 450) counter.classList.add('warning');
+    if (len >= 500) counter.classList.add('error');
+  }
+
+  // Лайки
+  function likeReview(btn) {
+    if (btn.dataset.liked) {
+      showToast('Вы уже оценили этот отзыв', 'info');
+      return;
+    }
+    const countEl = btn.querySelector('.like-count');
+    const current = parseInt(countEl.textContent);
+    countEl.textContent = current + 1;
+    btn.dataset.liked = 'yes';
+    btn.style.background = '#dbeafe';
+    btn.style.color = '#1e40af';
+    showToast('👍 Спасибо за оценку!', 'success');
+  }
+
+  // Поделиться
+  function shareReview(clientName) {
+    const url = window.location.href;
+    if (navigator.share) {
+      navigator.share({
+        title: 'Отзыв от ' + clientName + ' — REMPRO',
+        text: 'Посмотрите отзыв от ' + clientName + ' на платформе REMPRO',
+        url: url
+      });
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(url);
+      showToast('🔗 Ссылка скопирована в буфер обмена', 'success');
+    } else {
+      showToast('🔗 ' + url, 'info');
+    }
+  }
+
+  // Модальное окно жалобы
+  let currentReportClient = '';
+  function openReportModal(clientName) {
+    currentReportClient = clientName;
+    document.getElementById('report-client-name').textContent = clientName;
+    document.getElementById('report-modal').classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeReportModal() {
+    document.getElementById('report-modal').classList.remove('show');
+    document.body.style.overflow = '';
+    // Сброс
+    document.querySelectorAll('.reason-item').forEach(i => i.classList.remove('selected'));
+    document.getElementById('report-comment').value = '';
+  }
+
+  function selectReason(el) {
+    document.querySelectorAll('.reason-item').forEach(i => i.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  function submitReport() {
+    const selected = document.querySelector('.reason-item.selected');
+    if (!selected) {
+      showToast('⚠ Выберите причину жалобы', 'error');
+      return;
+    }
+    closeReportModal();
+    showToast('📨 Жалоба на отзыв от ' + currentReportClient + ' отправлена на модерацию', 'success');
+  }
+
+  // Экспорт
+  function exportReviews(format) {
+    const names = { pdf: 'PDF', xlsx: 'Excel', csv: 'CSV' };
+    showToast('📥 Начинается формирование ' + names[format] + '...');
+    setTimeout(() => {
+      showToast('✓ Отзывы.' + format + ' сохранён', 'success');
+    }, 1200);
+  }
+
+  // Читать полностью
+  function toggleReadMore(textId, btnId) {
+    const text = document.getElementById(textId);
+    const btn = document.getElementById(btnId);
+    if (text.classList.contains('collapsed')) {
+      text.classList.remove('collapsed');
+      btn.textContent = 'Свернуть';
+    } else {
+      text.classList.add('collapsed');
+      btn.textContent = 'Читать полностью';
+    }
+  }
+
+  // Обновление счётчиков в чипах
+  function updateChipCounts() {
+    const cards = document.querySelectorAll('.review-card');
+    let all = 0, positive = 0, neutral = 0, answered = 0, pending = 0;
+    cards.forEach(card => {
+      all++;
+      const r = parseInt(card.dataset.rating);
+      if (r === 5) positive++;
+      if (r === 4) neutral++;
+      if (card.dataset.answered === 'yes') answered++;
+      else pending++;
+    });
+    document.getElementById('chip-all').textContent = all;
+  }
+
+  // Закрытие модалки по Esc
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeReportModal();
+  });
+
+  updateChipCounts();
+</script>
+
+</body>
+</html>

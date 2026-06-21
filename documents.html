@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>REMPRO — вход в систему</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(145deg, #e0eafc 0%, #cfdef3 100%);
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    /* главная карточка — точная стилизация под дизайн */
+    .card {
+      max-width: 520px;
+      width: 100%;
+      background: #ffffff;
+      border-radius: 2rem;
+      box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.25), 0 4px 12px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+
+    /* внутренний отступ, как на референсе */
+    .card-inner {
+      padding: 2.25rem 2rem 2.5rem 2rem;
+    }
+
+    /* логотип / заголовок REMPRO */
+    .brand {
+      margin-bottom: 1.25rem;
+    }
+
+    .brand h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #1A2A3F, #1E3A5F);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      display: inline-block;
+    }
+
+    /* слоган под логотипом */
+    .tagline {
+      font-size: 0.95rem;
+      color: #4a5b6e;
+      margin-top: 0.3rem;
+      font-weight: 450;
+      border-left: 3px solid #2c7da0;
+      padding-left: 0.75rem;
+    }
+
+    /* разделитель после слогана (необязательно, но создает воздух) */
+    .spacer-sm {
+      height: 1.5rem;
+    }
+
+    /* форма */
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+      color: #1e2f3e;
+      letter-spacing: -0.2px;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      font-size: 0.95rem;
+      font-family: inherit;
+      border: 1px solid #d4dfea;
+      border-radius: 1rem;
+      background-color: #fff;
+      transition: 0.2s;
+      outline: none;
+      color: #0f1c2a;
+    }
+
+    input:focus {
+      border-color: #2c7da0;
+      box-shadow: 0 0 0 3px rgba(44, 125, 160, 0.2);
+    }
+
+    /* подпись под полем пароля: забыли пароль + кнопка входа в одной строке (как в дизайне) */
+    .password-recovery-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-top: 0.65rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .forgot-link {
+      font-size: 0.85rem;
+      color: #2c7da0;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .forgot-link:hover {
+      color: #1f5e7a;
+      text-decoration: underline;
+    }
+
+    /* кнопка входа — стилизована как [Войти] в рамке? В макете: забыли пароль? потом [Войти] 
+       Поскольку в строке справа "Войти" — это кнопка действия, но в оригинале: Забыли пароль?   [Войти]
+       То есть слева ссылка "Забыли пароль?", справа — кнопка/ссылка "Войти". Я использую кнопку, чтобы соответствовать действию входа */
+    .login-button {
+      background: #1e3a5f;
+      border: none;
+      padding: 0.55rem 1.6rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: white;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .login-button:hover {
+      background: #0f2b44;
+      transform: scale(0.97);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    /* ссылка "Нет аккаунта? Создать" */
+    .signup-link {
+      text-align: center;
+      margin-top: 2rem;
+      margin-bottom: 1.75rem;
+      font-size: 0.9rem;
+      color: #2c3e50;
+      border-top: 1px solid #edf2f7;
+      padding-top: 1.5rem;
+    }
+
+    .signup-link a {
+      color: #2c7da0;
+      text-decoration: none;
+      font-weight: 700;
+      margin-left: 0.3rem;
+      transition: color 0.2s;
+    }
+
+    .signup-link a:hover {
+      color: #1a5e7a;
+      text-decoration: underline;
+    }
+
+    /* блок с текстовым соглашением (нижний текст: Нажмите кнопку «Войти», и дайте понять ...) */
+    .legal-note {
+      background-color: #f8fafd;
+      border-radius: 1.25rem;
+      padding: 1.2rem 1.2rem;
+      margin-top: 0.75rem;
+      font-size: 0.75rem;
+      line-height: 1.45;
+      color: #4a5b6e;
+      border: 1px solid #e9edf2;
+      font-weight: 450;
+    }
+
+    .legal-note p {
+      margin-bottom: 0.65rem;
+    }
+
+    .legal-note p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* тонкие детали: текст примера почты неактивен, пароль звездочки в плейсхолдере? но в макете написано ******* как пример значения, 
+       однако для UX оставим плейсхолдеры "example@gmail.com" и "•••••••", но чтобы в точности — показываем "*******" как подсказку? 
+       Так как в макете под полем пароль указано "*******" (видимо, значение по умолчанию). Я задам значение value="*******" для поля пароль, но 
+       с типом password, чтобы скрыть реальный ввод. Но пользователь может изменить. Сделаем как демонстрацию, но при клике можно редактировать. 
+       Для почты значение "example@gmail.com" предзаполнено, как показано. Сохраним семантику */
+    input[type="email"] {
+      background-color: #fefefe;
+    }
+
+    /* чтобы звездочки отображались корректно */
+    .password-field {
+      font-family: monospace;
+      letter-spacing: 0.3px;
+    }
+
+    /* адаптивность */
+    @media (max-width: 500px) {
+      .card-inner {
+        padding: 1.5rem;
+      }
+      .login-button {
+        padding: 0.5rem 1.2rem;
+      }
+      .password-recovery-line {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .login-button {
+        align-self: flex-end;
+      }
+    }
+
+    /* кнопка входа активна, также для доступности */
+    button {
+      cursor: pointer;
+    }
+
+    /* имитация стандартного placeholder, но у нас value, так что все ок */
+    hr {
+      display: none;
+    }
+
+    /* исправление возможных багов */
+    a {
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="card-inner">
+    <!-- Бренд: REMPRO + слоган -->
+    <div class="brand">
+      <h1>REMPRO</h1>
+      <div class="tagline">Только с нами, вы достигнете лучшего результата!</div>
+    </div>
+
+    <div class="spacer-sm"></div>
+
+    <!-- форма входа -->
+    <form id="loginForm" action="#" method="post">
+      <!-- поле Почта -->
+      <div class="form-group">
+        <label for="email">Почта</label>
+        <input type="email" id="email" name="email" value="example@gmail.com" autocomplete="email">
+      </div>
+
+      <!-- поле Пароль -->
+      <div class="form-group">
+        <label for="password">Пароль</label>
+        <input type="password" id="password" name="password" value="*******" class="password-field" autocomplete="current-password">
+      </div>
+
+      <!-- строка "Забыли пароль?" + кнопка Войти -->
+      <div class="password-recovery-line">
+        <a href="#" class="forgot-link" id="forgotPasswordLink">Забыли пароль?</a>
+        <button type="submit" class="login-button" id="loginBtn">Войти</button>
+      </div>
+    </form>
+
+    <!-- ссылка создания аккаунта -->
+    <div class="signup-link">
+      Нет аккаунта? <a href="#" id="createAccountLink">Создать</a>
+    </div>
+
+    <!-- нижний текстовый блок с условиями и пояснением -->
+    <div class="legal-note">
+      <p>Нажмите кнопку «Войти», и дайте понять, что вы являетесь автором документа.</p>
+      <p>В качестве документа, вы можете использовать любой формат, в том числе и электронный.</p>
+      <p>В электронном документе вы можете использовать любые текстовые и графические элементы.</p>
+      <p>Для просмотра документа на сайте вы можете использовать любой браузер.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Небольшой интерактив: демонстрация алерта при нажатии «Войти» — чтобы полностью соответствовать логике (автор документа и пр.)
+     При нажатии на кнопку "Войти" показываем сообщение, что пользователь подтверждает авторство документа, согласно описанию. 
+     Также кнопки "Забыли пароль?" и "Создать" просто показывают заглушку (имитация). Ничего лишнего, но оригинальный текст подразумевает 
+     действие, сделаем для полноты функционала -->
+<script>
+  (function() {
+    // Получаем элементы
+    const loginForm = document.getElementById('loginForm');
+    const loginBtn = document.getElementById('loginBtn');
+    const forgotLink = document.getElementById('forgotPasswordLink');
+    const createLink = document.getElementById('createAccountLink');
+    
+    // Обработчик для кнопки "Войти" — он же сабмит формы
+    function handleLogin(event) {
+      // Предотвращаем реальную отправку, чтобы показать соответствие тексту задания
+      if (event) event.preventDefault();
+      
+      // Получаем значения полей (можно использовать в сообщении или просто для отображения)
+      const emailInput = document.getElementById('email');
+      const passwordInput = document.getElementById('password');
+      const emailValue = emailInput ? emailInput.value : '';
+      const passwordValue = passwordInput ? passwordInput.value : '';
+      
+      // Согласно описанию: "Нажмите кнопку «Войти», и дайте понять, что вы являетесь автором документа."
+      // Покажем информационное сообщение (alert) с четким текстом о подтверждении авторства.
+      alert(`Подтверждение: вы являетесь автором документа.\n\nДобро пожаловать, ${emailValue || 'пользователь'}!\n(Для демонстрации: документ можно создать в любом формате, включая электронный.)`);
+      
+      // Дополнительно: можно вывести в консоль, но основной посыл - алерт.
+      // Для полного соответствия интерфейсу — не отправляем форму на сервер.
+      return false;
+    }
+    
+    // Привязываем обработчик к форме и кнопке (на случай клика вне submit)
+    if (loginForm) {
+      loginForm.addEventListener('submit', handleLogin);
+    }
+    if (loginBtn) {
+      // Защита от двойного срабатывания, но ничего страшного
+      loginBtn.addEventListener('click', function(e) {
+        // если клик по кнопке не вызывает submit автоматически — вызовем сами,
+        // но чтобы избежать повторного алерта, проверим, не предотвращен ли уже.
+        // Лучше просто вызвать handleLogin, но чтобы форма не отправлялась.
+        e.preventDefault();
+        handleLogin(e);
+      });
+    }
+    
+    // "Забыли пароль?" — информационное сообщение, не нарушая макет
+    if (forgotLink) {
+      forgotLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        alert('Функция восстановления пароля.\nВы можете сбросить пароль, используя вашу электронную почту.');
+      });
+    }
+    
+    // "Создать" аккаунт — имитация регистрации
+    if (createLink) {
+      createLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        alert('Создание нового аккаунта.\nПожалуйста, заполните регистрационную форму (демонстрационный режим).');
+      });
+    }
+    
+    // Небольшое улучшение: placeholder/поведение для пароля, чтобы звездочки были при фокусе? 
+    // Поскольку в полях уже есть значения, при фокусе на пароле пользователь может ввести новый.
+    // Также сделаем чтобы при клике на поле пароля, если оно всё ещё содержит "*******", можно было легко изменить.
+    // Для удобства: добавим обработчик фокуса на пароль, но без агрессивного очищения.
+    const passwordField = document.getElementById('password');
+    if (passwordField) {
+      passwordField.addEventListener('focus', function() {
+        // Если текущее значение равно "*******", то выделим его, чтобы пользователь мог начать ввод.
+        if (this.value === '*******') {
+          this.select();
+        }
+      });
+    }
+    
+    // Аналогично для email: если значение example@gmail.com, при фокусе не очищаем, но разрешаем редактирование.
+    const emailField = document.getElementById('email');
+    if (emailField && emailField.value === 'example@gmail.com') {
+      emailField.addEventListener('focus', function() {
+        // можно выделить текст, чтобы быстро переписать
+        this.select();
+      });
+    }
+  })();
+</script>
+</body>
+</html>

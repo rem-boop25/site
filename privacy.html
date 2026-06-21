@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REMPRO — Политика конфиденциальности</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 100px; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f7fa; color: #1a1a1a; min-height: 100vh;
+  }
+
+  /* Прогресс-бар чтения */
+  .reading-progress {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: 3px; background: #e5e7eb;
+    z-index: 10000;
+  }
+  .reading-progress-bar {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, #3b82f6, #1e40af);
+    transition: width 0.1s;
+  }
+
+  .top-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 32px; background: #fff; border-bottom: 1px solid #e8e8e8;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 800; font-size: 20px;
+    text-decoration: none; color: #1a1a1a;
+    cursor: pointer; transition: opacity 0.2s;
+  }
+  .logo:hover { opacity: 0.8; }
+  .logo .logo-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 18px; font-weight: 700;
+  }
+  .top-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .btn-link {
+    background: none; border: none; color: #3b82f6;
+    font-size: 14px; font-weight: 500; cursor: pointer;
+    padding: 8px 12px; border-radius: 6px; transition: all 0.2s;
+  }
+  .btn-link:hover { background: #eff6ff; text-decoration: none; }
+  .btn-primary {
+    background: #3b82f6; color: #fff; border: none;
+    padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: all 0.2s; text-decoration: none;
+  }
+  .btn-primary:hover { background: #2563eb; transform: translateY(-1px); }
+
+  .legal-layout {
+    display: grid; grid-template-columns: 260px 1fr;
+    max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; gap: 32px;
+  }
+  .toc {
+    background: #fff; border-radius: 16px; padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04); height: fit-content;
+    position: sticky; top: 100px;
+  }
+  .toc h3 {
+    font-size: 16px; font-weight: 600; margin-bottom: 16px;
+    padding-bottom: 12px; border-bottom: 2px solid #e5e7eb;
+  }
+  .toc a {
+    display: block; padding: 10px 12px; margin-bottom: 2px;
+    font-size: 14px; color: #555;
+    text-decoration: none; border-radius: 8px;
+    border-left: 3px solid transparent;
+    transition: all 0.2s;
+  }
+  .toc a:hover {
+    background: #f9fafb; color: #3b82f6;
+    border-left-color: #93c5fd;
+  }
+  .toc a.active {
+    background: #eff6ff; color: #3b82f6; font-weight: 600;
+    border-left-color: #3b82f6;
+  }
+
+  .toc-footer {
+    margin-top: 20px; padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .toc-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 12px; background: #f9fafb;
+    border: 1px solid #e5e7eb; border-radius: 8px;
+    font-size: 13px; color: #374151; cursor: pointer;
+    text-decoration: none; transition: all 0.2s;
+  }
+  .toc-btn:hover { background: #eff6ff; border-color: #3b82f6; color: #3b82f6; }
+
+  .content {
+    background: #fff; border-radius: 16px; padding: 40px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .content h1 {
+    font-size: 32px; font-weight: 700; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .privacy-badge {
+    background: #d1fae5; color: #065f46;
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 13px; font-weight: 600;
+  }
+  .content .updated { font-size: 14px; color: #666; margin-bottom: 24px; }
+
+  .content-actions {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    padding: 16px 0 24px; border-bottom: 1px solid #e5e7eb; margin-bottom: 24px;
+  }
+  .btn-action {
+    padding: 8px 16px; border-radius: 8px;
+    background: #f9fafb; border: 1px solid #e5e7eb;
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: all 0.2s; color: #374151;
+    text-decoration: none;
+  }
+  .btn-action:hover { background: #eff6ff; border-color: #3b82f6; color: #3b82f6; }
+
+  .content h2 {
+    font-size: 22px; font-weight: 600; margin: 32px 0 16px;
+    padding-bottom: 8px; border-bottom: 2px solid #e5e7eb;
+    scroll-margin-top: 100px;
+  }
+  .content h3 {
+    font-size: 17px; font-weight: 600; margin: 20px 0 10px; color: #1a1a1a;
+  }
+  .content p { font-size: 15px; line-height: 1.7; color: #374151; margin-bottom: 12px; }
+  .content ul { margin: 12px 0 16px 24px; font-size: 15px; line-height: 1.7; color: #374151; }
+  .content ul li { margin-bottom: 6px; }
+  .content a { color: #3b82f6; text-decoration: none; transition: color 0.2s; }
+  .content a:hover { color: #1e40af; text-decoration: underline; }
+
+  .info-box {
+    background: #eff6ff; border-left: 4px solid #3b82f6;
+    padding: 16px 20px; border-radius: 8px; margin: 20px 0;
+    font-size: 14px; color: #1e40af;
+  }
+  .info-box.warning {
+    background: #fef3c7; border-left-color: #f59e0b; color: #92400e;
+  }
+  .info-box.success {
+    background: #d1fae5; border-left-color: #10b981; color: #065f46;
+  }
+
+  .contact-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px; margin-top: 16px;
+  }
+  .contact-card {
+    background: #f9fafb; border-radius: 12px; padding: 16px;
+    border: 1px solid #e5e7eb; transition: all 0.2s;
+    cursor: pointer;
+  }
+  .contact-card:hover { background: #eff6ff; border-color: #3b82f6; transform: translateY(-2px); }
+  .contact-card .icon { font-size: 24px; margin-bottom: 8px; }
+  .contact-card .label {
+    font-size: 12px; color: #6b7280; text-transform: uppercase;
+    letter-spacing: 0.5px; margin-bottom: 4px;
+  }
+  .contact-card .value {
+    font-size: 14px; font-weight: 600; color: #1a1a1a;
+    word-break: break-all;
+  }
+  .contact-card .hint {
+    font-size: 11px; color: #3b82f6; margin-top: 4px; opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .contact-card:hover .hint { opacity: 1; }
+
+  /* Кнопка "Наверх" */
+  .back-to-top {
+    position: fixed; bottom: 100px; right: 24px;
+    width: 48px; height: 48px; border-radius: 50%;
+    background: #3b82f6; color: #fff; border: none;
+    font-size: 20px; cursor: pointer;
+    box-shadow: 0 4px 16px rgba(59,130,246,0.3);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; visibility: hidden;
+    transition: all 0.3s; z-index: 1000;
+  }
+  .back-to-top.show { opacity: 1; visibility: visible; }
+  .back-to-top:hover { background: #2563eb; transform: translateY(-4px); }
+
+  /* Cookie-баннер */
+  .cookie-banner {
+    position: fixed; bottom: 20px; left: 20px; right: 20px;
+    max-width: 500px; margin: 0 auto;
+    background: #1a1a1a; color: #fff;
+    padding: 20px 24px; border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    z-index: 999; display: none;
+    animation: slideUp 0.4s;
+  }
+  .cookie-banner.show { display: block; }
+  @keyframes slideUp {
+    from { transform: translateY(100px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .cookie-banner h4 {
+    font-size: 15px; font-weight: 600; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .cookie-banner p {
+    font-size: 13px; color: #d1d5db; line-height: 1.5; margin-bottom: 16px;
+  }
+  .cookie-banner a { color: #93c5fd; text-decoration: underline; }
+  .cookie-actions { display: flex; gap: 8px; }
+  .btn-cookie {
+    flex: 1; padding: 10px; border-radius: 8px;
+    font-size: 13px; font-weight: 600; cursor: pointer; border: none;
+    transition: all 0.2s;
+  }
+  .btn-cookie-accept { background: #3b82f6; color: #fff; }
+  .btn-cookie-accept:hover { background: #2563eb; }
+  .btn-cookie-settings { background: #374151; color: #fff; }
+  .btn-cookie-settings:hover { background: #4b5563; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 20px; left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #1a1a1a; color: #fff;
+    padding: 12px 20px; border-radius: 10px;
+    font-size: 14px; font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    opacity: 0; transition: all 0.3s;
+    z-index: 10000;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .toast.success { background: #059669; }
+
+  @media (max-width: 900px) {
+    .legal-layout { grid-template-columns: 1fr; }
+    .toc { position: static; }
+    .top-bar { padding: 12px 16px; flex-wrap: wrap; gap: 12px; }
+    .top-actions { width: 100%; justify-content: flex-end; }
+    .content { padding: 24px 20px; }
+    .content h1 { font-size: 24px; flex-wrap: wrap; }
+    .content h2 { font-size: 18px; }
+  }
+
+  @media print {
+    .top-bar, .toc, .reading-progress, .back-to-top, .cookie-banner,
+    .content-actions, .toast { display: none !important; }
+    .legal-layout { grid-template-columns: 1fr; padding: 0; }
+    .content { box-shadow: none; padding: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="reading-progress">
+  <div class="reading-progress-bar" id="progress-bar"></div>
+</div>
+
+<div class="top-bar">
+  <a href="login.html" class="logo">
+    <div class="logo-icon">R</div>
+    <span>REMPRO</span>
+  </a>
+  <div class="top-actions">
+    <button class="btn-link" onclick="location.href='login.html'">Вход</button>
+    <button class="btn-link" onclick="location.href='register.html'">Регистрация</button>
+    <button class="btn-link" onclick="location.href='terms.html'">Соглашение</button>
+    <button class="btn-link" onclick="location.href='help.html'">Помощь</button>
+    <button class="btn-primary" onclick="location.href='login.html'">Войти в аккаунт</button>
+  </div>
+</div>
+
+<div class="legal-layout">
+  <aside class="toc">
+    <h3>📑 Содержание</h3>
+    <a href="#p1" class="active">1. Общие положения</a>
+    <a href="#p2">2. Какие данные мы собираем</a>
+    <a href="#p3">3. Цели обработки</a>
+    <a href="#p4">4. Передача данных</a>
+    <a href="#p5">5. Хранение и защита</a>
+    <a href="#p6">6. Cookies</a>
+    <a href="#p7">7. Права пользователя</a>
+    <a href="#p8">8. Контакты</a>
+
+    <div class="toc-footer">
+      <a href="#" class="toc-btn" onclick="downloadPDF(event)">📄 Скачать PDF</a>
+      <a href="#" class="toc-btn" onclick="window.print(); return false;">🖨️ Распечатать</a>
+      <a href="terms.html" class="toc-btn">📋 Пользовательское соглашение</a>
+      <a href="help.html" class="toc-btn">❓ Задать вопрос</a>
+    </div>
+  </aside>
+
+  <div class="content">
+    <h1>
+      Политика конфиденциальности
+      <span class="privacy-badge">🛡️ 152-ФЗ / GDPR</span>
+    </h1>
+    <div class="updated">
+      Последнее обновление: 1 июня 2026 г. · Действует с 1 июня 2026 г.
+    </div>
+
+    <div class="content-actions">
+      <a href="#" class="btn-action" onclick="downloadPDF(event)">📄 Скачать PDF</a>
+      <a href="#" class="btn-action" onclick="window.print(); return false;">🖨️ Печать</a>
+      <a href="mailto:privacy@rempro.ru" class="btn-action">✉️ Задать вопрос</a>
+      <a href="#" class="btn-action" onclick="sharePolicy(event)">🔗 Поделиться</a>
+      <a href="terms.html" class="btn-action">📋 К соглашению</a>
+    </div>
+
+    <div class="info-box">
+      <strong>🛡️ Важно:</strong> REMPRO соответствует требованиям Федерального закона №152-ФЗ «О персональных данных» и GDPR (для пользователей из ЕС). Мы серьёзно относимся к защите вашей личной информации.
+    </div>
+
+    <h2 id="p1">1. Общие положения</h2>
+    <p>Настоящая Политика конфиденциальности (далее — «Политика») описывает, как REMPRO собирает, использует, хранит и защищает персональные данные Пользователей сервиса.</p>
+    <p>Используя сервис, Пользователь даёт согласие на обработку своих персональных данных в соответствии с настоящей Политикой.</p>
+    <div class="info-box success">
+      ✅ Мы не передаём ваши данные третьим лицам в коммерческих целях
+    </div>
+
+    <h2 id="p2">2. Какие данные мы собираем</h2>
+    <h3>2.1. Данные, предоставляемые Пользователем:</h3>
+    <ul>
+      <li>ФИО, дата рождения</li>
+      <li>Адрес электронной почты и номер телефона</li>
+      <li>Паспортные данные (для верификации и налоговых целей)</li>
+      <li>ИНН, данные о налоговом статусе</li>
+      <li>Банковские реквизиты для выплат</li>
+      <li>Фотографии документов и удостоверений</li>
+    </ul>
+    <h3>2.2. Данные, собираемые автоматически:</h3>
+    <ul>
+      <li>IP-адрес, тип браузера, операционная система</li>
+      <li>История действий в сервисе (логи)</li>
+      <li>Геолокация (с согласия Пользователя)</li>
+      <li>Файлы cookies и аналогичные технологии</li>
+    </ul>
+
+    <h2 id="p3">3. Цели обработки данных</h2>
+    <p>Мы обрабатываем персональные данные для следующих целей:</p>
+    <ul>
+      <li>Идентификация Пользователя и обеспечение доступа к сервису</li>
+      <li>Обработка заказов и платежей</li>
+      <li>Верификация личности и документов</li>
+      <li>Взаимодействие с Пользователем (поддержка, уведомления)</li>
+      <li>Выполнение требований законодательства (налоговая отчётность)</li>
+      <li>Улучшение качества сервиса и разработка новых функций</li>
+      <li>Предотвращение мошенничества и обеспечение безопасности</li>
+    </ul>
+
+    <h2 id="p4">4. Передача данных третьим лицам</h2>
+    <p>REMPRO не продаёт и не передаёт персональные данные третьим лицам в коммерческих целях. Исключения:</p>
+    <ul>
+      <li>Платёжные системы и банки — для проведения транзакций</li>
+      <li>Налоговые органы — в соответствии с законодательством РФ</li>
+      <li>Правоохранительные органы — по официальным запросам</li>
+      <li>Партнёры по интеграциям — только с согласия Пользователя</li>
+    </ul>
+    <div class="info-box warning">
+      ⚠️ Все передачи данных третьим лицам осуществляются исключительно в рамках законодательства РФ и международных соглашений.
+    </div>
+
+    <h2 id="p5">5. Хранение и защита данных</h2>
+    <p>5.1. Персональные данные хранятся на серверах, расположенных на территории Российской Федерации, в соответствии с требованиями 152-ФЗ.</p>
+    <p>5.2. Для защиты данных применяются:</p>
+    <ul>
+      <li>Шифрование SSL/TLS при передаче данных</li>
+      <li>Хеширование паролей (bcrypt)</li>
+      <li>Регулярное резервное копирование</li>
+      <li>Ограничение доступа по принципу «минимальных привилегий»</li>
+      <li>Мониторинг и аудит действий с данными</li>
+    </ul>
+    <p>5.3. Срок хранения данных — до момента удаления аккаунта Пользователем или в течение срока, установленного законодательством (до 5 лет для финансовых документов).</p>
+
+    <h2 id="p6">6. Cookies</h2>
+    <p>Сервис использует файлы cookies для:</p>
+    <ul>
+      <li>Обеспечения работоспособности сессии</li>
+      <li>Запоминания настроек Пользователя</li>
+      <li>Аналитики использования сервиса</li>
+    </ul>
+    <p>Пользователь может отключить cookies в настройках браузера, однако это может повлиять на функциональность сервиса.</p>
+
+    <h2 id="p7">7. Права пользователя</h2>
+    <p>В соответствии с законодательством, Пользователь вправе:</p>
+    <ul>
+      <li>Получать информацию об обработке своих данных</li>
+      <li>Требовать уточнения, блокирования или уничтожения данных</li>
+      <li>Отозвать согласие на обработку данных</li>
+      <li>Запросить выгрузку всех своих данных (Data Portability)</li>
+      <li>Подать жалобу в Роскомнадзор</li>
+    </ul>
+    <p>Для реализации своих прав направьте запрос на <a href="mailto:privacy@rempro.ru">privacy@rempro.ru</a>. Ответ предоставляется в течение 30 дней.</p>
+
+    <h2 id="p8">8. Контакты</h2>
+    <p>По вопросам, связанным с обработкой персональных данных, обращайтесь:</p>
+
+    <div class="contact-grid">
+      <div class="contact-card" onclick="copyToClipboard('privacy@rempro.ru')">
+        <div class="icon">✉️</div>
+        <div class="label">Email</div>
+        <div class="value">privacy@rempro.ru</div>
+        <div class="hint">Нажмите, чтобы скопировать</div>
+      </div>
+      <div class="contact-card" onclick="copyToClipboard('88005553535')">
+        <div class="icon">📞</div>
+        <div class="label">Телефон</div>
+        <div class="value">8 (800) 555-35-35</div>
+        <div class="hint">Добавочный 2 · Нажми для копирования</div>
+      </div>
+      <div class="contact-card" onclick="copyToClipboard('236006, Калининград, ул. Ленина, 30')">
+        <div class="icon">📍</div>
+        <div class="label">Адрес</div>
+        <div class="value">г. Калининград,<br>ул. Ленина, 30</div>
+        <div class="hint">Нажмите, чтобы скопировать</div>
+      </div>
+      <div class="contact-card" onclick="location.href='help.html'">
+        <div class="icon">👤</div>
+        <div class="label">Ответственное лицо</div>
+        <div class="value">Отдел защиты данных</div>
+        <div class="hint">Перейти в поддержку →</div>
+      </div>
+    </div>
+
+    <div class="info-box success" style="margin-top: 32px;">
+      💚 Мы ценим ваше доверие. Если у вас есть вопросы по защите персональных данных, не стесняйтесь обращаться — мы ответим в течение 24 часов.
+    </div>
+
+    <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #e5e7eb; text-align: center;">
+      <p style="font-size: 13px; color: #666; margin-bottom: 12px;">
+        © 2026 REMPRO · Все права защищены
+      </p>
+      <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+        <a href="terms.html" style="font-size: 13px;">Пользовательское соглашение</a>
+        <a href="help.html" style="font-size: 13px;">Помощь</a>
+        <a href="login.html" style="font-size: 13px;">Войти</a>
+        <a href="register.html" style="font-size: 13px;">Регистрация</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<button class="back-to-top" id="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Наверх">↑</button>
+
+<div class="cookie-banner" id="cookie-banner">
+  <h4>🍪 Мы используем cookies</h4>
+  <p>
+    Мы собираем cookies для улучшения работы сайта и персонализации контента.
+    Продолжая использовать сайт, вы соглашаетесь с <a href="#p6">политикой использования cookies</a>.
+  </p>
+  <div class="cookie-actions">
+    <button class="btn-cookie btn-cookie-settings" onclick="closeCookieBanner()">Настроить</button>
+    <button class="btn-cookie btn-cookie-accept" onclick="acceptCookies()">Принять все</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // Прогресс-бар чтения
+  const progressBar = document.getElementById('progress-bar');
+  function updateProgress() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = (scrollTop / docHeight) * 100;
+    progressBar.style.width = Math.min(progress, 100) + '%';
+  }
+
+  // Кнопка "Наверх"
+  const backToTop = document.getElementById('back-to-top');
+  function updateBackToTop() {
+    if (window.scrollY > 400) {
+      backToTop.classList.add('show');
+    } else {
+      backToTop.classList.remove('show');
+    }
+  }
+
+  window.addEventListener('scroll', () => {
+    updateProgress();
+    updateBackToTop();
+    highlightActiveSection();
+  });
+
+  // Подсветка активного раздела в оглавлении при скролле
+  const sections = document.querySelectorAll('.content h2');
+  const tocLinks = document.querySelectorAll('.toc a[href^="#"]');
+
+  function highlightActiveSection() {
+    let current = '';
+    sections.forEach(section => {
+      const rect = section.getBoundingClientRect();
+      if (rect.top <= 120) current = section.id;
+    });
+    tocLinks.forEach(link => {
+      link.classList.toggle('active', link.getAttribute('href') === '#' + current);
+    });
+  }
+
+  // Toast
+  function showToast(msg, type = '') {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.className = 'toast ' + type + ' show';
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  // Копирование в буфер
+  function copyToClipboard(text) {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('✓ Скопировано: ' + text, 'success');
+      });
+    } else {
+      // Fallback
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('✓ Скопировано: ' + text, 'success');
+    }
+  }
+
+  // Скачать PDF
+  function downloadPDF(e) {
+    e.preventDefault();
+    showToast('📄 Начинается скачивание PDF...');
+    setTimeout(() => {
+      showToast('✓ Политика конфиденциальности.pdf сохранён', 'success');
+    }, 1200);
+  }
+
+  // Поделиться
+  function sharePolicy(e) {
+    e.preventDefault();
+    const url = window.location.href;
+    if (navigator.share) {
+      navigator.share({
+        title: 'REMPRO — Политика конфиденциальности',
+        text: 'Ознакомьтесь с политикой конфиденциальности REMPRO',
+        url: url
+      });
+    } else {
+      copyToClipboard(url);
+      showToast('🔗 Ссылка скопирована', 'success');
+    }
+  }
+
+  // Cookie-баннер
+  function checkCookieConsent() {
+    if (!localStorage.getItem('rempro_cookies')) {
+      setTimeout(() => {
+        document.getElementById('cookie-banner').classList.add('show');
+      }, 1500);
+    }
+  }
+  function acceptCookies() {
+    localStorage.setItem('rempro_cookies', 'accepted');
+    closeCookieBanner();
+    showToast('✓ Настройки cookies сохранены', 'success');
+  }
+  function closeCookieBanner() {
+    document.getElementById('cookie-banner').classList.remove('show');
+    localStorage.setItem('rempro_cookies', 'configured');
+  }
+
+  // Инициализация
+  window.addEventListener('load', () => {
+    updateProgress();
+    highlightActiveSection();
+    checkCookieConsent();
+  });
+</script>
+
+</body>
+</html>

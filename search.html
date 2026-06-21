@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REMPRO — Поиск заданий</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f7fa; color: #1a1a1a; min-height: 100vh;
+  }
+
+  header {
+    display: flex; align-items: center; padding: 12px 24px;
+    background: #fff; border-bottom: 1px solid #e8e8e8; gap: 16px; position: relative;
+  }
+  .header-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 600; font-size: 16px; white-space: nowrap;
+  }
+  .header-logo .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 13px; font-weight: 600;
+    cursor: pointer;
+  }
+  nav {
+    display: flex; align-items: center; gap: 20px; flex: 1; overflow-x: auto;
+  }
+  nav a { text-decoration: none; color: #333; font-size: 14px; white-space: nowrap; }
+  nav a:hover, nav a.active { color: #3b82f6; }
+
+  .header-actions { display: flex; align-items: center; gap: 16px; }
+  .btn-create {
+    background: #3b82f6; border: none; color: #fff;
+    padding: 8px 20px; border-radius: 8px; font-size: 14px;
+    cursor: pointer; white-space: nowrap; font-weight: 500;
+  }
+  .btn-create:hover { background: #2563eb; }
+
+  .dropdown { position: relative; }
+  .dropdown-menu {
+    display: none; position: absolute; top: 100%; right: 0;
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1); min-width: 220px;
+    z-index: 1000; padding: 8px 0; margin-top: 8px;
+  }
+  .dropdown:hover .dropdown-menu { display: block; }
+  .dropdown-menu a {
+    display: block; padding: 10px 16px; font-size: 14px;
+    color: #333; text-decoration: none; white-space: nowrap;
+  }
+  .dropdown-menu a:hover { background: #f5f7fa; color: #3b82f6; }
+
+  .profile-dropdown { position: relative; }
+  .profile-menu {
+    display: none; position: absolute; top: 100%; right: 0;
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1); min-width: 220px;
+    z-index: 1000; padding: 8px 0; margin-top: 8px;
+  }
+  .profile-menu.show { display: block; }
+  .profile-menu a {
+    display: block; padding: 10px 16px; font-size: 14px;
+    color: #333; text-decoration: none;
+  }
+  .profile-menu a:hover { background: #f5f7fa; color: #3b82f6; }
+  .profile-menu .divider { height: 1px; background: #e8e8e8; margin: 8px 0; }
+  .profile-menu .logout { color: #ef4444; }
+  .profile-menu .logout:hover { background: #fee2e2; color: #dc2626; }
+
+  .burger {
+    display: none; background: none; border: none;
+    font-size: 24px; cursor: pointer; color: #333;
+  }
+
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 20px 60px;
+  }
+
+  .breadcrumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: #666; margin-bottom: 16px;
+  }
+  .breadcrumbs a { color: #3b82f6; text-decoration: none; }
+  .breadcrumbs a:hover { text-decoration: underline; }
+  .breadcrumbs .sep { color: #ccc; }
+
+  .page-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+  }
+  .page-title { font-size: 28px; font-weight: 700; }
+  .tasks-counter {
+    background: #eff6ff; color: #3b82f6;
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 13px; font-weight: 600;
+  }
+
+  .search-bar {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .search-input-wrap {
+    flex: 1;
+    position: relative;
+  }
+  .search-input-wrap input {
+    width: 100%;
+    padding: 10px 14px 10px 40px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 14px;
+    outline: none;
+    font-family: inherit;
+  }
+  .search-input-wrap input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+  .search-input-wrap .search-icon {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    color: #9ca3af; font-size: 16px;
+  }
+  .sort-select {
+    padding: 10px 14px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 14px;
+    outline: none;
+    background: #fff;
+    cursor: pointer;
+    min-width: 180px;
+  }
+  .sort-select:focus { border-color: #3b82f6; }
+
+  .search-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 24px;
+  }
+
+  .sidebar {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+  }
+  .sidebar-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 16px;
+  }
+  .sidebar-title { font-size: 16px; font-weight: 600; }
+  .btn-reset-filters {
+    background: none; border: none; color: #3b82f6;
+    font-size: 12px; cursor: pointer; font-weight: 500;
+  }
+  .btn-reset-filters:hover { text-decoration: underline; }
+
+  .filter-section {
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #eee;
+  }
+  .filter-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+  .filter-title {
+    font-size: 14px; font-weight: 600; margin-bottom: 12px;
+    color: #1a1a1a;
+  }
+  .filter-option {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    padding: 4px 8px; border-radius: 6px;
+    transition: background 0.15s;
+  }
+  .filter-option:hover { background: #f9fafb; }
+  .filter-option input[type="checkbox"] {
+    width: 18px; height: 18px; accent-color: #3b82f6;
+    cursor: pointer;
+  }
+  .filter-option label {
+    font-size: 14px; cursor: pointer; flex: 1;
+  }
+  .price-inputs {
+    display: flex; gap: 8px; align-items: center;
+  }
+  .price-inputs input {
+    flex: 1; padding: 8px; border: 1px solid #ddd;
+    border-radius: 8px; font-size: 14px; outline: none;
+  }
+  .price-inputs input:focus { border-color: #3b82f6; }
+
+  .btn-apply-filters {
+    width: 100%; padding: 12px;
+    background: #3b82f6; color: #fff;
+    border: none; border-radius: 10px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    margin-top: 8px;
+    transition: all 0.2s;
+  }
+  .btn-apply-filters:hover { background: #2563eb; transform: translateY(-1px); }
+
+  /* Tasks list */
+  .tasks-list {
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .task-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    position: relative;
+    border-left: 4px solid transparent;
+  }
+  .task-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  }
+  .task-card.urgent { border-left-color: #ef4444; }
+  .task-card.new { border-left-color: #3b82f6; }
+  .task-card.hidden { display: none; }
+  .task-card.applied .btn-apply {
+    background: #10b981;
+  }
+  .task-card.applied .btn-apply::after {
+    content: " ✓";
+  }
+
+  .task-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 12px; gap: 12px;
+  }
+  .task-title {
+    font-size: 20px; font-weight: 600; margin-bottom: 4px;
+    color: #1a1a1a;
+  }
+  .task-id {
+    font-size: 13px; color: #999;
+  }
+  .task-badge {
+    padding: 6px 14px; border-radius: 20px;
+    font-size: 12px; font-weight: 600;
+    white-space: nowrap;
+  }
+  .task-badge.urgent { background: #fee2e2; color: #dc2626; }
+  .task-badge.new { background: #dbeafe; color: #2563eb; }
+  .task-badge.standard { background: #d1fae5; color: #059669; }
+
+  .task-description {
+    font-size: 14px; color: #555; line-height: 1.6;
+    margin-bottom: 16px;
+  }
+  .task-meta {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 12px; margin-bottom: 16px;
+  }
+  .meta-item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 14px; color: #666;
+  }
+  .meta-item .icon { font-size: 16px; }
+
+  .task-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-top: 16px; border-top: 1px solid #f0f0f0;
+    flex-wrap: wrap; gap: 12px;
+  }
+  .task-price {
+    font-size: 22px; font-weight: 700; color: #3b82f6;
+  }
+  .task-date {
+    font-size: 13px; color: #888;
+  }
+  .task-actions {
+    display: flex; gap: 10px;
+  }
+  .btn-task {
+    padding: 10px 20px; border-radius: 10px;
+    font-size: 14px; font-weight: 600; cursor: pointer; border: none;
+    transition: all 0.2s;
+  }
+  .btn-apply { background: #3b82f6; color: #fff; }
+  .btn-apply:hover:not(:disabled) { background: #2563eb; transform: translateY(-1px); }
+  .btn-apply:disabled { background: #93c5fd; cursor: not-allowed; transform: none; }
+  .btn-details { background: #fff; color: #3b82f6; border: 1px solid #3b82f6; }
+  .btn-details:hover { background: #eff6ff; }
+
+  .empty-state {
+    text-align: center; padding: 60px 20px;
+    background: #fff; border-radius: 16px;
+    display: none;
+  }
+  .empty-state.show { display: block; }
+  .empty-state .icon { font-size: 64px; margin-bottom: 16px; }
+  .empty-state h3 { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+  .empty-state p { font-size: 14px; color: #666; margin-bottom: 20px; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 20px; right: 20px;
+    background: #1a1a1a; color: #fff;
+    padding: 14px 20px; border-radius: 10px;
+    font-size: 14px; font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    transform: translateY(100px); opacity: 0;
+    transition: all 0.3s; z-index: 2000;
+    display: flex; align-items: center; gap: 10px;
+    max-width: 360px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { background: #059669; }
+  .toast.info { background: #2563eb; }
+
+  @media (max-width: 768px) {
+    nav { display: none; }
+    nav.open {
+      display: flex; flex-direction: column;
+      position: absolute; top: 56px; left: 0; right: 0;
+      background: #fff; padding: 20px;
+      border-bottom: 1px solid #e8e8e8; z-index: 100; gap: 14px;
+    }
+    .burger { display: block; }
+    .search-layout { grid-template-columns: 1fr; }
+    .sidebar { order: 2; position: static; }
+    .tasks-list { order: 1; }
+    .task-meta { grid-template-columns: 1fr; }
+    .dropdown-menu, .profile-menu {
+      position: fixed; top: 70px; right: 20px;
+    }
+    .search-bar { flex-direction: column; align-items: stretch; }
+    .sort-select { min-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="burger" onclick="document.querySelector('nav').classList.toggle('open')">☰</button>
+  <div class="header-logo">
+    <div class="avatar" onclick="document.querySelector('.profile-menu').classList.toggle('show')">МГ</div>
+    <span>Максим Гусев</span>
+  </div>
+  <nav>
+    <a href="dashboard.html">Рабочий стол</a>
+    <a href="projects.html">Проекты</a>
+    <a href="search.html" class="active">Поиск</a>
+    <a href="messages.html">Сообщения</a>
+    <a href="notifications.html">Уведомления</a>
+    <a href="finance.html">Финансы</a>
+    <div class="dropdown">
+      <a href="#" class="dropdown-toggle">Ещё ▾</a>
+      <div class="dropdown-menu">
+        <a href="calendar.html">📅 Календарь</a>
+        <a href="documents.html">📄 Документы</a>
+        <a href="reviews.html">⭐ Отзывы</a>
+        <a href="portfolio.html">🖼️ Портфолио</a>
+        <a href="workers.html">👷 Рабочие</a>
+        <a href="panels.html"> Панели</a>
+        <a href="reports.html">📈 Отчёты</a>
+        <a href="specializations.html"> Специализация</a>
+        <a href="admin.html">⚙️ Администратор</a>
+        <a href="manager.html">👔 Менеджер</a>
+      </div>
+    </div>
+  </nav>
+  <div class="header-actions">
+    <button class="btn-create" onclick="location.href='request-form.html'">+ Создать</button>
+    <div class="profile-dropdown">
+      <div class="avatar" onclick="document.querySelector('.profile-menu').classList.toggle('show')">МГ</div>
+      <div class="profile-menu">
+        <a href="profile.html">👤 Мой профиль</a>
+        <a href="personal-data.html">📋 Персональные данные</a>
+        <a href="settings.html">⚙️ Настройки</a>
+        <a href="help.html">❓ Помощь</a>
+        <div class="divider"></div>
+        <a href="login.html" class="logout">🚪 Выйти</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="breadcrumbs">
+    <a href="dashboard.html">Рабочий стол</a>
+    <span class="sep">›</span>
+    <span>Поиск заданий</span>
+  </div>
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">🔍 Поиск заданий</h1>
+    </div>
+    <span class="tasks-counter" id="tasks-counter">5 заданий</span>
+  </div>
+
+  <!-- Поиск и сортировка -->
+  <div class="search-bar">
+    <div class="search-input-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search-input" placeholder="Поиск по названию, описанию, адресу...">
+    </div>
+    <select class="sort-select" id="sort-select" onchange="applyAllFilters()">
+      <option value="date">📅 По дате (новые)</option>
+      <option value="price-desc">💰 По цене (сначала дорогие)</option>
+      <option value="price-asc">💰 По цене (сначала дешёвые)</option>
+      <option value="urgent">🔥 Сначала срочные</option>
+    </select>
+  </div>
+
+  <div class="search-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">⚙️ Фильтры</div>
+        <button class="btn-reset-filters" onclick="resetFilters()">🔄 Сбросить</button>
+      </div>
+
+      <div class="filter-section">
+        <div class="filter-title">Категория</div>
+        <div class="filter-option">
+          <input type="checkbox" id="cat-electric" checked onchange="applyAllFilters()">
+          <label for="cat-electric">⚡ Электрика</label>
+        </div>
+        <div class="filter-option">
+          <input type="checkbox" id="cat-plumbing" checked onchange="applyAllFilters()">
+          <label for="cat-plumbing">🚿 Сантехника</label>
+        </div>
+        <div class="filter-option">
+          <input type="checkbox" id="cat-repair" onchange="applyAllFilters()">
+          <label for="cat-repair"> Ремонт</label>
+        </div>
+        <div class="filter-option">
+          <input type="checkbox" id="cat-install" checked onchange="applyAllFilters()">
+          <label for="cat-install">🔧 Монтаж</label>
+        </div>
+        <div class="filter-option">
+          <input type="checkbox" id="cat-cleaning" onchange="applyAllFilters()">
+          <label for="cat-cleaning">🧹 Клининг</label>
+        </div>
+        <div class="filter-option">
+          <input type="checkbox" id="cat-hvac" onchange="applyAllFilters()">
+          <label for="cat-hvac">️ ОВиК</label>
+        </div>
+        <div class="filter-option">
+          <input type="checkbox" id="cat-furniture" onchange="applyAllFilters()">
+          <label for="cat-furniture">🪑 Сборка мебели</label>
+        </div>
+      </div>
+
+      <div class="filter-section">
+        <div class="filter-title">Цена, ₽</div>
+        <div class="price-inputs">
+          <input type="number" id="price-from" placeholder="От" min="0" onchange="applyAllFilters()">
+          <span>—</span>
+          <input type="number" id="price-to" placeholder="До" min="0" onchange="applyAllFilters()">
+        </div>
+      </div>
+
+      <div class="filter-section">
+        <div class="filter-title">Срочность</div>
+        <div class="filter-option">
+          <input type="checkbox" id="urg-urgent" checked onchange="applyAllFilters()">
+          <label for="urg-urgent">🔥 Срочно</label>
+        </div>
+        <div class="filter-option">
+          <input type="checkbox" id="urg-new" checked onchange="applyAllFilters()">
+          <label for="urg-new">✨ Новое</label>
+        </div>
+        <div class="filter-option">
+          <input type="checkbox" id="urg-standard" checked onchange="applyAllFilters()">
+          <label for="urg-standard">📋 Обычное</label>
+        </div>
+      </div>
+
+      <div class="filter-section">
+        <div class="filter-title">Расстояние</div>
+        <div class="filter-option">
+          <input type="checkbox" id="dist-5" checked onchange="applyAllFilters()">
+          <label for="dist-5"> До 5 км</label>
+        </div>
+        <div class="filter-option">
+          <input type="checkbox" id="dist-10" checked onchange="applyAllFilters()">
+          <label for="dist-10"> До 10 км</label>
+        </div>
+        <div class="filter-option">
+          <input type="checkbox" id="dist-20" onchange="applyAllFilters()">
+          <label for="dist-20">📍 До 20 км</label>
+        </div>
+      </div>
+
+      <button class="btn-apply-filters" onclick="applyAllFilters()">✓ Применить фильтры</button>
+    </aside>
+
+    <!-- Tasks -->
+    <div class="tasks-list" id="tasks-list">
+      <!-- Task 1 -->
+      <div class="task-card urgent" data-category="electric" data-urgency="urgent" data-distance="3" data-price="8500" data-title="срочный ремонт электропроводки" data-address="ленина 45" onclick="location.href='task-detail.html'">
+        <div class="task-header">
+          <div>
+            <div class="task-title">Срочный ремонт электропроводки</div>
+            <div class="task-id">#TASK-8821 · Электрика</div>
+          </div>
+          <span class="task-badge urgent"> Срочно</span>
+        </div>
+        <div class="task-description">
+          Необходимо срочно устранить короткое замыкание в электрощите офисного здания. 
+          Требуется опытный электрик с допуском до 1000В.
+        </div>
+        <div class="task-meta">
+          <div class="meta-item"><span class="icon">📍</span><span>ул. Ленина, 45</span></div>
+          <div class="meta-item"><span class="icon">📁</span><span>Электрика</span></div>
+          <div class="meta-item"><span class="icon">⏰</span><span>Сегодня, 14:00</span></div>
+        </div>
+        <div class="task-footer">
+          <div class="task-price">8 500 ₽</div>
+          <div class="task-date">Опубликовано 2 часа назад</div>
+          <div class="task-actions">
+            <button class="btn-task btn-details" onclick="event.stopPropagation(); location.href='404.html'">Подробнее</button>
+            <button class="btn-task btn-apply" onclick="event.stopPropagation(); applyToTask(this, 'Срочный ремонт электропроводки')">Откликнуться</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Task 2 -->
+      <div class="task-card new" data-category="plumbing" data-urgency="new" data-distance="7" data-price="3200" data-title="установка кухонной мойки" data-address="мира 12" onclick="location.href='task-detail.html'">
+        <div class="task-header">
+          <div>
+            <div class="task-title">Установка кухонной мойки</div>
+            <div class="task-id">#TASK-8820 · Сантехника</div>
+          </div>
+          <span class="task-badge new">✨ Новое</span>
+        </div>
+        <div class="task-description">
+          Требуется установить новую кухонную мойку из нержавеющей стали, 
+          подключить сифон и смеситель. Все материалы есть.
+        </div>
+        <div class="task-meta">
+          <div class="meta-item"><span class="icon">📍</span><span>пр. Мира, 12</span></div>
+          <div class="meta-item"><span class="icon">📁</span><span>Сантехника</span></div>
+          <div class="meta-item"><span class="icon">⏰</span><span>Завтра, 10:00</span></div>
+        </div>
+        <div class="task-footer">
+          <div class="task-price">3 200 ₽</div>
+          <div class="task-date">Опубликовано 3 часа назад</div>
+          <div class="task-actions">
+            <button class="btn-task btn-details" onclick="event.stopPropagation(); location.href='404.html'">Подробнее</button>
+            <button class="btn-task btn-apply" onclick="event.stopPropagation(); applyToTask(this, 'Установка кухонной мойки')">Откликнуться</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Task 3 -->
+      <div class="task-card" data-category="hvac" data-urgency="standard" data-distance="4" data-price="12000" data-title="монтаж кондиционера сплит-системы" data-address="гагарина 8" onclick="location.href='task-detail.html'">
+        <div class="task-header">
+          <div>
+            <div class="task-title">Монтаж кондиционера сплит-системы</div>
+            <div class="task-id">#TASK-8819 · ОВиК</div>
+          </div>
+          <span class="task-badge standard">📋 Обычное</span>
+        </div>
+        <div class="task-description">
+          Установка сплит-системы 2.5 кВт в спальне. 
+          Требуется монтаж внутреннего и внешнего блока, прокладка трассы 3 метра.
+        </div>
+        <div class="task-meta">
+          <div class="meta-item"><span class="icon"></span><span>ул. Гагарина, 8</span></div>
+          <div class="meta-item"><span class="icon">📁</span><span>ОВиК</span></div>
+          <div class="meta-item"><span class="icon">⏰</span><span>12.06.2026</span></div>
+        </div>
+        <div class="task-footer">
+          <div class="task-price">12 000 ₽</div>
+          <div class="task-date">Опубликовано 5 часов назад</div>
+          <div class="task-actions">
+            <button class="btn-task btn-details" onclick="event.stopPropagation(); location.href='404.html'">Подробнее</button>
+            <button class="btn-task btn-apply" onclick="event.stopPropagation(); applyToTask(this, 'Монтаж кондиционера')">Откликнуться</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Task 4 -->
+      <div class="task-card" data-category="cleaning" data-urgency="standard" data-distance="6" data-price="9500" data-title="генеральная уборка офиса" data-address="советская 22" onclick="location.href='task-detail.html'">
+        <div class="task-header">
+          <div>
+            <div class="task-title">Генеральная уборка офиса</div>
+            <div class="task-id">#TASK-8818 · Клининг</div>
+          </div>
+          <span class="task-badge standard">📋 Обычное</span>
+        </div>
+        <div class="task-description">
+          Требуется генеральная уборка офиса площадью 120 кв.м. 
+          Включает: мойку окон, чистку ковров, уборку санузлов, протирку пыли.
+        </div>
+        <div class="task-meta">
+          <div class="meta-item"><span class="icon"></span><span>ул. Советская, 22</span></div>
+          <div class="meta-item"><span class="icon">📁</span><span>Клининг</span></div>
+          <div class="meta-item"><span class="icon">⏰</span><span>15.06.2026</span></div>
+        </div>
+        <div class="task-footer">
+          <div class="task-price">9 500 ₽</div>
+          <div class="task-date">Опубликовано вчера</div>
+          <div class="task-actions">
+            <button class="btn-task btn-details" onclick="event.stopPropagation(); location.href='404.html'">Подробнее</button>
+            <button class="btn-task btn-apply" onclick="event.stopPropagation(); applyToTask(this, 'Генеральная уборка офиса')">Откликнуться</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Task 5 -->
+      <div class="task-card new" data-category="furniture" data-urgency="new" data-distance="8" data-price="4500" data-title="сборка шкафа-купе" data-address="кирова 67" onclick="location.href='task-detail.html'">
+        <div class="task-header">
+          <div>
+            <div class="task-title">Сборка шкафа-купе</div>
+            <div class="task-id">#TASK-8817 · Сборка мебели</div>
+          </div>
+          <span class="task-badge new">✨ Новое</span>
+        </div>
+        <div class="task-description">
+          Сборка шкафа-купе из ЛДСП (3 двери, зеркала). 
+          Размеры: 2400×600×2200 мм. Инструкция и инструмент есть.
+        </div>
+        <div class="task-meta">
+          <div class="meta-item"><span class="icon">📍</span><span>ул. Кирова, 67</span></div>
+          <div class="meta-item"><span class="icon">📁</span><span>Сборка мебели</span></div>
+          <div class="meta-item"><span class="icon"></span><span>10.06.2026</span></div>
+        </div>
+        <div class="task-footer">
+          <div class="task-price">4 500 ₽</div>
+          <div class="task-date">Опубликовано вчера</div>
+          <div class="task-actions">
+            <button class="btn-task btn-details" onclick="event.stopPropagation(); location.href='404.html'">Подробнее</button>
+            <button class="btn-task btn-apply" onclick="event.stopPropagation(); applyToTask(this, 'Сборка шкафа-купе')">Откликнуться</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state" id="empty-state">
+        <div class="icon">🔍</div>
+        <h3>Задания не найдены</h3>
+        <p>Попробуйте изменить параметры фильтрации или сбросить фильтры</p>
+        <button class="btn-task btn-details" onclick="resetFilters()">🔄 Сбросить фильтры</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // Burger
+  document.querySelector('.burger').addEventListener('click', function() {
+    document.querySelector('nav').classList.toggle('open');
+  });
+
+  // Закрытие меню профиля
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.profile-dropdown') && !e.target.closest('.header-logo .avatar')) {
+      document.querySelectorAll('.profile-menu').forEach(m => m.classList.remove('show'));
+    }
+  });
+
+  // Toast
+  function showToast(msg, type = '') {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.className = 'toast ' + type + ' show';
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  // Плюрализация
+  function pluralize(n, one, few, many) {
+    const mod10 = n % 10, mod100 = n % 100;
+    if (mod100 >= 11 && mod100 <= 19) return many;
+    if (mod10 === 1) return one;
+    if (mod10 >= 2 && mod10 <= 4) return few;
+    return many;
+  }
+
+  // Живой поиск
+  document.getElementById('search-input').addEventListener('input', applyAllFilters);
+
+  // Отклик на задание
+  function applyToTask(btn, taskName) {
+    if (btn.disabled) return;
+
+    if (!confirm('Вы хотите откликнуться на задание «' + taskName + '»?\n\nЗаказчик получит ваше уведомление.')) {
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '⏳ Отправка...';
+
+    setTimeout(() => {
+      btn.textContent = '✓ Отклик отправлен';
+      btn.classList.add('applied');
+      btn.closest('.task-card').classList.add('applied');
+      showToast('✅ Отклик на «' + taskName + '» успешно отправлен!', 'success');
+    }, 600);
+  }
+
+  // Применение всех фильтров
+  function applyAllFilters() {
+    const search = document.getElementById('search-input').value.toLowerCase().trim();
+    const sort = document.getElementById('sort-select').value;
+
+    // Категории
+    const categories = [];
+    if (document.getElementById('cat-electric').checked) categories.push('electric');
+    if (document.getElementById('cat-plumbing').checked) categories.push('plumbing');
+    if (document.getElementById('cat-repair').checked) categories.push('repair');
+    if (document.getElementById('cat-install').checked) categories.push('install');
+    if (document.getElementById('cat-cleaning').checked) categories.push('cleaning');
+    if (document.getElementById('cat-hvac').checked) categories.push('hvac');
+    if (document.getElementById('cat-furniture').checked) categories.push('furniture');
+
+    // Срочность
+    const urgencies = [];
+    if (document.getElementById('urg-urgent').checked) urgencies.push('urgent');
+    if (document.getElementById('urg-new').checked) urgencies.push('new');
+    if (document.getElementById('urg-standard').checked) urgencies.push('standard');
+
+    // Расстояние
+    const maxDist = getMaxDistance();
+
+    // Цена
+    const priceFrom = parseInt(document.getElementById('price-from').value) || 0;
+    const priceTo = parseInt(document.getElementById('price-to').value) || Infinity;
+
+    // Фильтрация
+    const cards = Array.from(document.querySelectorAll('.task-card'));
+    let visible = 0;
+
+    cards.forEach(card => {
+      const cat = card.dataset.category;
+      const urg = card.dataset.urgency;
+      const dist = parseInt(card.dataset.distance);
+      const price = parseInt(card.dataset.price);
+      const title = card.dataset.title;
+      const address = card.dataset.address;
+
+      let show = true;
+
+      if (!categories.includes(cat)) show = false;
+      if (!urgencies.includes(urg)) show = false;
+      if (dist > maxDist) show = false;
+      if (price < priceFrom || price > priceTo) show = false;
+
+      if (search && !title.includes(search) && !address.includes(search) &&
+          !card.querySelector('.task-description').textContent.toLowerCase().includes(search)) {
+        show = false;
+      }
+
+      if (show) {
+        card.classList.remove('hidden');
+        visible++;
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+
+    // Сортировка видимых карточек
+    const visibleCards = cards.filter(c => !c.classList.contains('hidden'));
+    visibleCards.sort((a, b) => {
+      if (sort === 'price-desc') return parseInt(b.dataset.price) - parseInt(a.dataset.price);
+      if (sort === 'price-asc') return parseInt(a.dataset.price) - parseInt(b.dataset.price);
+      if (sort === 'urgent') {
+        const order = { urgent: 0, new: 1, standard: 2 };
+        return order[a.dataset.urgency] - order[b.dataset.urgency];
+      }
+      return 0; // date — по умолчанию (исходный порядок)
+    });
+
+    const list = document.getElementById('tasks-list');
+    const emptyState = document.getElementById('empty-state');
+    visibleCards.forEach(card => list.insertBefore(card, emptyState));
+
+    document.getElementById('empty-state').classList.toggle('show', visible === 0);
+    document.getElementById('tasks-counter').textContent = 
+      visible + ' ' + pluralize(visible, 'задание', 'задания', 'заданий');
+  }
+
+  function getMaxDistance() {
+    if (document.getElementById('dist-5').checked) return 5;
+    if (document.getElementById('dist-10').checked) return 10;
+    if (document.getElementById('dist-20').checked) return 20;
+    return 0;
+  }
+
+  function resetFilters() {
+    document.getElementById('search-input').value = '';
+    document.getElementById('price-from').value = '';
+    document.getElementById('price-to').value = '';
+    document.getElementById('sort-select').value = 'date';
+
+    document.getElementById('cat-electric').checked = true;
+    document.getElementById('cat-plumbing').checked = true;
+    document.getElementById('cat-repair').checked = false;
+    document.getElementById('cat-install').checked = true;
+    document.getElementById('cat-cleaning').checked = false;
+    document.getElementById('cat-hvac').checked = false;
+    document.getElementById('cat-furniture').checked = false;
+
+    document.getElementById('urg-urgent').checked = true;
+    document.getElementById('urg-new').checked = true;
+    document.getElementById('urg-standard').checked = true;
+
+    document.getElementById('dist-5').checked = true;
+    document.getElementById('dist-10').checked = true;
+    document.getElementById('dist-20').checked = false;
+
+    applyAllFilters();
+    showToast('🔄 Фильтры сброшены', 'info');
+  }
+
+  // Инициализация
+  applyAllFilters();
+</script>
+
+</body>
+</html>

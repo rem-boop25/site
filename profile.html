@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REMPRO — Профиль</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #fff; color: #1a1a1a; min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    display: flex; align-items: center; padding: 12px 24px;
+    border-bottom: 1px solid #e8e8e8; gap: 16px; position: relative;
+    background: #fff;
+  }
+  .header-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 600; font-size: 16px; white-space: nowrap;
+  }
+  .header-logo .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 13px; font-weight: 600;
+    cursor: pointer;
+  }
+  nav {
+    display: flex; align-items: center; gap: 20px; flex: 1; overflow-x: auto;
+  }
+  nav a {
+    text-decoration: none; color: #333; font-size: 14px; white-space: nowrap;
+  }
+  nav a:hover, nav a.active { color: #3b82f6; }
+
+  .header-actions { display: flex; align-items: center; gap: 16px; }
+  .btn-create {
+    background: #3b82f6; border: none; color: #fff;
+    padding: 8px 20px; border-radius: 8px; font-size: 14px;
+    cursor: pointer; white-space: nowrap; font-weight: 500;
+  }
+  .btn-create:hover { background: #2563eb; }
+
+  .dropdown { position: relative; }
+  .dropdown-toggle { cursor: pointer; }
+  .dropdown-menu {
+    display: none; position: absolute; top: 100%; right: 0;
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1); min-width: 220px;
+    z-index: 1000; padding: 8px 0; margin-top: 8px;
+  }
+  .dropdown:hover .dropdown-menu { display: block; }
+  .dropdown-menu a {
+    display: block; padding: 10px 16px; font-size: 14px;
+    color: #333; text-decoration: none; white-space: nowrap;
+  }
+  .dropdown-menu a:hover { background: #f5f7fa; color: #3b82f6; }
+
+  .profile-dropdown { position: relative; }
+  .profile-menu {
+    display: none; position: absolute; top: 100%; right: 0;
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1); min-width: 220px;
+    z-index: 1000; padding: 8px 0; margin-top: 8px;
+  }
+  .profile-menu.show { display: block; }
+  .profile-menu a {
+    display: block; padding: 10px 16px; font-size: 14px;
+    color: #333; text-decoration: none;
+  }
+  .profile-menu a:hover { background: #f5f7fa; color: #3b82f6; }
+  .profile-menu .divider { height: 1px; background: #e8e8e8; margin: 8px 0; }
+  .profile-menu .logout { color: #ef4444; }
+  .profile-menu .logout:hover { background: #fee2e2; color: #dc2626; }
+
+  .burger {
+    display: none; background: none; border: none;
+    font-size: 24px; cursor: pointer; color: #333;
+  }
+
+  /* Breadcrumbs */
+  .breadcrumbs {
+    max-width: 1200px; margin: 20px auto 0; padding: 0 80px;
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: #666;
+  }
+  .breadcrumbs a { color: #3b82f6; text-decoration: none; }
+  .breadcrumbs a:hover { text-decoration: underline; }
+  .breadcrumbs .sep { color: #ccc; }
+
+  /* Main */
+  main {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 40px 80px; min-height: calc(100vh - 120px); gap: 40px;
+  }
+  .left-side { flex: 1; }
+  .left-side h1 {
+    font-size: 56px; font-weight: 800; color: #1a1a1a;
+    letter-spacing: 2px; margin-bottom: 16px;
+    background: linear-gradient(135deg, #1a1a1a, #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .left-side p {
+    font-size: 18px; color: #1a1a1a; line-height: 1.5;
+    margin-bottom: 32px;
+  }
+
+  /* Profile stats */
+  .profile-stats {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+    margin-bottom: 32px;
+  }
+  .profile-stat {
+    background: #f9fafb; border-radius: 12px; padding: 16px;
+    text-align: center; cursor: pointer; transition: all 0.2s;
+    border: 1px solid #e5e7eb;
+  }
+  .profile-stat:hover {
+    background: #eff6ff; border-color: #93c5fd; transform: translateY(-2px);
+  }
+  .profile-stat-value {
+    font-size: 24px; font-weight: 700; color: #3b82f6;
+    margin-bottom: 4px;
+  }
+  .profile-stat-label {
+    font-size: 12px; color: #666;
+  }
+
+  /* Quick actions */
+  .quick-actions {
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .quick-action {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 18px; background: #fff;
+    border: 1px solid #e5e7eb; border-radius: 12px;
+    cursor: pointer; text-decoration: none;
+    color: #1a1a1a; transition: all 0.2s;
+    font-size: 14px; font-weight: 500;
+  }
+  .quick-action:hover {
+    border-color: #3b82f6; background: #eff6ff;
+    transform: translateX(4px);
+  }
+  .quick-action .icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: #eff6ff; display: flex;
+    align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .quick-action .arrow { margin-left: auto; color: #9ca3af; }
+
+  /* Card */
+  .card {
+    width: 400px; border: 1.5px solid #93c5fd;
+    border-radius: 20px; padding: 40px 32px; flex-shrink: 0;
+    background: #fff;
+  }
+
+  /* Profile view */
+  .profile-avatar {
+    width: 90px; height: 90px; border-radius: 50%;
+    border: 3px solid #93c5fd; margin: 0 auto 16px;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    color: #fff; font-size: 32px; font-weight: 700;
+    cursor: pointer; position: relative;
+    transition: transform 0.2s;
+  }
+  .profile-avatar:hover { transform: scale(1.05); }
+  .profile-avatar .edit-icon {
+    position: absolute; bottom: 0; right: 0;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: #3b82f6; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; border: 2px solid #fff;
+  }
+  .profile-name {
+    text-align: center; font-size: 22px; font-weight: 700; margin-bottom: 4px;
+    cursor: pointer;
+  }
+  .profile-name:hover { color: #3b82f6; }
+  .profile-role {
+    text-align: center; font-size: 13px; color: #3b82f6;
+    font-weight: 600; margin-bottom: 8px;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .role-badge {
+    background: #dbeafe; padding: 2px 10px; border-radius: 12px;
+    font-size: 11px;
+  }
+  .profile-city {
+    text-align: center; font-size: 14px; color: #888; margin-bottom: 12px;
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+  }
+  .profile-since {
+    text-align: center; font-size: 12px; color: #9ca3af;
+    margin-bottom: 16px;
+  }
+
+  .stars {
+    text-align: center; font-size: 22px; margin-bottom: 6px;
+    letter-spacing: 4px;
+  }
+  .stars .filled { color: #ef4444; }
+  .stars .empty { color: #ccc; }
+  .rating-text {
+    text-align: center; font-size: 12px; color: #666; margin-bottom: 20px;
+    cursor: pointer;
+  }
+  .rating-text:hover { color: #3b82f6; text-decoration: underline; }
+
+  .btn-personal {
+    display: block; margin: 0 auto 24px; width: 100%;
+    background: #fff; border: 1px solid #ddd; color: #333;
+    padding: 10px 24px; border-radius: 10px; font-size: 14px;
+    cursor: pointer; font-weight: 500;
+    transition: all 0.2s;
+  }
+  .btn-personal:hover { background: #f9f9f9; border-color: #3b82f6; color: #3b82f6; }
+
+  .menu-list {
+    display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px;
+  }
+  .menu-item {
+    padding: 14px 16px; border-radius: 10px;
+    font-size: 14px; font-weight: 500; cursor: pointer;
+    background: #fff; border: 1px solid #ddd;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 10px;
+    text-decoration: none; color: #333;
+  }
+  .menu-item:hover {
+    background: #f5f5f5; border-color: #3b82f6; color: #3b82f6;
+    transform: translateX(4px);
+  }
+  .menu-item.active {
+    background: #3b82f6; color: #fff; border-color: #3b82f6;
+  }
+  .menu-item.active:hover { background: #2563eb; color: #fff; }
+  .menu-item .mi-icon { font-size: 16px; }
+  .menu-item .mi-arrow { margin-left: auto; opacity: 0.6; }
+
+  .btn-edit {
+    display: block; width: 100%;
+    margin: 0 auto;
+    background: #3b82f6; color: #fff; border: none;
+    padding: 12px 32px; border-radius: 10px; font-size: 15px;
+    font-weight: 600; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-edit:hover { background: #2563eb; transform: translateY(-1px); }
+
+  /* Edit view */
+  .edit-title {
+    text-align: center; font-size: 20px; font-weight: 700; margin-bottom: 24px;
+  }
+  .photo-upload {
+    display: flex; align-items: center; gap: 16px; margin-bottom: 20px;
+    padding: 16px; background: #f9fafb; border-radius: 12px;
+    border: 1px dashed #93c5fd;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .photo-upload:hover { background: #eff6ff; }
+  .photo-upload .avatar-circle {
+    width: 64px; height: 64px; border-radius: 50%;
+    border: 2px solid #93c5fd; flex-shrink: 0;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 22px; font-weight: 700;
+  }
+  .photo-upload .info { font-size: 13px; }
+  .photo-upload .info strong { display: block; margin-bottom: 2px; font-size: 14px; color: #1a1a1a; }
+  .photo-upload .info span { color: #666; font-size: 11px; line-height: 1.4; display: block; }
+  .photo-upload input[type="file"] { display: none; }
+
+  .edit-fields {
+    background: #f9fafb; border: 1px solid #e5e7eb;
+    border-radius: 12px; padding: 16px;
+    display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;
+  }
+  .edit-field {
+    padding: 12px 14px; background: #fff;
+    border: 1px solid #e5e7eb; border-radius: 8px;
+    font-size: 14px; display: flex; gap: 8px;
+    align-items: center;
+  }
+  .edit-field strong { color: #666; min-width: 120px; font-weight: 500; font-size: 13px; }
+  .edit-field input {
+    flex: 1; border: none; outline: none;
+    font-size: 14px; font-family: inherit;
+    background: transparent;
+  }
+  .edit-field input:focus {
+    background: #eff6ff; border-radius: 4px;
+    padding: 2px 4px;
+  }
+  .edit-field .edit-icon-small {
+    color: #9ca3af; cursor: pointer; font-size: 14px;
+    transition: color 0.2s;
+  }
+  .edit-field .edit-icon-small:hover { color: #3b82f6; }
+
+  .btn-row { display: flex; gap: 10px; }
+  .btn-save {
+    flex: 2;
+    background: #3b82f6; color: #fff; border: none;
+    padding: 12px 24px; border-radius: 10px; font-size: 15px;
+    font-weight: 600; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-save:hover { background: #2563eb; }
+  .btn-cancel {
+    flex: 1;
+    background: #fff; color: #666; border: 1px solid #ddd;
+    padding: 12px 24px; border-radius: 10px; font-size: 14px;
+    font-weight: 500; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-cancel:hover { background: #f9fafb; color: #1a1a1a; }
+
+  .back-to-profile {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: #3b82f6; font-size: 14px; font-weight: 500;
+    cursor: pointer; margin-bottom: 16px;
+    background: none; border: none;
+  }
+  .back-to-profile:hover { text-decoration: underline; }
+
+  /* Views */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 20px; right: 20px;
+    background: #1a1a1a; color: #fff;
+    padding: 14px 20px; border-radius: 10px;
+    font-size: 14px; font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    transform: translateY(100px); opacity: 0;
+    transition: all 0.3s; z-index: 2000;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { background: #059669; }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    main { padding: 40px; }
+    .breadcrumbs { padding: 0 40px; }
+    .left-side h1 { font-size: 44px; }
+  }
+  @media (max-width: 768px) {
+    nav { display: none; }
+    nav.open {
+      display: flex; flex-direction: column;
+      position: absolute; top: 56px; left: 0; right: 0;
+      background: #fff; padding: 20px;
+      border-bottom: 1px solid #e8e8e8; z-index: 100; gap: 14px;
+    }
+    .burger { display: block; }
+    main { flex-direction: column; padding: 24px 20px; text-align: center; }
+    .breadcrumbs { padding: 0 20px; }
+    .left-side h1 { font-size: 32px; }
+    .left-side p { font-size: 15px; }
+    .card { width: 100%; max-width: 400px; }
+    .profile-stats { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .profile-stat { padding: 12px 8px; }
+    .profile-stat-value { font-size: 18px; }
+    .dropdown-menu, .profile-menu {
+      position: fixed; top: 70px; right: 20px;
+    }
+    .quick-actions { text-align: left; }
+  }
+  @media (max-width: 480px) {
+    .left-side h1 { font-size: 28px; }
+    .left-side p { font-size: 14px; }
+    .card { padding: 28px 20px; }
+    .edit-field { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .edit-field strong { min-width: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="burger" onclick="document.querySelector('nav').classList.toggle('open')">☰</button>
+  <div class="header-logo">
+    <div class="avatar" onclick="document.querySelector('.profile-menu').classList.toggle('show')">МГ</div>
+    <span>Максим Гусев</span>
+  </div>
+  <nav>
+    <a href="dashboard.html">Рабочий стол</a>
+    <a href="projects.html">Проекты</a>
+    <a href="search.html">Поиск</a>
+    <a href="messages.html">Сообщения</a>
+    <a href="notifications.html">Уведомления</a>
+    <a href="finance.html">Финансы</a>
+    <div class="dropdown">
+      <a href="#" class="dropdown-toggle">Ещё ▾</a>
+      <div class="dropdown-menu">
+        <a href="calendar.html">📅 Календарь</a>
+        <a href="documents.html">📄 Документы</a>
+        <a href="reviews.html">⭐ Отзывы</a>
+        <a href="portfolio.html">🖼️ Портфолио</a>
+        <a href="workers.html">👷 Рабочие</a>
+        <a href="panels.html">📊 Панели</a>
+        <a href="reports.html">📈 Отчёты</a>
+        <a href="specializations.html">🔧 Специализация</a>
+        <a href="admin.html">⚙️ Администратор</a>
+        <a href="manager.html">👔 Менеджер</a>
+      </div>
+    </div>
+  </nav>
+  <div class="header-actions">
+    <button class="btn-create" onclick="location.href='request-form.html'">+ Создать</button>
+    <div class="profile-dropdown">
+      <div class="avatar" onclick="document.querySelector('.profile-menu').classList.toggle('show')">МГ</div>
+      <div class="profile-menu">
+        <a href="profile.html" style="background:#eff6ff; color:#3b82f6;">👤 Мой профиль</a>
+        <a href="personal-data.html">📋 Персональные данные</a>
+        <a href="settings.html">⚙️ Настройки</a>
+        <a href="help.html">❓ Помощь</a>
+        <div class="divider"></div>
+        <a href="login.html" class="logout">🚪 Выйти</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="breadcrumbs">
+  <a href="dashboard.html">Рабочий стол</a>
+  <span class="sep">›</span>
+  <span>Профиль</span>
+</div>
+
+<main>
+  <div class="left-side">
+    <h1>REMPRO</h1>
+    <p>Только с нами, вы достигните лучшего результата! Управляйте профилем, смотрите статистику и развивайте свой рейтинг.</p>
+
+    <div class="profile-stats">
+      <div class="profile-stat" onclick="location.href='projects.html'">
+        <div class="profile-stat-value">12</div>
+        <div class="profile-stat-label">Активных проектов</div>
+      </div>
+      <div class="profile-stat" onclick="location.href='reviews.html'">
+        <div class="profile-stat-value">4.8</div>
+        <div class="profile-stat-label">Рейтинг</div>
+      </div>
+      <div class="profile-stat" onclick="location.href='finance.html'">
+        <div class="profile-stat-value">285K</div>
+        <div class="profile-stat-label">Доход, ₽</div>
+      </div>
+    </div>
+
+    <div class="quick-actions">
+      <a href="portfolio.html" class="quick-action">
+        <div class="icon">🖼️</div>
+        <span>Портфолио работ</span>
+        <span class="arrow">→</span>
+      </a>
+      <a href="reviews.html" class="quick-action">
+        <div class="icon">⭐</div>
+        <span>Мои отзывы</span>
+        <span class="arrow">→</span>
+      </a>
+      <a href="documents.html" class="quick-action">
+        <div class="icon">📄</div>
+        <span>Мои документы</span>
+        <span class="arrow">→</span>
+      </a>
+      <a href="settings.html" class="quick-action">
+        <div class="icon">⚙️</div>
+        <span>Настройки аккаунта</span>
+        <span class="arrow">→</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- View: Profile -->
+  <div class="card view active" id="view-profile">
+    <div class="profile-avatar" onclick="showView('view-edit')" title="Изменить фото">
+      МГ
+      <div class="edit-icon">✏️</div>
+    </div>
+    <div class="profile-name" onclick="showView('view-edit')">Максим Гусев</div>
+    <div class="profile-role">
+      Исполнитель <span class="role-badge">ИП</span>
+    </div>
+    <div class="profile-city">📍 Калининград</div>
+    <div class="profile-since">На платформе с марта 2024</div>
+    <div class="stars">
+      <span class="filled">★</span>
+      <span class="filled">★</span>
+      <span class="filled">★</span>
+      <span class="filled">★</span>
+      <span class="empty">☆</span>
+    </div>
+    <div class="rating-text" onclick="location.href='reviews.html'">147 отзывов · 98% довольных клиентов</div>
+
+    <button class="btn-personal" onclick="location.href='personal-data.html'">📋 Личные данные</button>
+
+    <div class="menu-list">
+      <a href="specializations.html" class="menu-item active">
+        <span class="mi-icon">🔧</span>
+        <span>Специализация и инструменты</span>
+        <span class="mi-arrow">→</span>
+      </a>
+      <a href="personal-data.html#territory" class="menu-item">
+        <span class="mi-icon">🗺️</span>
+        <span>Территория работы</span>
+        <span class="mi-arrow">→</span>
+      </a>
+      <a href="personal-data.html" class="menu-item">
+        <span class="mi-icon">👤</span>
+        <span>Персональные данные</span>
+        <span class="mi-arrow">→</span>
+      </a>
+      <a href="personal-data.html#tax" class="menu-item">
+        <span class="mi-icon">💼</span>
+        <span>Налоговый статус</span>
+        <span class="mi-arrow">→</span>
+      </a>
+    </div>
+    <button class="btn-edit" onclick="showView('view-edit')">✏️ Редактировать профиль</button>
+  </div>
+
+  <!-- View: Edit profile -->
+  <div class="card view" id="view-edit">
+    <button class="back-to-profile" onclick="showView('view-profile')">← Назад к профилю</button>
+    <div class="edit-title">Редактирование профиля</div>
+
+    <label class="photo-upload" for="photo-input">
+      <div class="avatar-circle" id="preview-avatar">МГ</div>
+      <div class="info">
+        <strong>Загрузить фото профиля</strong>
+        <span>Размер не более 500×500. Объём изображения не более 10 МБ.</span>
+        <span id="photo-name" style="color:#059669; font-weight:600; margin-top:4px;"></span>
+      </div>
+      <input type="file" id="photo-input" accept="image/*" onchange="handlePhoto(this)">
+    </label>
+
+    <div class="edit-fields">
+      <div class="edit-field">
+        <strong>Фамилия:</strong>
+        <input type="text" value="Гусев" id="edit-lname">
+        <span class="edit-icon-small">✏️</span>
+      </div>
+      <div class="edit-field">
+        <strong>Имя:</strong>
+        <input type="text" value="Максим" id="edit-fname">
+        <span class="edit-icon-small">✏️</span>
+      </div>
+      <div class="edit-field">
+        <strong>Отчество:</strong>
+        <input type="text" value="Андреевич" id="edit-mname">
+        <span class="edit-icon-small">✏️</span>
+      </div>
+      <div class="edit-field">
+        <strong>Город:</strong>
+        <input type="text" value="Калининград" id="edit-city">
+        <span class="edit-icon-small">✏️</span>
+      </div>
+      <div class="edit-field">
+        <strong>Телефон:</strong>
+        <input type="tel" value="+7 (906) 211-88-19" id="edit-phone">
+        <span class="edit-icon-small">✏️</span>
+      </div>
+      <div class="edit-field">
+        <strong>Email:</strong>
+        <input type="email" value="maksim7892@gmail.com" id="edit-email">
+        <span class="edit-icon-small">✏️</span>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-cancel" onclick="showView('view-profile')">Отмена</button>
+      <button class="btn-save" onclick="saveProfile()">💾 Сохранить</button>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // Burger
+  document.querySelector('.burger').addEventListener('click', function() {
+    document.querySelector('nav').classList.toggle('open');
+  });
+
+  // Закрытие меню профиля
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.profile-dropdown') && !e.target.closest('.header-logo .avatar')) {
+      document.querySelectorAll('.profile-menu').forEach(m => m.classList.remove('show'));
+    }
+  });
+
+  function showView(id) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  // Toast
+  function showToast(msg, type = '') {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.className = 'toast ' + type + ' show';
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  // Загрузка фото
+  function handlePhoto(input) {
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      if (file.size > 10 * 1024 * 1024) {
+        showToast('Файл слишком большой (макс. 10 МБ)', '');
+        input.value = '';
+        return;
+      }
+      document.getElementById('photo-name').textContent = '✓ ' + file.name;
+      showToast('📷 Фото загружено', 'success');
+    }
+  }
+
+  // Сохранение профиля
+  function saveProfile() {
+    const fname = document.getElementById('edit-fname').value;
+    const lname = document.getElementById('edit-lname').value;
+
+    if (!fname || !lname) {
+      showToast('Имя и фамилия обязательны', '');
+      return;
+    }
+
+    // Обновляем данные в шапке и профиле
+    const initials = fname[0] + lname[0];
+    document.querySelectorAll('.header-logo .avatar, .profile-menu + .avatar').forEach(el => {
+      if (el && !el.classList.contains('profile-avatar')) {
+        // Оставляем как есть для простоты
+      }
+    });
+
+    showToast('✓ Профиль успешно сохранён', 'success');
+    setTimeout(() => showView('view-profile'), 800);
+  }
+
+  // Активный пункт меню при клике
+  document.querySelectorAll('.menu-item').forEach(item => {
+    item.addEventListener('click', function() {
+      document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+
+  // Подсказка для неактивных меню (если надо)
+  document.querySelectorAll('.menu-item').forEach(item => {
+    item.addEventListener('mouseenter', function() {
+      const text = this.querySelector('span:nth-child(2)').textContent;
+      this.title = 'Перейти в: ' + text;
+    });
+  });
+</script>
+
+</body>
+</html>

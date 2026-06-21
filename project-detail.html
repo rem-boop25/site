@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REMPRO — Детали проекта</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f7fa; color: #1a1a1a; min-height: 100vh;
+  }
+  
+  /* Навигация (из nav-template) */
+  .top-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 32px; background: #fff; border-bottom: 1px solid #e8e8e8;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 20px; text-decoration: none; color: #1a1a1a; }
+  .logo-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 18px; font-weight: 700;
+  }
+  .nav-links { display: flex; gap: 24px; }
+  .nav-links a { text-decoration: none; color: #666; font-weight: 500; font-size: 14px; }
+  .nav-links a:hover, .nav-links a.active { color: #3b82f6; }
+  
+  /* Основной контент */
+  .container { max-width: 1200px; margin: 0 auto; padding: 32px 20px; }
+  
+  /* Заголовок проекта */
+  .project-header {
+    background: #fff; padding: 24px; border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 24px;
+    display: flex; justify-content: space-between; align-items: flex-start;
+  }
+  .project-title { margin-bottom: 8px; font-size: 24px; font-weight: 700; }
+  .project-meta { color: #666; font-size: 14px; display: flex; gap: 16px; align-items: center;}
+  .badge { 
+    padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    background: #e0f2fe; color: #0284c7; 
+  }
+  
+  /* Сетка */
+  .layout { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+  
+  /* Карточки */
+  .card {
+    background: #fff; border-radius: 16px; padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 24px;
+  }
+  .card-title { font-size: 18px; font-weight: 600; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+  
+  /* Вкладки (Tabs) */
+  .tabs { display: flex; gap: 24px; border-bottom: 1px solid #e8e8e8; margin-bottom: 24px; }
+  .tab { padding: 12px 0; cursor: pointer; color: #666; font-weight: 500; font-size: 15px; position: relative; }
+  .tab.active { color: #3b82f6; }
+  .tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px; background: #3b82f6; }
+  
+  /* Список этапов */
+  .stage-item {
+    border: 1px solid #e8e8e8; border-radius: 12px; padding: 16px;
+    margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;
+  }
+  .stage-info h4 { margin-bottom: 4px; font-size: 15px; }
+  .stage-info p { color: #666; font-size: 13px; }
+  .stage-status.done { color: #16a34a; font-weight: 600; font-size: 13px; }
+  .stage-status.progress { color: #d97706; font-weight: 600; font-size: 13px; }
+  
+  /* Кнопки */
+  .btn { padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; }
+  .btn-primary { background: #3b82f6; color: #fff; }
+  .btn-secondary { background: #f3f4f6; color: #374151; }
+  
+  /* Прогресс-бар */
+  .progress-bg { background: #e5e7eb; border-radius: 8px; height: 8px; width: 100%; margin-top: 8px; overflow: hidden; }
+  .progress-fill { background: #3b82f6; height: 100%; }
+  
+  .team-member { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .avatar { width: 40px; height: 40px; border-radius: 50%; background: #e5e7eb; display: flex; justify-content: center; align-items: center; font-weight: bold; color: #6b7280; }
+  
+  .btn-back { background: none; border: none; color: #6b7280; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; text-decoration: none; margin-bottom: 16px; }
+  .btn-back:hover { color: #374151; }
+</style>
+</head>
+<body>
+
+  <!-- Шапка сайта -->
+  <header class="top-bar">
+    <a href="dashboard.html" class="logo">
+      <div class="logo-icon">R</div> REMPRO
+    </a>
+    <nav class="nav-links">
+      <a href="dashboard.html">Дашборд</a>
+      <a href="projects.html" class="active">Проекты</a>
+      <a href="search.html">Биржа</a>
+      <a href="finance.html">Финансы</a>
+    </nav>
+    <div class="user-profile">
+      <button class="btn btn-secondary" onclick="location.href='settings.html'">Настройки</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <a href="projects.html" class="btn-back">← Вернуться к списку проектов</a>
+    
+    <!-- Заголовок и метаданные проекта -->
+    <div class="project-header">
+      <div>
+        <h1 class="project-title">Ремонт бизнес-центра "Авангард" (Этаж 4)</h1>
+        <div class="project-meta">
+          <span class="badge">В работе</span>
+          <span>📍 г. Москва, ул. Ленина, 45</span>
+          <span>📅 15 Авг 2023 — 30 Ноя 2023</span>
+        </div>
+      </div>
+      <div>
+        <button class="btn btn-secondary" onclick="location.href='request-form.html'">Редактировать</button>
+<button class="btn btn-primary" onclick="location.href='messages.html'">Отправить сообщение</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <!-- Левая колонка (Основной контент: Этапы, Документы) -->
+      <main>
+        <div class="card">
+          <div class="tabs">
+            <div class="tab active">Этапы работ</div>
+            <div class="tab" onclick="location.href='documents.html'">Документы (4)</div>
+            <div class="tab" onclick="location.href='finance.html'">Смета</div>
+          </div>
+          
+          <div class="stages-list">
+            <div class="stage-item">
+              <div class="stage-info">
+                <h4>Демонтажные работы</h4>
+                <p>Снос перегородок, вывоз строительного мусора</p>
+              </div>
+              <div class="stage-status done">✓ Завершено</div>
+            </div>
+            
+            <div class="stage-item" style="border-left: 4px solid #3b82f6;">
+              <div class="stage-info">
+                <h4>Черновая отделка</h4>
+                <p>Стяжка пола, штукатурка стен, разводка электрики</p>
+              </div>
+              <div class="stage-status progress">В процессе (60%)</div>
+            </div>
+            
+            <div class="stage-item" style="opacity: 0.6;">
+              <div class="stage-info">
+                <h4>Чистовая отделка</h4>
+                <p>Покраска, укладка напольных покрытий, установка дверей</p>
+              </div>
+              <div class="stage-status">Ожидает начала</div>
+            </div>
+          </div>
+          
+          <button class="btn btn-secondary" style="width: 100%; margin-top: 16px;" onclick="location.href='request-form.html'">+ Добавить этап</button>
+        </div>
+      </main>
+
+      <!-- Правая колонка (Сайдбар: Статистика, Команда) -->
+      <aside>
+        <div class="card">
+          <div class="card-title">Финансовый свод</div>
+          <div style="margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 4px;">
+              <span style="color: #666;">Освоено бюджета</span>
+              <span style="font-weight: 600;">1 250 000 ₽ / 3 000 000 ₽</span>
+            </div>
+            <div class="progress-bg">
+              <div class="progress-fill" style="width: 41%;"></div>
+            </div>
+          </div>
+          <button class="btn btn-secondary" style="width: 100%;" onclick="location.href='finance.html'">Подробнее в Финансах</button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Команда проекта</div>
+          <div class="team-member">
+            <div class="avatar">АИ</div>
+            <div>
+              <div style="font-weight: 600; font-size: 14px;">Алексей Иванов</div>
+              <div style="font-size: 12px; color: #666;">Руководитель проекта</div>
+            </div>
+          </div>
+          <div class="team-member" style="cursor: pointer;" onclick="location.href='worker-detail.html'">
+            <div class="avatar">МС</div>
+            <div>
+              <div style="font-weight: 600; font-size: 14px; color: #3b82f6;">Михаил Смирнов</div>
+              <div style="font-size: 12px; color: #666;">Бригадир (Отделочники)</div>
+            </div>
+          </div>
+          <button class="btn btn-secondary" style="width: 100%; margin-top: 8px;" onclick="location.href='workers.html'">+ Пригласить участника</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+</body>
+</html>

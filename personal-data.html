@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REMPRO — Персональные данные</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f7fa; color: #1a1a1a; min-height: 100vh;
+  }
+
+  header {
+    display: flex; align-items: center; padding: 12px 24px;
+    background: #fff; border-bottom: 1px solid #e8e8e8; gap: 16px; position: relative;
+  }
+  .header-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 600; font-size: 16px; white-space: nowrap;
+  }
+  .header-logo .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 13px; font-weight: 600;
+    cursor: pointer;
+  }
+  nav {
+    display: flex; align-items: center; gap: 20px; flex: 1;
+  }
+  nav a { text-decoration: none; color: #333; font-size: 14px; white-space: nowrap; }
+  nav a:hover, nav a.active { color: #3b82f6; }
+
+  .header-actions { display: flex; align-items: center; gap: 16px; }
+  .btn-create {
+    background: #3b82f6; border: none; color: #fff;
+    padding: 8px 20px; border-radius: 8px; font-size: 14px;
+    cursor: pointer; white-space: nowrap; font-weight: 500;
+  }
+  .btn-create:hover { background: #2563eb; }
+
+  .dropdown { position: relative; }
+  .dropdown-toggle { cursor: pointer; }
+  .dropdown-menu {
+    display: none; position: absolute; top: 100%; right: 0;
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1); min-width: 220px;
+    z-index: 1000; padding: 8px 0; margin-top: 8px;
+  }
+  .dropdown:hover .dropdown-menu { display: block; }
+  .dropdown-menu a {
+    display: block; padding: 10px 16px; font-size: 14px;
+    color: #333; text-decoration: none; white-space: nowrap;
+  }
+  .dropdown-menu a:hover { background: #f5f7fa; color: #3b82f6; }
+
+  .profile-dropdown { position: relative; }
+  .profile-menu {
+    display: none; position: absolute; top: 100%; right: 0;
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1); min-width: 200px;
+    z-index: 1000; padding: 8px 0; margin-top: 8px;
+  }
+  .profile-menu.show { display: block; }
+  .profile-menu a {
+    display: block; padding: 10px 16px; font-size: 14px;
+    color: #333; text-decoration: none;
+  }
+  .profile-menu a:hover { background: #f5f7fa; color: #3b82f6; }
+  .profile-menu .divider { height: 1px; background: #e8e8e8; margin: 8px 0; }
+  .profile-menu .logout { color: #ef4444; }
+  .profile-menu .logout:hover { background: #fee2e2; color: #dc2626; }
+
+  .burger {
+    display: none; background: none; border: none;
+    font-size: 24px; cursor: pointer; color: #333;
+  }
+
+  main {
+    max-width: 1100px;
+    margin: 32px auto;
+    padding: 0 20px;
+  }
+
+  /* Breadcrumbs */
+  .breadcrumbs {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: #666; margin-bottom: 16px;
+  }
+  .breadcrumbs a {
+    color: #3b82f6; text-decoration: none;
+  }
+  .breadcrumbs a:hover { text-decoration: underline; }
+  .breadcrumbs .sep { color: #ccc; }
+
+  .card {
+    background: #fff;
+    border: 1.5px solid #93c5fd;
+    border-radius: 20px;
+    padding: 40px;
+  }
+
+  .page-title {
+    text-align: center; font-size: 28px; font-weight: 700; margin-bottom: 32px;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+  }
+
+  .section-title {
+    font-size: 18px; font-weight: 700; margin-bottom: 8px;
+  }
+  .section-desc {
+    font-size: 13px; color: #666; margin-bottom: 16px; line-height: 1.5;
+  }
+
+  input[type="text"],
+  input[type="date"],
+  input[type="tel"],
+  input[type="email"],
+  input[type="number"] {
+    width: 100%; padding: 12px 14px;
+    border: 1px solid #ddd; border-radius: 10px;
+    font-size: 14px; outline: none; transition: border-color 0.2s;
+    font-family: inherit;
+  }
+  input:focus { border-color: #3b82f6; }
+
+  .field-group { margin-bottom: 16px; }
+  .field-group label {
+    display: block; font-size: 13px; color: #555; margin-bottom: 6px;
+  }
+
+  .field-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  }
+
+  .btn-primary {
+    background: #3b82f6; color: #fff; border: none;
+    padding: 12px 28px; border-radius: 10px; font-size: 14px;
+    font-weight: 600; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-primary:hover { background: #2563eb; }
+  .btn-primary:disabled { background: #93c5fd; cursor: not-allowed; }
+
+  .btn-outline {
+    background: #fff; color: #3b82f6;
+    border: 1px solid #3b82f6;
+    padding: 10px 24px; border-radius: 10px; font-size: 14px;
+    font-weight: 500; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-outline:hover { background: #eff6ff; }
+
+  .photo-req {
+    font-size: 12px; color: #666; margin-bottom: 12px; line-height: 1.5;
+  }
+  .photo-req strong { color: #1a1a1a; }
+
+  .file-upload-row {
+    display: flex; gap: 12px; margin-bottom: 16px;
+  }
+  .file-upload {
+    flex: 1; border: 1.5px dashed #ccc; border-radius: 10px;
+    padding: 16px 12px; text-align: center;
+    color: #888; font-size: 12px; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .file-upload:hover { border-color: #3b82f6; background: #f0f7ff; }
+  .file-upload.uploaded { border-color: #10b981; background: #f0fdf4; color: #065f46; }
+  .file-upload .icon { font-size: 20px; margin-bottom: 4px; }
+  .file-upload input[type="file"] { display: none; }
+  .file-upload .filename {
+    font-size: 11px; color: #059669; font-weight: 600;
+    margin-top: 4px; word-break: break-all;
+  }
+
+  .photo-note {
+    font-size: 12px; color: #666; margin: 16px 0; line-height: 1.5;
+  }
+
+  .btn-send {
+    background: #3b82f6; color: #fff; border: none;
+    padding: 12px 28px; border-radius: 10px; font-size: 14px;
+    font-weight: 600; cursor: pointer; margin-top: 8px;
+    transition: all 0.2s;
+  }
+  .btn-send:hover { background: #2563eb; }
+
+  .tax-note {
+    font-size: 12px; color: #666; margin-top: 24px; line-height: 1.5;
+  }
+
+  .inn-section { margin-top: 32px; }
+  .inn-section h3 { font-size: 18px; font-weight: 700; margin-bottom: 12px; }
+
+  .status-indicator {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 12px; font-weight: 600;
+    margin-left: 12px;
+  }
+  .status-indicator.verified { background: #d1fae5; color: #065f46; }
+  .status-indicator.pending { background: #fef3c7; color: #92400e; }
+  .status-indicator.unverified { background: #fee2e2; color: #991b1b; }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .tax-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .tax-card {
+    border: 1.5px solid #ddd;
+    border-radius: 16px;
+    padding: 28px 24px;
+    text-align: center;
+    transition: all 0.2s;
+    background: #fff;
+    cursor: pointer;
+    position: relative;
+  }
+  .tax-card:hover { border-color: #93c5fd; transform: translateY(-4px); box-shadow: 0 8px 24px rgba(59,130,246,0.1); }
+  .tax-card.selected { border-color: #3b82f6; background: #eff6ff; }
+  .tax-card.featured {
+    grid-column: 1 / -1;
+    border-color: #93c5fd;
+  }
+  .tax-card h3 {
+    font-size: 24px; font-weight: 700; margin-bottom: 12px;
+  }
+  .tax-card p {
+    font-size: 14px; color: #666; line-height: 1.6; margin-bottom: 16px;
+  }
+  .tax-card .btn-primary { width: 100%; }
+  .tax-card .check-icon {
+    position: absolute; top: 16px; right: 16px;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: #3b82f6; color: #fff;
+    display: none; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .tax-card.selected .check-icon { display: flex; }
+
+  .back-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-bottom: 20px;
+    color: #3b82f6; font-size: 14px; cursor: pointer;
+    text-decoration: none; font-weight: 500;
+  }
+  .back-link:hover { text-decoration: underline; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 20px; right: 20px;
+    background: #1a1a1a; color: #fff;
+    padding: 14px 20px;
+    border-radius: 10px;
+    font-size: 14px; font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    transform: translateY(100px); opacity: 0;
+    transition: all 0.3s;
+    z-index: 2000;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { background: #059669; }
+  .toast.error { background: #dc2626; }
+
+  @media (max-width: 768px) {
+    nav { display: none; }
+    nav.open {
+      display: flex; flex-direction: column;
+      position: absolute; top: 56px; left: 0; right: 0;
+      background: #fff; padding: 20px;
+      border-bottom: 1px solid #e8e8e8; z-index: 100; gap: 14px;
+    }
+    .burger { display: block; }
+    .two-col { grid-template-columns: 1fr; gap: 24px; }
+    .field-row { grid-template-columns: 1fr; }
+    .tax-grid { grid-template-columns: 1fr; }
+    .card { padding: 24px 20px; }
+    .page-title { font-size: 22px; }
+    .dropdown-menu, .profile-menu {
+      position: fixed; top: 70px; right: 20px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="burger" onclick="document.querySelector('nav').classList.toggle('open')">☰</button>
+  <div class="header-logo">
+    <div class="avatar">МГ</div>
+    <span>Максим Гусев</span>
+  </div>
+  <nav>
+    <a href="dashboard.html">Рабочий стол</a>
+    <a href="projects.html">Проекты</a>
+    <a href="search.html">Поиск</a>
+    <a href="messages.html">Сообщения</a>
+    <a href="notifications.html">Уведомления</a>
+    <a href="finance.html">Финансы</a>
+    <div class="dropdown">
+      <a href="#" class="dropdown-toggle">Ещё ▾</a>
+      <div class="dropdown-menu">
+        <a href="calendar.html">📅 Календарь</a>
+        <a href="documents.html">📄 Документы</a>
+        <a href="reviews.html">⭐ Отзывы</a>
+        <a href="portfolio.html">🖼️ Портфолио</a>
+        <a href="workers.html">👷 Рабочие</a>
+        <a href="panels.html">📊 Панели</a>
+        <a href="reports.html">📈 Отчёты</a>
+        <a href="specializations.html">🔧 Специализация</a>
+        <a href="admin.html">⚙️ Администратор</a>
+        <a href="manager.html">👔 Менеджер</a>
+      </div>
+    </div>
+  </nav>
+  <div class="header-actions">
+    <button class="btn-create" onclick="location.href='request-form.html'">+ Создать</button>
+    <div class="profile-dropdown">
+      <div class="avatar" onclick="document.querySelector('.profile-menu').classList.toggle('show')">МГ</div>
+      <div class="profile-menu">
+        <a href="profile.html">👤 Мой профиль</a>
+        <a href="personal-data.html" style="background:#eff6ff; color:#3b82f6;">📋 Персональные данные</a>
+        <a href="settings.html">⚙️ Настройки</a>
+        <a href="help.html">❓ Помощь</a>
+        <div class="divider"></div>
+        <a href="login.html" class="logout">🚪 Выйти</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="breadcrumbs">
+    <a href="profile.html">Профиль</a>
+    <span class="sep">›</span>
+    <span>Персональные данные</span>
+  </div>
+
+  <!-- View: Personal Data -->
+  <div class="card view active" id="view-personal">
+    <h1 class="page-title">
+      Персональные данные
+      <span class="status-indicator pending" id="verification-status">⏳ На проверке</span>
+    </h1>
+
+    <div class="two-col">
+      <!-- Left column -->
+      <div>
+        <!-- Main territory -->
+        <div class="section-title">Основная территория работы</div>
+        <p class="section-desc">Укажите населённый пункт, в котором будете выполнять задания.</p>
+        <div class="field-group">
+          <input type="text" id="main-city" value="Калининград" placeholder="Населённый пункт">
+        </div>
+        <p class="section-desc" style="margin-top:12px;">Основной населённый пункт можно менять 1 раз в неделю при отсутствии заданий в работе. Мы действуем так, чтобы обезопасить сервис от мошенников и посредников.</p>
+
+        <!-- Additional territory -->
+        <div class="section-title" style="margin-top:28px;">Дополнительная территория работы</div>
+        <div class="field-group">
+          <input type="text" id="add-city" placeholder="Город">
+        </div>
+        <button class="btn-primary" onclick="confirmCity()">Подтвердить</button>
+
+        <!-- Passport -->
+        <div style="margin-top:36px;">
+          <div class="section-title">
+            Паспорт
+            <span class="status-indicator verified">✓ Проверен</span>
+          </div>
+          <div class="field-row" style="margin-top:12px;">
+            <div class="field-group">
+              <label>Гражданство</label>
+              <input type="text" value="Российская Федерация">
+            </div>
+            <div class="field-group">
+              <label>Дата выдачи</label>
+              <input type="date" value="2012-03-27">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label>Серия и номер паспорта</label>
+              <input type="text" value="2712412774">
+            </div>
+            <div class="field-group">
+              <label>Место получения</label>
+              <input type="text" value="УМВД России по Калининградской обл.">
+            </div>
+          </div>
+          <p class="section-desc">Паспортные данные нужны для оформления пропуска на объект при выполнении заданий, выводе денежных средств, для проверки в налоговой, а также для подтверждения статуса ИП.</p>
+          <button class="btn-outline" onclick="showToast('📋 Функция редактирования паспорта доступна после обращения в поддержку.', '')">✏️ Изменить паспортные данные</button>
+        </div>
+      </div>
+
+      <!-- Right column -->
+      <div>
+        <!-- Photo -->
+        <div class="section-title">Фото паспорта</div>
+        <p class="photo-req">Прикрепите скан или сделайте фотографию паспорта.<br>Загрузите разворот с фотографией и страницу с регистрацией.</p>
+        <p class="photo-req"><strong>Требования к качеству фотографии:</strong><br>Фотография должна быть светлой, четкой и хорошо читаемой. Убедитесь, что изображение не обрезанное, неподсвеченное и без каких-либо пометок.</p>
+
+        <button class="btn-outline" style="margin-bottom:16px;" onclick="showToast('📷 Инициализация камеры...', '')">📷 Сделать фото с камеры</button>
+
+        <div class="file-upload-row">
+          <label class="file-upload" id="upload-1">
+            <div class="icon">📄</div>
+            <div>Разворот с фото</div>
+            <input type="file" accept="image/*" onchange="handleFileUpload(this, 'upload-1')">
+            <div class="filename"></div>
+          </label>
+          <label class="file-upload" id="upload-2">
+            <div class="icon">📄</div>
+            <div>Страница с регистрацией</div>
+            <input type="file" accept="image/*" onchange="handleFileUpload(this, 'upload-2')">
+            <div class="filename"></div>
+          </label>
+        </div>
+
+        <p class="photo-note">Для отправки на модерацию, требуется приложить скан или фотографии актуального паспорта и дождаться их проверки. Это займёт не больше 1 минуты.</p>
+
+        <button class="btn-send" onclick="sendToModeration()">📤 Отправить на проверку</button>
+
+        <p class="tax-note">Налоговые данные нужны для проверки в налоговой и для вывода денежных средств.</p>
+
+        <!-- INN -->
+        <div class="inn-section">
+          <h3>
+            ИНН
+            <span class="status-indicator unverified">✗ Не проверен</span>
+          </h3>
+          <div class="field-group">
+            <input type="text" id="inn-input" placeholder="ИНН должен состоять из 12 цифр" maxlength="12">
+            <div style="font-size: 11px; color: #999; margin-top: 4px;" id="inn-hint">Введите 12 цифр ИНН</div>
+          </div>
+          <button class="btn-primary" onclick="checkInn()">🔍 Проверить данные в налоговой</button>
+          <button class="btn-outline" style="margin-top:8px; margin-left:8px;" onclick="showView('view-tax')">Выбрать налоговый статус</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- View: Tax Status -->
+  <div class="card view" id="view-tax">
+    <a class="back-link" onclick="showView('view-personal')">← Назад к персональным данным</a>
+    <h1 class="page-title">Выберите налоговый статус</h1>
+
+    <div class="tax-grid">
+      <div class="tax-card featured selected" onclick="selectTax(this)">
+        <div class="check-icon">✓</div>
+        <h3>ИП</h3>
+        <p>Вывод денежных средств в течение 15 рабочих дней<br>Подходит при любом доходе</p>
+        <button class="btn-primary" onclick="event.stopPropagation(); chooseTax('ИП')">Выбрать</button>
+      </div>
+      <div class="tax-card" onclick="selectTax(this)">
+        <div class="check-icon">✓</div>
+        <h3>Самозанятый</h3>
+        <p>Не нужно посещать банк, оформлять документы на право деятельности. Вся отчётность через простое мобильное приложение ФНС России</p>
+        <p>Вывод денежных средств в течение 25 рабочих дней</p>
+        <p>Подходит если ваш доход ежегодный меньше 2,4 млн. рублей</p>
+        <button class="btn-primary" onclick="event.stopPropagation(); chooseTax('Самозанятый')">Выбрать</button>
+      </div>
+      <div class="tax-card" onclick="selectTax(this)">
+        <div class="check-icon">✓</div>
+        <h3>Физическое лицо</h3>
+        <p>Подходит при небольшом доходе</p>
+        <button class="btn-primary" onclick="event.stopPropagation(); chooseTax('Физ. лицо')">Выбрать</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // Burger
+  document.querySelector('.burger').addEventListener('click', function() {
+    document.querySelector('nav').classList.toggle('open');
+  });
+
+  // Закрытие меню профиля
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.profile-dropdown')) {
+      document.querySelectorAll('.profile-menu').forEach(m => m.classList.remove('show'));
+    }
+  });
+
+  function showView(id) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  // Toast
+  function showToast(msg, type = '') {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.className = 'toast ' + type + ' show';
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  // Подтверждение города
+  function confirmCity() {
+    const mainCity = document.getElementById('main-city').value.trim();
+    const addCity = document.getElementById('add-city').value.trim();
+    if (!mainCity) {
+      showToast('Укажите основной город', 'error');
+      return;
+    }
+    let msg = '✓ Основная территория: ' + mainCity;
+    if (addCity) msg += '\n✓ Дополнительная: ' + addCity;
+    showToast(msg, 'success');
+  }
+
+  // Загрузка файлов
+  function handleFileUpload(input, uploadId) {
+    const label = document.getElementById(uploadId);
+    if (input.files.length > 0) {
+      const file = input.files[0];
+      if (file.size > 10 * 1024 * 1024) {
+        showToast('Файл слишком большой (макс. 10 МБ)', 'error');
+        input.value = '';
+        return;
+      }
+      label.classList.add('uploaded');
+      label.querySelector('.icon').textContent = '✅';
+      const filenameEl = label.querySelector('.filename');
+      filenameEl.textContent = file.name;
+      showToast('✓ Файл загружен: ' + file.name, 'success');
+    }
+  }
+
+  // Отправка на модерацию
+  function sendToModeration() {
+    const uploaded = document.querySelectorAll('.file-upload.uploaded').length;
+    if (uploaded < 2) {
+      showToast('Загрузите оба фото паспорта', 'error');
+      return;
+    }
+    showToast('✓ Документы отправлены на проверку!', 'success');
+    const statusEl = document.getElementById('verification-status');
+    statusEl.textContent = '⏳ На проверке';
+    statusEl.className = 'status-indicator pending';
+  }
+
+  // Валидация ИНН
+  const innInput = document.getElementById('inn-input');
+  const innHint = document.getElementById('inn-hint');
+  innInput.addEventListener('input', function() {
+    this.value = this.value.replace(/\D/g, '').slice(0, 12);
+    const len = this.value.length;
+    if (len === 12) {
+      innHint.textContent = '✓ ИНН введён полностью';
+      innHint.style.color = '#10b981';
+    } else {
+      innHint.textContent = 'Осталось ввести: ' + (12 - len) + ' ' + pluralize(12-len, 'цифру', 'цифры', 'цифр');
+      innHint.style.color = '#999';
+    }
+  });
+
+  function checkInn() {
+    const inn = innInput.value;
+    if (inn.length !== 12) {
+      showToast('ИНН должен содержать 12 цифр', 'error');
+      return;
+    }
+    // Имитация проверки
+    showToast('🔍 Проверка ИНН в налоговой...', '');
+    setTimeout(() => {
+      showToast('✓ ИНН подтверждён в ФНС', 'success');
+    }, 1500);
+  }
+
+  function pluralize(n, one, few, many) {
+    const mod10 = n % 10, mod100 = n % 100;
+    if (mod100 >= 11 && mod100 <= 19) return many;
+    if (mod10 === 1) return one;
+    if (mod10 >= 2 && mod10 <= 4) return few;
+    return many;
+  }
+
+  // Выбор налогового статуса
+  function selectTax(card) {
+    document.querySelectorAll('.tax-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+  }
+
+  function chooseTax(status) {
+    showToast('✓ Выбран статус: ' + status, 'success');
+    setTimeout(() => showView('view-personal'), 800);
+  }
+</script>
+
+</body>
+</html>

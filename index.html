@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REMPRO</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #fff;
+    color: #1a1a1a;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: center;
+    padding: 12px 24px;
+    border-bottom: 1px solid #e8e8e8;
+    gap: 16px;
+    position: relative;
+  }
+  .header-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 15px;
+    white-space: nowrap;
+  }
+  .header-logo .icon {
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 14px;
+  }
+  nav {
+    display: flex; align-items: center; gap: 20px; flex: 1; overflow-x: auto;
+  }
+  nav a {
+    text-decoration: none; color: #333; font-size: 14px; white-space: nowrap;
+  }
+  nav a:hover { color: #3b82f6; }
+  .btn-create {
+    background: #fff; border: 1px solid #3b82f6; color: #3b82f6;
+    padding: 8px 20px; border-radius: 8px; font-size: 14px;
+    cursor: pointer; white-space: nowrap; font-weight: 500;
+  }
+  .btn-create:hover { background: #eff6ff; }
+  .burger {
+    display: none; background: none; border: none;
+    font-size: 24px; cursor: pointer; color: #333;
+  }
+
+  /* Main */
+  main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 60px 80px;
+    min-height: calc(100vh - 60px);
+    gap: 40px;
+  }
+  .left-side { flex: 1; }
+  .left-side h1 {
+    font-size: 56px; font-weight: 800; color: #3b82f6;
+    letter-spacing: 2px; margin-bottom: 16px;
+  }
+  .left-side p { font-size: 18px; color: #1a1a1a; line-height: 1.5; }
+
+  /* Card */
+  .card {
+    width: 380px;
+    border: 1.5px solid #93c5fd;
+    border-radius: 20px;
+    padding: 40px 32px;
+    flex-shrink: 0;
+  }
+  .card h2 {
+    text-align: center; font-size: 22px; font-weight: 600; margin-bottom: 28px;
+  }
+  .form-group { margin-bottom: 16px; }
+  .form-group label {
+    display: block; font-size: 13px; color: #555; margin-bottom: 6px;
+  }
+  .form-group input[type="text"],
+  .form-group input[type="email"],
+  .form-group input[type="password"] {
+    width: 100%; padding: 12px 14px;
+    border: 1px solid #ddd; border-radius: 10px;
+    font-size: 14px; outline: none; transition: border-color 0.2s;
+  }
+  .form-group input:focus { border-color: #3b82f6; }
+  .password-wrap { position: relative; }
+  .password-wrap input { padding-right: 40px; }
+  .toggle-password {
+    position: absolute; right: 12px; top: 50%;
+    transform: translateY(-50%);
+    background: none; border: none; cursor: pointer;
+    color: #999; font-size: 16px;
+  }
+  .forgot-link {
+    display: block; text-align: right; font-size: 13px;
+    color: #555; text-decoration: none; margin-bottom: 24px;
+  }
+  .forgot-link:hover { color: #3b82f6; }
+  .btn-primary {
+    width: 100%; padding: 12px; background: #3b82f6; color: #fff;
+    border: none; border-radius: 10px; font-size: 15px;
+    font-weight: 600; cursor: pointer; transition: background 0.2s;
+  }
+  .btn-primary:hover { background: #2563eb; }
+  .signup-text {
+    text-align: center; margin-top: 20px; font-size: 14px; color: #555;
+  }
+  .signup-text a { color: #1a1a1a; font-weight: 600; text-decoration: none; }
+  .signup-text a:hover { color: #3b82f6; }
+  .agreement {
+    text-align: center; font-size: 11px; color: #999;
+    margin-top: 20px; line-height: 1.5;
+  }
+  .agreement a { color: #999; text-decoration: underline; }
+
+  /* Role selection */
+  .role-grid {
+    display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;
+  }
+  .role-card {
+    background: #f3f4f6; border-radius: 14px; padding: 20px;
+    text-align: center; cursor: pointer; border: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .role-card:hover { background: #e5e7eb; }
+  .role-card.selected {
+    border-color: #3b82f6; background: #eff6ff;
+  }
+  .role-card svg { width: 48px; height: 48px; margin-bottom: 8px; }
+  .role-card .role-name { font-size: 14px; font-weight: 500; }
+
+  /* City step */
+  .city-inner {
+    border: 1.5px solid #93c5fd; border-radius: 14px;
+    padding: 24px; margin-bottom: 24px;
+  }
+  .city-inner h3 {
+    font-size: 15px; font-weight: 500; margin-bottom: 12px; text-align: center;
+  }
+  .city-inner input {
+    width: 100%; padding: 12px 14px;
+    border: 1px solid #ddd; border-radius: 10px;
+    font-size: 14px; outline: none;
+  }
+  .city-inner input:focus { border-color: #3b82f6; }
+  .btn-row {
+    display: flex; gap: 12px;
+  }
+  .btn-secondary {
+    flex: 1; padding: 12px; background: #fff;
+    border: 1px solid #93c5fd; color: #3b82f6;
+    border-radius: 10px; font-size: 14px; font-weight: 500;
+    cursor: pointer;
+  }
+  .btn-secondary:hover { background: #eff6ff; }
+  .btn-row .btn-primary { flex: 2; }
+
+  /* Consent */
+  .consent {
+    display: flex; align-items: flex-start; gap: 10px;
+    margin: 20px 0; font-size: 13px; color: #555;
+  }
+  .consent input[type="checkbox"] {
+    width: 18px; height: 18px; margin-top: 2px; accent-color: #3b82f6;
+    flex-shrink: 0;
+  }
+
+  /* Step visibility */
+  .step { display: none; }
+  .step.active { display: block; }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    main { padding: 40px; }
+    .left-side h1 { font-size: 44px; }
+  }
+  @media (max-width: 768px) {
+    nav { display: none; }
+    nav.open {
+      display: flex; flex-direction: column;
+      position: absolute; top: 56px; left: 0; right: 0;
+      background: #fff; padding: 20px;
+      border-bottom: 1px solid #e8e8e8; z-index: 100; gap: 14px;
+    }
+    .burger { display: block; }
+    main {
+      flex-direction: column; padding: 32px 20px; text-align: center;
+    }
+    .left-side h1 { font-size: 36px; }
+    .left-side p { font-size: 15px; }
+    .card { width: 100%; max-width: 400px; }
+  }
+  @media (max-width: 480px) {
+    .left-side h1 { font-size: 28px; }
+    .left-side p { font-size: 14px; }
+    .card { padding: 28px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="burger" onclick="document.querySelector('nav').classList.toggle('open')">☰</button>
+  <div class="header-logo">
+    <div class="icon">R</div>
+    <span>Вход</span>
+  </div>
+  <nav>
+    <a href="#">Рабочий стол</a>
+    <a href="#">Проекты</a>
+    <a href="#">Поиск</a>
+    <a href="#">Панели</a>
+    <a href="#">Администратор</a>
+    <a href="#">Менеджер</a>
+    <a href="#">Рабочие</a>
+  </nav>
+  <button class="btn-create">Создать</button>
+</header>
+
+<main>
+  <div class="left-side">
+    <h1>REMPRO</h1>
+    <p>Только с нами, вы достигните лучшего результата!</p>
+  </div>
+
+  <!-- STEP 0: Login -->
+  <div class="card step active" id="step-login">
+    <h2>Войти</h2>
+    <form onsubmit="return false;">
+      <div class="form-group">
+        <label>Почта</label>
+        <input type="email" placeholder="example@gmail.com">
+      </div>
+      <div class="form-group">
+        <label>Пароль</label>
+        <div class="password-wrap">
+          <input type="password" placeholder="••••••••">
+          <button type="button" class="toggle-password" onclick="togglePwd(this)">👁</button>
+        </div>
+      </div>
+      <a href="#" class="forgot-link">Забыли пароль?</a>
+      <button type="submit" class="btn-primary">Войти</button>
+    </form>
+    <p class="signup-text">Нет аккаунта? <a href="#" onclick="goTo('step-role'); return false;">Создать</a></p>
+    <p class="agreement">Нажимая кнопку «Войти», вы даёте согласие на обработку персональных данных, в соответствии с <a href="#">Политикой конфиденциальности</a> и <a href="#">Пользовательским соглашением</a></p>
+  </div>
+
+  <!-- STEP 1: Role -->
+  <div class="card step" id="step-role">
+    <h2>Выберите должность</h2>
+    <div class="role-grid">
+      <div class="role-card" onclick="selectRole(this)">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M24 14c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6zm-10 18c0-3.3 4.5-6 10-6s10 2.7 10 6v2H14v-2z" fill="#3b82f6"/>
+          <path d="M34 12c-2.2 0-4 1.8-4 4s1.8 4 4 4 4-1.8 4-4-1.8-4-4-4zm-6 12c2.5 0 4.8.8 6.2 2H40v2h-5.8c-1.4-1.2-3.7-2-6.2-2z" fill="#3b82f6" opacity="0.7"/>
+        </svg>
+        <div class="role-name">Заказчик</div>
+      </div>
+      <div class="role-card" onclick="selectRole(this)">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M24 14c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6zm-10 18c0-3.3 4.5-6 10-6s10 2.7 10 6v2H14v-2z" fill="#3b82f6"/>
+          <circle cx="36" cy="14" r="4" fill="#3b82f6" opacity="0.7"/>
+          <path d="M36 10v-2M36 20v-2M32 14h-2M42 14h-2M33.2 11.2l-1.4-1.4M38.8 16.8l1.4 1.4M33.2 16.8l-1.4 1.4M38.8 11.2l1.4-1.4" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <div class="role-name">Исполнитель</div>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="goTo('step-register')">Продолжить</button>
+  </div>
+
+  <!-- STEP 2: Register -->
+  <div class="card step" id="step-register">
+    <h2>Регистрация</h2>
+    <form onsubmit="return false;">
+      <div class="form-group">
+        <label>Имя</label>
+        <input type="text" placeholder="Имя">
+      </div>
+      <div class="form-group">
+        <label>Фамилия</label>
+        <input type="text" placeholder="Фамилия">
+      </div>
+      <div class="form-group">
+        <label>Почта</label>
+        <input type="email" placeholder="example@gmail.com">
+      </div>
+      <button type="submit" class="btn-primary" onclick="goTo('step-city')" style="margin-top: 8px;">Продолжить</button>
+    </form>
+  </div>
+
+  <!-- STEP 3: City -->
+  <div class="card step" id="step-city">
+    <div class="city-inner">
+      <h3>Укажите ваш город</h3>
+      <input type="text" placeholder="—">
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="goTo('step-register')">Назад</button>
+      <button class="btn-primary" onclick="goTo('step-password')">Продолжить</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: Password -->
+  <div class="card step" id="step-password">
+    <div class="city-inner">
+      <h3 style="text-align:left; font-size:14px; margin-bottom:10px;">Пароль</h3>
+      <div class="password-wrap" style="margin-bottom:12px;">
+        <input type="password" placeholder="••••••••" style="width:100%; padding:12px 40px 12px 14px; border:1px solid #ddd; border-radius:10px; font-size:14px; outline:none;">
+        <button type="button" class="toggle-password" onclick="togglePwd(this)">👁</button>
+      </div>
+      <div class="password-wrap">
+        <input type="password" placeholder="••••••••" style="width:100%; padding:12px 40px 12px 14px; border:1px solid #ddd; border-radius:10px; font-size:14px; outline:none;">
+        <button type="button" class="toggle-password" onclick="togglePwd(this)">👁</button>
+      </div>
+    </div>
+    <label class="consent">
+      <input type="checkbox">
+      <span>Даю согласие на обработку персональных данных</span>
+    </label>
+    <button class="btn-primary">Зарегистрироваться</button>
+  </div>
+</main>
+
+<script>
+  function goTo(id) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelector('nav').classList.remove('open');
+  }
+  function selectRole(el) {
+    document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+  function togglePwd(btn) {
+    const input = btn.previousElementSibling;
+    input.type = input.type === 'password' ? 'text' : 'password';
+  }
+</script>
+
+</body>
+</html>
